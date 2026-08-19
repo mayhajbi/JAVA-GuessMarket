@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Guess-Market>
+    <GM-events>
+        <GM-event name="Rain in Tel Aviv tomorrow">
+            <id>1</id>
+            <description>Will more than 1 mm of rain be measured in Tel Aviv tomorrow? The event
+                is decided by the official measurement published the day after.</description>
+            <comision type="on-purchase">5</comision>
+            <GM-options>
+                <GM-option>YES</GM-option>
+                <GM-option>NO</GM-option>
+            </GM-options>
+            <GM-method>
+                <GM-LMSR>
+                    <b>100</b>
+                </GM-LMSR>
+            </GM-method>
+        </GM-event>
+        <GM-event name="Eurovision winner from Europe">
+            <id>2</id>
+            <description>Will the next Eurovision contest be won by a country located in Europe?
+                The event is decided when the final results are announced.</description>
+            <comision type="on-close">10</comision>
+            <GM-options>
+                <GM-option>YES</GM-option>
+                <GM-option>NO</GM-option>
+            </GM-options>
+            <GM-method>
+                <GM-LMSR>
+                    <b>50</b>
+                </GM-LMSR>
+            </GM-method>
+        </GM-event>
+        <GM-event name="New underground line opens on time">
+            <id>17</id>
+            <description>Will the new underground line open for passengers before the end of the
+                year, according to an official announcement?</description>
+            <comision type="on-purchase">0</comision>
+            <GM-options>
+                <GM-option>It will open on time</GM-option>
+                <GM-option>It will be delayed</GM-option>
+            </GM-options>
+            <GM-method>
+                <GM-LMSR>
+                    <b>20</b>
+                </GM-LMSR>
+            </GM-method>
+        </GM-event>
+    </GM-events>
+</Guess-Market>

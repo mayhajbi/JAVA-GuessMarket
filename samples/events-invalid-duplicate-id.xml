@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Both events use the id 7. Loading this file must fail with a clear message. -->
+<Guess-Market>
+    <GM-events>
+        <GM-event name="First event">
+            <id>7</id>
+            <description>A legal event.</description>
+            <comision type="on-purchase">5</comision>
+            <GM-options>
+                <GM-option>YES</GM-option>
+                <GM-option>NO</GM-option>
+            </GM-options>
+            <GM-method>
+                <GM-LMSR>
+                    <b>100</b>
+                </GM-LMSR>
+            </GM-method>
+        </GM-event>
+        <GM-event name="Second event with the same id">
+            <id>7</id>
+            <description>A legal event that uses an id that is already taken.</description>
+            <comision type="on-close">5</comision>
+            <GM-options>
+                <GM-option>YES</GM-option>
+                <GM-option>NO</GM-option>
+            </GM-options>
+            <GM-method>
+                <GM-LMSR>
+                    <b>100</b>
+                </GM-LMSR>
+            </GM-method>
+        </GM-event>
+    </GM-events>
+</Guess-Market>

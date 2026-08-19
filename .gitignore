@@ -1,0 +1,77 @@
+# --- build output ---
+out/
+jars/
+target/
+*.class
+
+# --- submission archives ---
+*.zip
+*.rar
+*.7z
+
+# --- saved system states (bonus command 6) ---
+*.gm
+
+# --- IntelliJ IDEA: user specific files ---
+# the shared configuration (modules.xml, misc.xml, libraries/ and the .iml files) is committed
+# on purpose, so that the project opens correctly after a clone
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/usage.statistics.xml
+.idea/shelf/
+.idea/dictionaries/
+.idea/httpRequests/
+.idea/inspectionProfiles/
+.idea/copilot/
+.idea/sonarlint/
+.idea/discord.xml
+.idea/dataSources/
+.idea/dataSources.local.xml
+*.iws
+
+# --- JVM crash and profiling dumps ---
+hs_err_pid*.log
+replay_pid*.log
+*.hprof
+*.log
+
+# --- editors and OS junk ---
+# ~$... files are the lock files Word creates while a document is open
+~$*
+.vscode/
+Thumbs.db
+desktop.ini
+ehthumbs.db
+.DS_Store
+*~
+*.bak
+*.tmp
+*.swp
+
+# --- personal notes and local tooling that stay on this computer only ---
+.local/
+LOCAL-NOTES.md
+WORK-PLAN.local.md
+*.local.md
+*.local.txt
+*.local.json
+*.local.yaml
+CLAUDE.md
+CLAUDE*.md
+claude.md
+AGENTS.md
+GEMINI.md
+.claude/
+.codex/
+.cursor/
+.cursorrules
+.aider*
+.continue/
+.windsurfrules
+.github/copilot-instructions.md
+prompts/
+notes/
+
+# The jar files under lib/ are committed on purpose, so that the project can be built right after a
+# clone. To keep binaries out of the repository, uncomment the next line instead.
+# lib/*.jar

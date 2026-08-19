@@ -1,0 +1,2 @@
+This file is not an XML file at all. It is used to check that the system reports a clear
+message when the given path does not point to an .xml file.

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The event has only one option, while every event must have exactly two. -->
+<Guess-Market>
+    <GM-events>
+        <GM-event name="Event with a single option">
+            <id>1</id>
+            <description>A legal event that offers only one possible answer.</description>
+            <comision type="on-close">5</comision>
+            <GM-options>
+                <GM-option>YES</GM-option>
+            </GM-options>
+            <GM-method>
+                <GM-LMSR>
+                    <b>100</b>
+                </GM-LMSR>
+            </GM-method>
+        </GM-event>
+    </GM-events>
+</Guess-Market>
