@@ -48,19 +48,11 @@ ehthumbs.db
 *.tmp
 *.swp
 
-# --- personal notes and local tooling that stay on this computer only ---
+# --- personal / local, never pushed ---
+# All planning, working docs and helper files live under .local/ ; course material
+# and test files under notes/ . AI-assistant config files are listed explicitly.
 .local/
-LOCAL-NOTES.md
-WORK-PLAN.local.md
-*.local.md
-*.local.txt
-*.local.json
-*.local.yaml
-CLAUDE.md
-CLAUDE*.md
-claude.md
-AGENTS.md
-GEMINI.md
+notes/
 .claude/
 .codex/
 .cursor/
@@ -69,8 +61,9 @@ GEMINI.md
 .continue/
 .windsurfrules
 .github/copilot-instructions.md
-prompts/
-notes/
+CLAUDE.md
+AGENTS.md
+GEMINI.md
 
 # The jar files under lib/ are committed on purpose, so that the project can be built right after a
 # clone. To keep binaries out of the repository, uncomment the next line instead.

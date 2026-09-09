@@ -14,24 +14,30 @@ the project - the system engine and a console user interface on top of it.
 
 ## Project structure
 
-| Module   | Package     | Role |
-|----------|-------------|------|
-| `dto`    | `gm.dto`    | Immutable data transfer objects (records) that carry information between the engine and any user interface |
-| `engine` | `gm.engine` | The system itself: the events, the pricing rules, loading and validating the data file, and the engine interface |
-| `ui`     | `gm.ui`     | The console application: the menu, reading the input of the user and printing the output |
+| Module   | Package      | Role |
+|----------|--------------|------|
+| `dto`    | `gm.dto`     | Immutable data transfer objects (records) that carry information between the engine and any user interface |
+| `engine` | `gm.engine`  | The system itself: the events, the pricing rules, loading and validating the data file, and the engine interface |
+| `ui`     | `gm.ui`      | The console application of exercise 1: the menu, reading the input of the user and printing the output |
+| `ui-fx`  | `gm.ui.fx`   | The JavaFX application of exercise 2 (in progress) |
 
-The `ui` module talks to the engine only through the `gm.engine.api.GuessMarketEngine` interface, and
-receives answers only as `gm.dto` objects, so the inner objects of the engine are never exposed. All
-the printing and the reading of the console happen in the `ui` module alone.
+Every user interface module talks to the engine only through the `gm.engine.api.GuessMarketEngine`
+interface, and receives answers only as `gm.dto` objects, so the inner objects of the engine are
+never exposed. The engine stays passive - it never reaches back into a user interface.
+
+JavaFX is bundled under `lib/javafx-sdk-22.0.2/` (base, controls, graphics, fxml); the build and run
+scripts pass it as `--module-path lib/javafx-sdk-22.0.2/lib --add-modules javafx.controls,javafx.fxml`.
 
 ## Build and run
 
 ```
-build.bat        creates out\ (compiled classes) and jars\ (gm-dto.jar, gm-engine.jar, gm-ui.jar)
-run.bat          runs the console application
+build.bat        creates out\ (compiled classes) and jars\ (gm-dto.jar, gm-engine.jar,
+                 gm-ui.jar, gm-ui-fx.jar), and copies lib\ next to them
+run.bat          runs the JavaFX application (exercise 2)
+run-console.bat  runs the console application (exercise 1)
 ```
 
-`run.bat` also works from inside the `jars` folder, which is the folder that gets submitted.
+The run scripts also work from inside the `jars` folder, which is the folder that gets submitted.
 
 ## Menu
 

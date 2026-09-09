@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="gm-ui-fx">
+    <output-path>$PROJECT_DIR$/jars</output-path>
+    <root id="archive" name="gm-ui-fx.jar">
+      <element id="module-output" name="ui-fx" />
+    </root>
+  </artifact>
+</component>
