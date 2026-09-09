@@ -4,9 +4,11 @@ import gm.dto.EventInfoDTO;
 import gm.dto.MarketStateDTO;
 import gm.dto.OptionStateDTO;
 import gm.dto.TradeRecordDTO;
+import gm.dto.UserInfoDTO;
 import gm.engine.core.Event;
 import gm.engine.core.EventOption;
 import gm.engine.core.Trade;
+import gm.engine.core.User;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +37,19 @@ class DtoFactory {
             eventInfoList.add(toEventInfo(event));
         }
         return eventInfoList;
+    }
+
+    UserInfoDTO toUserInfo(User user) {
+        return new UserInfoDTO(user.getName(), user.getAccount().getBalance(),
+                user.getAccount().isBlocked());
+    }
+
+    List<UserInfoDTO> toUserInfoList(Iterable<User> users) {
+        List<UserInfoDTO> userInfoList = new ArrayList<>();
+        for (User user : users) {
+            userInfoList.add(toUserInfo(user));
+        }
+        return userInfoList;
     }
 
     MarketStateDTO toMarketState(Event event) {

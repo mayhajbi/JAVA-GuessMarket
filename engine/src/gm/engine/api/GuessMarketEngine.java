@@ -4,6 +4,7 @@ import gm.dto.EventInfoDTO;
 import gm.dto.LoadResultDTO;
 import gm.dto.MarketStateDTO;
 import gm.dto.PurchaseResultDTO;
+import gm.dto.UserInfoDTO;
 
 import java.util.List;
 
@@ -42,6 +43,11 @@ public interface GuessMarketEngine {
      * @return general details of the events that are still active
      */
     List<EventInfoDTO> getActiveEvents();
+
+    /**
+     * @return general details of all the users in the system, in the order of the data file
+     */
+    List<UserInfoDTO> getAllUsers();
 
     /**
      * @param eventId id of the requested event

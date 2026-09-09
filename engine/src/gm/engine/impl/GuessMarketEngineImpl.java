@@ -4,6 +4,7 @@ import gm.dto.EventInfoDTO;
 import gm.dto.LoadResultDTO;
 import gm.dto.MarketStateDTO;
 import gm.dto.PurchaseResultDTO;
+import gm.dto.UserInfoDTO;
 import gm.engine.api.GuessMarketEngine;
 import gm.engine.core.Event;
 import gm.engine.core.GuessMarket;
@@ -43,6 +44,11 @@ public class GuessMarketEngineImpl implements GuessMarketEngine {
     @Override
     public List<EventInfoDTO> getActiveEvents() {
         return dtoFactory.toEventInfoList(requireLoadedMarket().getActiveEvents());
+    }
+
+    @Override
+    public List<UserInfoDTO> getAllUsers() {
+        return dtoFactory.toUserInfoList(requireLoadedMarket().getAllUsers());
     }
 
     @Override

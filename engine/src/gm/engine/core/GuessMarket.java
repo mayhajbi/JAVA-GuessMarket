@@ -1,7 +1,9 @@
 package gm.engine.core;
 
 import gm.engine.exception.DuplicateEventIdException;
+import gm.engine.exception.DuplicateUserNameException;
 import gm.engine.exception.EventNotFoundException;
+import gm.engine.exception.UserNotFoundException;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -9,6 +11,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -22,6 +25,9 @@ public class GuessMarket implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private final Map<Integer, Event> eventsById = new LinkedHashMap<>();
+
+    /** Keyed by the lower case name, so that the lookup is case insensitive. */
+    private final Map<String, User> usersByName = new LinkedHashMap<>();
 
     /**
      * Adds an event to the system.
@@ -72,5 +78,34 @@ public class GuessMarket implements Serializable {
             total += event.getInitialSubsidy();
         }
         return total;
+    }
+
+    /**
+     * Adds a user to the system.
+     *
+     * @throws DuplicateUserNameException when a user with the same name (ignoring case) already
+     *                                    exists
+     */
+    public void addUser(User user) {
+        String key = user.getName().toLowerCase(Locale.ROOT);
+        if (usersByName.containsKey(key)) {
+            throw new DuplicateUserNameException(user.getName());
+        }
+        usersByName.put(key, user);
+    }
+
+    /**
+     * @throws UserNotFoundException when no user with this name (ignoring case) exists
+     */
+    public User getUser(String name) {
+        User user = usersByName.get(name.toLowerCase(Locale.ROOT));
+        if (user == null) {
+            throw new UserNotFoundException(name);
+        }
+        return user;
+    }
+
+    public Collection<User> getAllUsers() {
+        return Collections.unmodifiableCollection(usersByName.values());
     }
 }
