@@ -2,6 +2,7 @@ package gm.engine.core;
 
 import gm.dto.CommissionType;
 import gm.dto.EventStatus;
+import gm.dto.EventType;
 import gm.engine.core.method.TradingMethod;
 import gm.engine.exception.EventNotActiveException;
 import gm.engine.exception.InvalidOptionSelectionException;
@@ -34,28 +35,82 @@ public class Event implements Serializable {
     private final int commissionPercent;
     private final CommissionType commissionType;
     private final List<EventOption> options;
+    private final EventType type;
+    /** The pricing rules of an LMSR event; {@code null} for an order book event. */
     private final TradingMethod tradingMethod;
     private final EventAccount account;
     private final List<Trade> trades = new ArrayList<>();
 
+    /** Order book parameters; all {@code null} for an LMSR event. */
+    private final Integer orderBookBaseValue;
+    private final Boolean orderBookAllowMint;
+    private final Integer orderBookInitialInvestment;
+
     private EventStatus status = EventStatus.ACTIVE;
     private Integer winningOptionIndex;
+    /** The single user allowed to open, fund and close this event; wired in while the file loads. */
+    private User marketMaker;
 
-    public Event(int id,
-                 String name,
-                 String description,
-                 int commissionPercent,
-                 CommissionType commissionType,
-                 List<EventOption> options,
-                 TradingMethod tradingMethod) {
+    /**
+     * Creates an LMSR event. The initial subsidy of the method is invested into the event account.
+     */
+    public static Event lmsr(int id,
+                             String name,
+                             String description,
+                             int commissionPercent,
+                             CommissionType commissionType,
+                             List<EventOption> options,
+                             TradingMethod tradingMethod) {
+        return new Event(id, name, description, commissionPercent, commissionType, options,
+                EventType.LMSR, tradingMethod, tradingMethod.initialSubsidy(options.size()),
+                null, null, null);
+    }
+
+    /**
+     * Creates an order book event. Its account starts empty - the market maker pays the initial
+     * investment when the event is opened.
+     *
+     * @param baseValue         the base value (d): a positive integer
+     * @param allowMint          whether minting new share pairs is allowed on this event
+     * @param initialInvestment the amount the market maker invests when the event is opened
+     */
+    public static Event orderBook(int id,
+                                  String name,
+                                  String description,
+                                  int commissionPercent,
+                                  CommissionType commissionType,
+                                  List<EventOption> options,
+                                  int baseValue,
+                                  boolean allowMint,
+                                  int initialInvestment) {
+        return new Event(id, name, description, commissionPercent, commissionType, options,
+                EventType.ORDER_BOOK, null, 0.0, baseValue, allowMint, initialInvestment);
+    }
+
+    private Event(int id,
+                  String name,
+                  String description,
+                  int commissionPercent,
+                  CommissionType commissionType,
+                  List<EventOption> options,
+                  EventType type,
+                  TradingMethod tradingMethod,
+                  double initialAccountBalance,
+                  Integer orderBookBaseValue,
+                  Boolean orderBookAllowMint,
+                  Integer orderBookInitialInvestment) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.commissionPercent = commissionPercent;
         this.commissionType = commissionType;
         this.options = new ArrayList<>(options);
+        this.type = type;
         this.tradingMethod = tradingMethod;
-        this.account = new EventAccount(tradingMethod.initialSubsidy(options.size()));
+        this.account = new EventAccount(initialAccountBalance);
+        this.orderBookBaseValue = orderBookBaseValue;
+        this.orderBookAllowMint = orderBookAllowMint;
+        this.orderBookInitialInvestment = orderBookInitialInvestment;
     }
 
     public int getId() {
@@ -78,8 +133,42 @@ public class Event implements Serializable {
         return commissionType;
     }
 
+    public EventType getType() {
+        return type;
+    }
+
     public EventStatus getStatus() {
         return status;
+    }
+
+    public User getMarketMaker() {
+        return marketMaker;
+    }
+
+    /**
+     * Wires the market maker of this event. Called once, while the data file is loaded, after the
+     * users of the file are known.
+     */
+    public void setMarketMaker(User marketMaker) {
+        this.marketMaker = marketMaker;
+    }
+
+    /** The base value (d) of an order book event. */
+    public int getOrderBookBaseValue() {
+        requireOrderBook();
+        return orderBookBaseValue;
+    }
+
+    /** Whether minting is allowed on an order book event. */
+    public boolean isOrderBookMintAllowed() {
+        requireOrderBook();
+        return orderBookAllowMint;
+    }
+
+    /** The amount the market maker invests when an order book event is opened. */
+    public int getOrderBookInitialInvestment() {
+        requireOrderBook();
+        return orderBookInitialInvestment;
     }
 
     public boolean isActive() {
@@ -106,7 +195,7 @@ public class Event implements Serializable {
      * The subsidy that was invested in this event when it was created.
      */
     public double getInitialSubsidy() {
-        return tradingMethod.initialSubsidy(options.size());
+        return type == EventType.LMSR ? tradingMethod.initialSubsidy(options.size()) : 0;
     }
 
     /**
@@ -115,6 +204,7 @@ public class Event implements Serializable {
      * @param optionIndex zero based index of the option
      */
     public double getOptionValue(int optionIndex) {
+        requireLmsr();
         validateOptionIndex(optionIndex);
         return tradingMethod.optionValue(sharesPerOption(), optionIndex);
     }
@@ -144,6 +234,7 @@ public class Event implements Serializable {
      * @return the trade that was created
      */
     public Trade buy(int optionIndex, long quantity) {
+        requireLmsr();
         requireActive();
         validateOptionIndex(optionIndex);
         if (quantity <= 0) {
@@ -206,6 +297,24 @@ public class Event implements Serializable {
     private void requireActive() {
         if (!isActive()) {
             throw new EventNotActiveException(id, name);
+        }
+    }
+
+    /**
+     * Order book trading (pricing, buying, closing) is built in a later step of the exercise. Until
+     * then any such call on an order book event fails loudly instead of misbehaving.
+     */
+    private void requireLmsr() {
+        if (type != EventType.LMSR) {
+            throw new UnsupportedOperationException("Event [" + name + "] (id " + id + ") uses the "
+                    + "order book method, whose trading is not implemented yet.");
+        }
+    }
+
+    private void requireOrderBook() {
+        if (type != EventType.ORDER_BOOK) {
+            throw new UnsupportedOperationException("Event [" + name + "] (id " + id + ") is not an "
+                    + "order book event.");
         }
     }
 

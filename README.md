@@ -55,3 +55,20 @@ The run scripts also work from inside the `jars` folder, which is the folder tha
 `samples/` holds one valid file and several invalid ones (duplicate event id, an illegal commission,
 a single option, a zero liquidity value and a file that is not XML at all), for checking the error
 messages of the system.
+
+## Assumptions
+
+* **Data file** - only the exercise 2 schema is accepted (`Guess-Market` with `GM-events` and
+  `GM-users`). A file is loaded only if it is completely valid; a failed load leaves the previous
+  system untouched.
+* **Validation order** - the file is checked top to bottom and the load stops at the first fault:
+  the events, then the users (unique name, positive initial cash), then that every market maker
+  reference points to an event that exists, and finally that every event has exactly one market
+  maker.
+* **Market maker** - exactly one user per event, taken from the `GM-market-maker` blocks of the
+  file. Only that user may later open, fund and close the event.
+* **Order book events** - loaded and shown, but not traded yet: pricing, buying and closing for the
+  order book method are added in a later stage. `d` must be a positive integer, `initial` must not
+  be negative, and `allow-mint` must be `true` or `false`.
+* **Text** - every textual value is compared without case, and whitespace at the edges (or line
+  breaks inside a value) is ignored.

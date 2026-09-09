@@ -19,7 +19,14 @@ public class XmlGuessMarket {
     @XmlElement(name = "GM-events")
     private XmlEvents events;
 
+    @XmlElement(name = "GM-users")
+    private XmlUsers users;
+
     public XmlEvents getEvents() {
         return events;
+    }
+
+    public XmlUsers getUsers() {
+        return users;
     }
 }

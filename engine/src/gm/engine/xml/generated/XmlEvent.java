@@ -20,14 +20,6 @@ public class XmlEvent {
     @XmlElement(name = "description")
     private String description;
 
-    /**
-     * The commission element. The schema of the exercise spells it "comision", while the description
-     * table spells it "commission" - both spellings are accepted so that a data file cannot fail on
-     * this difference.
-     */
-    @XmlElement(name = "comision")
-    private XmlCommission comision;
-
     @XmlElement(name = "commission")
     private XmlCommission commission;
 
@@ -50,7 +42,7 @@ public class XmlEvent {
     }
 
     public XmlCommission getCommission() {
-        return comision != null ? comision : commission;
+        return commission;
     }
 
     public XmlOptions getOptions() {

@@ -54,6 +54,14 @@ public class GuessMarket implements Serializable {
         return event;
     }
 
+    /**
+     * @return the event with this id, or {@code null} when no such event exists. Used while loading a
+     *         file, where a missing id is reported with a message that fits its context.
+     */
+    public Event findEvent(int eventId) {
+        return eventsById.get(eventId);
+    }
+
     public Collection<Event> getAllEvents() {
         return Collections.unmodifiableCollection(eventsById.values());
     }
