@@ -19,7 +19,7 @@ the project - the system engine and a console user interface on top of it.
 | `dto`    | `gm.dto`     | Immutable data transfer objects (records) that carry information between the engine and any user interface |
 | `engine` | `gm.engine`  | The system itself: the events, the pricing rules, loading and validating the data file, and the engine interface |
 | `ui`     | `gm.ui`      | The console application of exercise 1. Kept for reference only and not built since exercise 2: the engine now requires a user for every action, which that console does not have |
-| `ui-fx`  | `gm.ui.fx`   | The JavaFX application of exercise 2: a header that loads a data file in the background, the events screen (filters, table, event details) and the users screen (balances, the events of a user, event details). Every screen is an FXML file with its own controller, connected by `app.AppController` |
+| `ui-fx`  | `gm.ui.fx`   | The JavaFX application of exercise 2: a header that loads a data file in the background, the events screen (filters, table, event details) and the users screen (balances, the events of a user, event details). The event details show the options and history of an LMSR event, or the order book of every option (with LAST/BID/ASK/MID/SPREAD), the participants and trades of an order book event, and offer the actions of the acting user: open, buy, place an order, close. Every screen is an FXML file with its own controller, connected by `app.AppController` |
 
 Every user interface module talks to the engine only through the `gm.engine.api.GuessMarketEngine`
 interface, and receives answers only as `gm.dto` objects, so the inner objects of the engine are

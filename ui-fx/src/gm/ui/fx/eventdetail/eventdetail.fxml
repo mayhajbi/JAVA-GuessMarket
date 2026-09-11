@@ -6,7 +6,7 @@
 
 <ScrollPane fitToWidth="true" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="gm.ui.fx.eventdetail.EventDetailController">
-    <VBox spacing="10" minWidth="440">
+    <VBox spacing="10" minWidth="480">
         <padding>
             <Insets top="10" right="10" bottom="10" left="10"/>
         </padding>
@@ -46,9 +46,8 @@
                     <Label fx:id="actingUserBlockedLabel" styleClass="blocked" text="Blocked"/>
                 </HBox>
                 <HBox fx:id="openBox" spacing="8" alignment="CENTER_LEFT">
-                    <Button fx:id="openButton" text="Open event" onAction="#onOpen"/>
-                    <Label text="The market maker pays the initial subsidy and trading starts."
-                           styleClass="field-name" wrapText="true"/>
+                    <Button fx:id="openButton" text="Open event" onAction="#onOpen" minWidth="-Infinity"/>
+                    <Label fx:id="openHintLabel" styleClass="field-name" wrapText="true"/>
                 </HBox>
                 <HBox fx:id="buyBox" spacing="8" alignment="CENTER_LEFT">
                     <Label text="Buy" styleClass="field-name"/>
@@ -57,6 +56,19 @@
                     <ComboBox fx:id="buyOptionComboBox" prefWidth="170" promptText="Choose an option"/>
                     <Button fx:id="buyButton" text="Buy" onAction="#onBuy"/>
                 </HBox>
+                <FlowPane fx:id="orderBox" hgap="8" vgap="6" alignment="CENTER_LEFT">
+                    <fx:define>
+                        <ToggleGroup fx:id="orderSideGroup"/>
+                    </fx:define>
+                    <RadioButton fx:id="orderBuyToggle" text="Buy" toggleGroup="$orderSideGroup" selected="true"/>
+                    <RadioButton fx:id="orderSellToggle" text="Sell" toggleGroup="$orderSideGroup"/>
+                    <TextField fx:id="orderQuantityField" promptText="Quantity" prefWidth="80"/>
+                    <Label text="shares of" styleClass="field-name"/>
+                    <ComboBox fx:id="orderOptionComboBox" prefWidth="150" promptText="Choose an option"/>
+                    <Label text="at" styleClass="field-name"/>
+                    <TextField fx:id="orderPriceField" promptText="Price" prefWidth="70" onAction="#onPlaceOrder"/>
+                    <Button fx:id="placeOrderButton" text="Place order" onAction="#onPlaceOrder"/>
+                </FlowPane>
                 <HBox fx:id="closeBox" spacing="8" alignment="CENTER_LEFT">
                     <Label text="Winning option" styleClass="field-name"/>
                     <ComboBox fx:id="winnerComboBox" prefWidth="170" promptText="Choose the winner"/>
@@ -97,8 +109,42 @@
                     </columns>
                 </TableView>
             </VBox>
-            <Label fx:id="orderBookNoteLabel" wrapText="true" styleClass="placeholder"
-                   text="The order books of this event are not available yet."/>
+
+            <VBox fx:id="orderBookBox" spacing="10">
+                <Label fx:id="orderBookInfoLabel" styleClass="field-name" wrapText="true"/>
+                <VBox fx:id="positionBox" spacing="4" styleClass="actions">
+                    <Label fx:id="positionTitleLabel" styleClass="section-title"/>
+                    <GridPane fx:id="positionGrid" hgap="16" vgap="3"/>
+                </VBox>
+                <HBox fx:id="optionBooksBox" spacing="12"/>
+                <Label text="Participants" styleClass="section-title"/>
+                <TableView fx:id="participantsTable" prefHeight="140" minHeight="100">
+                    <columnResizePolicy>
+                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS"/>
+                    </columnResizePolicy>
+                    <placeholder>
+                        <Label text="No participants yet." styleClass="placeholder"/>
+                    </placeholder>
+                </TableView>
+                <Label text="Trades (latest first)" styleClass="section-title"/>
+                <TableView fx:id="orderBookTradesTable" prefHeight="160" minHeight="100">
+                    <columnResizePolicy>
+                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS"/>
+                    </columnResizePolicy>
+                    <placeholder>
+                        <Label text="No trades yet." styleClass="placeholder"/>
+                    </placeholder>
+                    <columns>
+                        <TableColumn fx:id="obBuyerColumn" text="Buyer" prefWidth="70"/>
+                        <TableColumn fx:id="obFromColumn" text="From" prefWidth="110"/>
+                        <TableColumn fx:id="obOptionColumn" text="Option" prefWidth="70"/>
+                        <TableColumn fx:id="obSharesColumn" text="Shares" prefWidth="55" styleClass="numeric"/>
+                        <TableColumn fx:id="obPriceColumn" text="Price" prefWidth="55" styleClass="numeric"/>
+                        <TableColumn fx:id="obCommissionColumn" text="Commission" prefWidth="75"
+                                     styleClass="numeric"/>
+                    </columns>
+                </TableView>
+            </VBox>
         </VBox>
     </VBox>
 </ScrollPane>

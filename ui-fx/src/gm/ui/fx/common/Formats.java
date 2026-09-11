@@ -19,6 +19,13 @@ public final class Formats {
         return String.format(Locale.ROOT, "%.2f", value);
     }
 
+    /**
+     * Like {@link #decimal(double)}, for a value that may not exist yet (shown as "-").
+     */
+    public static String optionalDecimal(Double value) {
+        return value == null ? "-" : decimal(value);
+    }
+
     public static String commission(int percent, CommissionType type) {
         return percent + "% " + type.getDisplayName();
     }
