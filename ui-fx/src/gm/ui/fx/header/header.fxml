@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox styleClass="header" spacing="6" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="gm.ui.fx.header.HeaderController">
+    <padding>
+        <Insets top="8" right="12" bottom="8" left="12"/>
+    </padding>
+    <Label text="Guess Market" styleClass="app-title" maxWidth="Infinity" alignment="CENTER"/>
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Button fx:id="loadFileButton" text="Load File..." onAction="#onLoadFile" minWidth="-Infinity"/>
+        <Label fx:id="filePathLabel" text="No file loaded" textOverrun="LEADING_ELLIPSIS" maxWidth="Infinity"
+               HBox.hgrow="ALWAYS"/>
+    </HBox>
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <HBox fx:id="progressBox" spacing="10" alignment="CENTER_LEFT" visible="false" managed="false">
+            <ProgressBar fx:id="loadProgressBar" prefWidth="220" minWidth="80"/>
+            <Label fx:id="loadMessageLabel"/>
+        </HBox>
+        <Label fx:id="statusLabel" styleClass="field-name"/>
+    </HBox>
+</VBox>

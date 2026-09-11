@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.layout.BorderPane?>
+
+<BorderPane xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="gm.ui.fx.app.AppController" stylesheets="@app.css">
+    <top>
+        <fx:include fx:id="headerComponent" source="../header/header.fxml"/>
+    </top>
+    <center>
+        <TabPane tabClosingPolicy="UNAVAILABLE">
+            <tabs>
+                <Tab text="Events">
+                    <content>
+                        <fx:include fx:id="eventsComponent" source="../events/events.fxml"/>
+                    </content>
+                </Tab>
+                <Tab text="Users">
+                    <content>
+                        <fx:include fx:id="usersComponent" source="../users/users.fxml"/>
+                    </content>
+                </Tab>
+            </tabs>
+        </TabPane>
+    </center>
+</BorderPane>

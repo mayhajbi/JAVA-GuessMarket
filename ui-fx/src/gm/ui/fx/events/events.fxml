@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<ScrollPane fitToWidth="true" fitToHeight="true" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="gm.ui.fx.events.EventsController">
+    <SplitPane dividerPositions="0.54" minWidth="980" minHeight="560">
+        <VBox spacing="8">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+            <Label text="Events" styleClass="section-title"/>
+            <GridPane hgap="8" vgap="6">
+                <columnConstraints>
+                    <ColumnConstraints minWidth="80"/>
+                    <ColumnConstraints hgrow="ALWAYS"/>
+                </columnConstraints>
+                <Label text="Type" styleClass="field-name" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                <FlowPane fx:id="typeFilterPane" hgap="4" vgap="4" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                <Label text="Status" styleClass="field-name" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                <FlowPane fx:id="statusFilterPane" hgap="4" vgap="4" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                <Label text="Commission" styleClass="field-name" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                <FlowPane fx:id="commissionFilterPane" hgap="4" vgap="4" GridPane.rowIndex="2"
+                          GridPane.columnIndex="1"/>
+            </GridPane>
+            <TableView fx:id="eventsTable" VBox.vgrow="ALWAYS">
+                <columnResizePolicy>
+                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS"/>
+                </columnResizePolicy>
+                <placeholder>
+                    <Label text="No events to show. Load a file, or change the filters." styleClass="placeholder"/>
+                </placeholder>
+                <columns>
+                    <TableColumn fx:id="idColumn" text="#" prefWidth="35" styleClass="numeric"/>
+                    <TableColumn fx:id="nameColumn" text="Name" prefWidth="170"/>
+                    <TableColumn fx:id="statusColumn" text="Status" prefWidth="70"/>
+                    <TableColumn fx:id="typeColumn" text="Type" prefWidth="85"/>
+                    <TableColumn fx:id="commissionColumn" text="Commission" prefWidth="110"/>
+                    <TableColumn fx:id="marketMakerColumn" text="Market maker" prefWidth="95"/>
+                    <TableColumn fx:id="balanceColumn" text="Account" prefWidth="75" styleClass="numeric"/>
+                </columns>
+            </TableView>
+            <Label fx:id="eventsCountLabel" styleClass="field-name"/>
+        </VBox>
+        <fx:include fx:id="eventDetailComponent" source="../eventdetail/eventdetail.fxml"/>
+    </SplitPane>
+</ScrollPane>

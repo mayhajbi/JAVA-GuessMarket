@@ -1,0 +1,32 @@
+.header {
+    -fx-background-color: #eef1f5;
+    -fx-border-color: transparent transparent #c9d0da transparent;
+}
+
+.app-title {
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+}
+
+.section-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+.field-name {
+    -fx-text-fill: #5b6472;
+}
+
+.placeholder {
+    -fx-text-fill: #6b7280;
+    -fx-font-style: italic;
+}
+
+.blocked {
+    -fx-text-fill: #b91c1c;
+    -fx-font-weight: bold;
+}
+
+.numeric {
+    -fx-alignment: CENTER-RIGHT;
+}

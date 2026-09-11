@@ -4,6 +4,7 @@ import gm.dto.EventInfoDTO;
 import gm.dto.LoadResultDTO;
 import gm.dto.MarketStateDTO;
 import gm.dto.PurchaseResultDTO;
+import gm.dto.UserDetailsDTO;
 import gm.dto.UserInfoDTO;
 
 import java.util.List;
@@ -48,6 +49,13 @@ public interface GuessMarketEngine {
      * @return general details of all the users in the system, in the order of the data file
      */
     List<UserInfoDTO> getAllUsers();
+
+    /**
+     * @param userName name of the requested user
+     * @return the details of that user, including every event the user is the market maker of or
+     *         has traded in
+     */
+    UserDetailsDTO getUserDetails(String userName);
 
     /**
      * @param eventId id of the requested event

@@ -37,6 +37,11 @@ dir /s /b ui-fx\src\*.java > out\sources-ui-fx.txt
 javac -encoding UTF-8 --module-path "%FX%" --add-modules javafx.controls,javafx.fxml ^
       -cp "out\dto;out\engine" -d out\ui-fx @out\sources-ui-fx.txt
 if errorlevel 1 goto failed
+rem The screens are described in FXML files with their style sheets, loaded from the jar at run time.
+xcopy /s /y /q ui-fx\src\*.fxml out\ui-fx\ >nul
+if errorlevel 1 goto failed
+xcopy /s /y /q ui-fx\src\*.css out\ui-fx\ >nul
+if errorlevel 1 goto failed
 
 echo Creating the jar files...
 jar --create --file jars\gm-dto.jar -C out\dto .

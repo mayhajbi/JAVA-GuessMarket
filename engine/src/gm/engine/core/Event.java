@@ -342,6 +342,18 @@ public class Event implements Serializable {
     }
 
     /**
+     * @return whether the user has traded in this event (participation starts with the first action)
+     */
+    public boolean hasParticipant(User user) {
+        for (Trade trade : trades) {
+            if (trade.getBuyer() == user) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Makes sure the given zero based option index belongs to this event.
      */
     public void validateOptionIndex(int optionIndex) {

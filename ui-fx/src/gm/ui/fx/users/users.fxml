@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<ScrollPane fitToWidth="true" fitToHeight="true" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="gm.ui.fx.users.UsersController">
+    <SplitPane dividerPositions="0.28" minWidth="980" minHeight="560">
+        <VBox spacing="8">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+            <Label text="Users" styleClass="section-title"/>
+            <TableView fx:id="usersTable" VBox.vgrow="ALWAYS">
+                <columnResizePolicy>
+                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS"/>
+                </columnResizePolicy>
+                <placeholder>
+                    <Label text="No users. Load a file first." styleClass="placeholder"/>
+                </placeholder>
+                <columns>
+                    <TableColumn fx:id="userNameColumn" text="Name" prefWidth="100"/>
+                    <TableColumn fx:id="userBalanceColumn" text="Balance" prefWidth="80" styleClass="numeric"/>
+                    <TableColumn fx:id="userBlockedColumn" text="Blocked" prefWidth="60"/>
+                </columns>
+            </TableView>
+        </VBox>
+        <VBox spacing="8">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+            <Label fx:id="userPlaceholderLabel" text="Select a user to see the details." styleClass="placeholder"/>
+            <VBox fx:id="userDetailsBox" spacing="8" VBox.vgrow="ALWAYS">
+                <HBox spacing="12" alignment="CENTER_LEFT">
+                    <Label fx:id="userNameLabel" styleClass="section-title"/>
+                    <Label fx:id="blockedLabel" styleClass="blocked"
+                           text="Blocked - the balance dropped below zero"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label text="Account balance" styleClass="field-name"/>
+                    <Label fx:id="balanceLabel" styleClass="section-title"/>
+                </HBox>
+                <Label text="Events - market maker / participant" styleClass="section-title"/>
+                <TableView fx:id="userEventsTable" prefHeight="150" minHeight="110">
+                    <columnResizePolicy>
+                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS"/>
+                    </columnResizePolicy>
+                    <placeholder>
+                        <Label text="This user is not connected to any event yet." styleClass="placeholder"/>
+                    </placeholder>
+                    <columns>
+                        <TableColumn fx:id="userEventNameColumn" text="Event" prefWidth="200"/>
+                        <TableColumn fx:id="userEventStatusColumn" text="Status" prefWidth="70"/>
+                        <TableColumn fx:id="userEventTypeColumn" text="Type" prefWidth="85"/>
+                        <TableColumn fx:id="userEventRoleColumn" text="Role" prefWidth="160"/>
+                    </columns>
+                </TableView>
+                <fx:include fx:id="eventDetailComponent" source="../eventdetail/eventdetail.fxml"
+                            VBox.vgrow="ALWAYS"/>
+            </VBox>
+        </VBox>
+    </SplitPane>
+</ScrollPane>

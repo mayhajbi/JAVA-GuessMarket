@@ -4,6 +4,7 @@ import gm.dto.EventInfoDTO;
 import gm.dto.LoadResultDTO;
 import gm.dto.MarketStateDTO;
 import gm.dto.PurchaseResultDTO;
+import gm.dto.UserDetailsDTO;
 import gm.dto.UserInfoDTO;
 import gm.engine.api.GuessMarketEngine;
 import gm.engine.core.Event;
@@ -34,7 +35,8 @@ public class GuessMarketEngineImpl implements GuessMarketEngine {
         GuessMarket loadedMarket = fileLoader.loadFile(xmlFilePath);
         this.market = loadedMarket;
         String cleanPath = xmlFilePath == null ? "" : InputText.stripSurroundingQuotes(xmlFilePath.trim());
-        return new LoadResultDTO(cleanPath, loadedMarket.getEventCount(), loadedMarket.getTotalSubsidy());
+        return new LoadResultDTO(cleanPath, loadedMarket.getEventCount(),
+                loadedMarket.getAllUsers().size(), loadedMarket.getTotalSubsidy());
     }
 
     @Override
@@ -50,6 +52,12 @@ public class GuessMarketEngineImpl implements GuessMarketEngine {
     @Override
     public List<UserInfoDTO> getAllUsers() {
         return dtoFactory.toUserInfoList(requireLoadedMarket().getAllUsers());
+    }
+
+    @Override
+    public UserDetailsDTO getUserDetails(String userName) {
+        GuessMarket loadedMarket = requireLoadedMarket();
+        return dtoFactory.toUserDetails(loadedMarket.getUser(userName), loadedMarket.getAllEvents());
     }
 
     @Override

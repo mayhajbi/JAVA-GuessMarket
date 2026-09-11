@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<ScrollPane fitToWidth="true" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="gm.ui.fx.eventdetail.EventDetailController">
+    <VBox spacing="10" minWidth="440">
+        <padding>
+            <Insets top="10" right="10" bottom="10" left="10"/>
+        </padding>
+        <Label fx:id="placeholderLabel" text="Select an event to see its details." styleClass="placeholder"/>
+        <VBox fx:id="detailsBox" spacing="10">
+            <Label fx:id="eventNameLabel" styleClass="section-title" wrapText="true"/>
+            <Label fx:id="descriptionLabel" wrapText="true"/>
+            <GridPane hgap="16" vgap="4">
+                <columnConstraints>
+                    <ColumnConstraints minWidth="140"/>
+                    <ColumnConstraints hgrow="ALWAYS"/>
+                </columnConstraints>
+                <Label text="Status" styleClass="field-name" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                <Label fx:id="statusValue" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                <Label text="Type" styleClass="field-name" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                <Label fx:id="typeValue" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                <Label text="Commission" styleClass="field-name" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                <Label fx:id="commissionValue" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                <Label text="Market maker" styleClass="field-name" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                <Label fx:id="marketMakerValue" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+                <Label text="Account balance" styleClass="field-name" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                <Label fx:id="balanceValue" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+                <Label text="Commission collected" styleClass="field-name" GridPane.rowIndex="5"
+                       GridPane.columnIndex="0"/>
+                <Label fx:id="commissionCollectedValue" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+                <Label text="Winning option" styleClass="field-name" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
+                <Label fx:id="winnerValue" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+            </GridPane>
+            <VBox fx:id="lmsrBox" spacing="10">
+                <Label text="Options" styleClass="section-title"/>
+                <TableView fx:id="optionsTable" prefHeight="100" minHeight="90">
+                    <columnResizePolicy>
+                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS"/>
+                    </columnResizePolicy>
+                    <columns>
+                        <TableColumn fx:id="optionNumberColumn" text="#" prefWidth="35" styleClass="numeric"/>
+                        <TableColumn fx:id="optionNameColumn" text="Option" prefWidth="180"/>
+                        <TableColumn fx:id="optionValueColumn" text="Value" prefWidth="80" styleClass="numeric"/>
+                        <TableColumn fx:id="optionSharesColumn" text="Shares" prefWidth="80" styleClass="numeric"/>
+                    </columns>
+                </TableView>
+                <Label text="Trading history (latest first)" styleClass="section-title"/>
+                <TableView fx:id="historyTable" prefHeight="200" minHeight="120">
+                    <columnResizePolicy>
+                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS"/>
+                    </columnResizePolicy>
+                    <placeholder>
+                        <Label text="No trades yet." styleClass="placeholder"/>
+                    </placeholder>
+                    <columns>
+                        <TableColumn fx:id="buyerColumn" text="Buyer" prefWidth="80"/>
+                        <TableColumn fx:id="tradeOptionColumn" text="Option" prefWidth="100"/>
+                        <TableColumn fx:id="tradeSharesColumn" text="Shares" prefWidth="60" styleClass="numeric"/>
+                        <TableColumn fx:id="sharesCostColumn" text="Shares cost" prefWidth="80" styleClass="numeric"/>
+                        <TableColumn fx:id="tradeCommissionColumn" text="Commission" prefWidth="80"
+                                     styleClass="numeric"/>
+                        <TableColumn fx:id="totalPaidColumn" text="Total paid" prefWidth="80" styleClass="numeric"/>
+                    </columns>
+                </TableView>
+            </VBox>
+            <Label fx:id="orderBookNoteLabel" wrapText="true" styleClass="placeholder"
+                   text="The order books of this event are not available yet."/>
+        </VBox>
+    </VBox>
+</ScrollPane>

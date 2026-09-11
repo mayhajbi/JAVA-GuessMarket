@@ -4,6 +4,8 @@ import gm.dto.EventInfoDTO;
 import gm.dto.MarketStateDTO;
 import gm.dto.OptionStateDTO;
 import gm.dto.TradeRecordDTO;
+import gm.dto.UserDetailsDTO;
+import gm.dto.UserEventDTO;
 import gm.dto.UserInfoDTO;
 import gm.engine.core.Event;
 import gm.engine.core.EventOption;
@@ -45,6 +47,19 @@ class DtoFactory {
                 user.getAccount().isBlocked());
     }
 
+    UserDetailsDTO toUserDetails(User user, Iterable<Event> events) {
+        List<UserEventDTO> userEvents = new ArrayList<>();
+        for (Event event : events) {
+            boolean marketMaker = event.getMarketMaker() == user;
+            boolean participant = event.hasParticipant(user);
+            if (marketMaker || participant) {
+                userEvents.add(new UserEventDTO(toEventInfo(event), marketMaker, participant));
+            }
+        }
+        return new UserDetailsDTO(user.getName(), user.getAccount().getBalance(),
+                user.getAccount().isBlocked(), userEvents);
+    }
+
     List<UserInfoDTO> toUserInfoList(Iterable<User> users) {
         List<UserInfoDTO> userInfoList = new ArrayList<>();
         for (User user : users) {
@@ -77,7 +92,8 @@ class DtoFactory {
         List<TradeRecordDTO> history = new ArrayList<>();
         for (int index = trades.size() - 1; index >= 0; index--) {
             Trade trade = trades.get(index);
-            history.add(new TradeRecordDTO(event.getOptionName(trade.getOptionIndex()),
+            history.add(new TradeRecordDTO(trade.getBuyer().getName(),
+                    event.getOptionName(trade.getOptionIndex()),
                     trade.getShares(), trade.getSharesCost(), trade.getCommission(),
                     trade.getTotalPaid()));
         }
