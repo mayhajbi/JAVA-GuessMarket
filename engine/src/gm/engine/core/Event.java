@@ -4,21 +4,29 @@ import gm.dto.CommissionType;
 import gm.dto.EventStatus;
 import gm.dto.EventType;
 import gm.engine.core.method.TradingMethod;
+import gm.engine.exception.EventAlreadyOpenedException;
 import gm.engine.exception.EventNotActiveException;
+import gm.engine.exception.InsufficientFundsException;
 import gm.engine.exception.InvalidOptionSelectionException;
 import gm.engine.exception.InvalidQuantityException;
+import gm.engine.exception.NotEventMarketMakerException;
+import gm.engine.exception.UserBlockedException;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
  * A single event in the system: its details, its options, its trading account and its history.
  * <p>
- * All the money rules of an event live here: the subsidy that is invested when the event is created,
- * the price of a purchase, the commission and the payment to the winners when the event is closed.
+ * All the money rules of an event live here. The life cycle is INACTIVE (as loaded) to ACTIVE (the
+ * market maker opens it and pays the initial subsidy) to CLOSED (the market maker decides the winning
+ * option, the winners are paid and the market maker receives the commission and what is left in the
+ * event account).
  */
 public class Event implements Serializable {
 
@@ -38,7 +46,7 @@ public class Event implements Serializable {
     private final EventType type;
     /** The pricing rules of an LMSR event; {@code null} for an order book event. */
     private final TradingMethod tradingMethod;
-    private final EventAccount account;
+    private final EventAccount account = new EventAccount(0);
     private final List<Trade> trades = new ArrayList<>();
 
     /** Order book parameters; all {@code null} for an LMSR event. */
@@ -46,13 +54,14 @@ public class Event implements Serializable {
     private final Boolean orderBookAllowMint;
     private final Integer orderBookInitialInvestment;
 
-    private EventStatus status = EventStatus.ACTIVE;
+    private EventStatus status = EventStatus.INACTIVE;
     private Integer winningOptionIndex;
     /** The single user allowed to open, fund and close this event; wired in while the file loads. */
     private User marketMaker;
 
     /**
-     * Creates an LMSR event. The initial subsidy of the method is invested into the event account.
+     * Creates an LMSR event. Its account starts empty - the market maker pays the initial subsidy of
+     * the method when the event is opened.
      */
     public static Event lmsr(int id,
                              String name,
@@ -62,8 +71,7 @@ public class Event implements Serializable {
                              List<EventOption> options,
                              TradingMethod tradingMethod) {
         return new Event(id, name, description, commissionPercent, commissionType, options,
-                EventType.LMSR, tradingMethod, tradingMethod.initialSubsidy(options.size()),
-                null, null, null);
+                EventType.LMSR, tradingMethod, null, null, null);
     }
 
     /**
@@ -84,7 +92,7 @@ public class Event implements Serializable {
                                   boolean allowMint,
                                   int initialInvestment) {
         return new Event(id, name, description, commissionPercent, commissionType, options,
-                EventType.ORDER_BOOK, null, 0.0, baseValue, allowMint, initialInvestment);
+                EventType.ORDER_BOOK, null, baseValue, allowMint, initialInvestment);
     }
 
     private Event(int id,
@@ -95,7 +103,6 @@ public class Event implements Serializable {
                   List<EventOption> options,
                   EventType type,
                   TradingMethod tradingMethod,
-                  double initialAccountBalance,
                   Integer orderBookBaseValue,
                   Boolean orderBookAllowMint,
                   Integer orderBookInitialInvestment) {
@@ -107,7 +114,6 @@ public class Event implements Serializable {
         this.options = new ArrayList<>(options);
         this.type = type;
         this.tradingMethod = tradingMethod;
-        this.account = new EventAccount(initialAccountBalance);
         this.orderBookBaseValue = orderBookBaseValue;
         this.orderBookAllowMint = orderBookAllowMint;
         this.orderBookInitialInvestment = orderBookInitialInvestment;
@@ -192,7 +198,8 @@ public class Event implements Serializable {
     }
 
     /**
-     * The subsidy that was invested in this event when it was created.
+     * The subsidy the market maker of an LMSR event pays into the event account when opening it (0
+     * for an order book event).
      */
     public double getInitialSubsidy() {
         return type == EventType.LMSR ? tradingMethod.initialSubsidy(options.size()) : 0;
@@ -223,19 +230,49 @@ public class Event implements Serializable {
     }
 
     /**
+     * Opens the event for trading. The market maker pays the initial subsidy from the own account
+     * into the event account. Unlike a purchase, opening must be fully covered: when the balance of
+     * the market maker is not enough, nothing happens and the event stays inactive.
+     *
+     * @param user the user asking to open the event - must be its market maker
+     */
+    public void open(User user) {
+        requireLmsr();
+        requireMarketMaker(user, "open");
+        if (status != EventStatus.INACTIVE) {
+            throw new EventAlreadyOpenedException(id, name, status);
+        }
+        requireNotBlocked(user, "open the event [" + name + "]");
+
+        double subsidy = getInitialSubsidy();
+        double balance = user.getAccount().getBalance();
+        if (balance < subsidy) {
+            throw new InsufficientFundsException(user.getName(),
+                    "open the event [" + name + "] (the initial subsidy)", subsidy, balance);
+        }
+
+        user.getAccount().withdraw(subsidy);
+        account.deposit(subsidy);
+        status = EventStatus.ACTIVE;
+    }
+
+    /**
      * Buys shares of one of the options of this event.
      * <p>
-     * The price of the shares is calculated by the trading method of the event and is deposited into
-     * the event account. When the commission of the event is collected on every purchase, it is
-     * added on top of that price and is deposited into the event account as well.
+     * The buyer pays the price of the shares, calculated by the trading method, into the event
+     * account. When the commission of the event is collected on every purchase, the buyer pays it on
+     * top of that price, straight to the market maker. The purchase is carried out even if it brings
+     * the balance of the buyer below zero - that blocks the buyer from any further action.
      *
+     * @param buyer       the user who buys the shares
      * @param optionIndex zero based index of the option to buy
      * @param quantity    amount of shares to buy, must be positive
      * @return the trade that was created
      */
-    public Trade buy(int optionIndex, long quantity) {
+    public Trade buy(User buyer, int optionIndex, long quantity) {
         requireLmsr();
         requireActive();
+        requireNotBlocked(buyer, "buy shares");
         validateOptionIndex(optionIndex);
         if (quantity <= 0) {
             throw new InvalidQuantityException(quantity);
@@ -247,13 +284,14 @@ public class Event implements Serializable {
                 : 0;
 
         options.get(optionIndex).addShares(quantity);
+        buyer.getAccount().withdraw(sharesCost + commission);
         account.deposit(sharesCost);
         if (commission > 0) {
-            account.deposit(commission);
+            marketMaker.getAccount().deposit(commission);
             account.addCollectedCommission(commission);
         }
 
-        Trade trade = new Trade(optionIndex, quantity, sharesCost, commission);
+        Trade trade = new Trade(buyer, optionIndex, quantity, sharesCost, commission);
         trades.add(trade);
         return trade;
     }
@@ -261,25 +299,43 @@ public class Event implements Serializable {
     /**
      * Closes the event and decides its winning option.
      * <p>
-     * Every share of the winning option is worth {@value #PAYOUT_PER_WINNING_SHARE}. When the
-     * commission of the event is collected on close, it is taken out of that total payment and stays
-     * in the event account, and the winners are paid the rest. Whatever is left in the account (a
-     * positive or a negative balance) stays there.
+     * Every holder of the winning option is paid {@value #PAYOUT_PER_WINNING_SHARE} per share out of
+     * the event account. When the commission of the event is collected on close, it is taken out of
+     * that payment and goes to the market maker. Whatever is left in the event account afterwards
+     * (the unused part of the subsidy) is returned to the market maker as well.
+     * <p>
+     * A blocked market maker may still close the event: deciding the result is not a trading action,
+     * and without it the winners could never be paid.
      *
+     * @param user               the user asking to close the event - must be its market maker
      * @param winningOptionIndex zero based index of the winning option
      */
-    public void close(int winningOptionIndex) {
+    public void close(User user, int winningOptionIndex) {
+        requireLmsr();
+        requireMarketMaker(user, "close");
         requireActive();
         validateOptionIndex(winningOptionIndex);
 
-        double totalPayout = options.get(winningOptionIndex).getShares() * PAYOUT_PER_WINNING_SHARE;
-        double commission = commissionType == CommissionType.ON_CLOSE
-                ? totalPayout * commissionPercent / PERCENT
-                : 0;
-        if (commission > 0) {
-            account.addCollectedCommission(commission);
+        for (Map.Entry<User, Long> holding : holdingsOf(winningOptionIndex).entrySet()) {
+            double payout = holding.getValue() * PAYOUT_PER_WINNING_SHARE;
+            double commission = commissionType == CommissionType.ON_CLOSE
+                    ? payout * commissionPercent / PERCENT
+                    : 0;
+            account.withdraw(payout);
+            holding.getKey().getAccount().deposit(payout - commission);
+            if (commission > 0) {
+                marketMaker.getAccount().deposit(commission);
+                account.addCollectedCommission(commission);
+            }
         }
-        account.withdraw(totalPayout - commission);
+
+        // LMSR keeps the account at C(q), which is never below the payout, so this is the unused part
+        // of the subsidy. A negative balance (not reachable with LMSR) is left as is.
+        double leftover = account.getBalance();
+        if (leftover > 0) {
+            account.withdraw(leftover);
+            marketMaker.getAccount().deposit(leftover);
+        }
 
         this.winningOptionIndex = winningOptionIndex;
         this.status = EventStatus.CLOSED;
@@ -294,15 +350,41 @@ public class Event implements Serializable {
         }
     }
 
+    /**
+     * The amount of shares every user holds of one option, in the order the users first bought it.
+     */
+    private Map<User, Long> holdingsOf(int optionIndex) {
+        Map<User, Long> holdings = new LinkedHashMap<>();
+        for (Trade trade : trades) {
+            if (trade.getOptionIndex() == optionIndex) {
+                holdings.merge(trade.getBuyer(), trade.getShares(), Long::sum);
+            }
+        }
+        return holdings;
+    }
+
     private void requireActive() {
         if (!isActive()) {
-            throw new EventNotActiveException(id, name);
+            throw new EventNotActiveException(id, name, status, marketMaker.getName());
+        }
+    }
+
+    private void requireMarketMaker(User user, String action) {
+        if (user != marketMaker) {
+            throw new NotEventMarketMakerException(id, name, marketMaker.getName(), user.getName(),
+                    action);
+        }
+    }
+
+    private void requireNotBlocked(User user, String action) {
+        if (user.getAccount().isBlocked()) {
+            throw new UserBlockedException(user.getName(), action);
         }
     }
 
     /**
-     * Order book trading (pricing, buying, closing) is built in a later step of the exercise. Until
-     * then any such call on an order book event fails loudly instead of misbehaving.
+     * Order book trading (opening, pricing, buying, closing) is built in a later step of the exercise.
+     * Until then any such call on an order book event fails loudly instead of misbehaving.
      */
     private void requireLmsr() {
         if (type != EventType.LMSR) {

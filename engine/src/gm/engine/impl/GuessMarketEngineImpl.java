@@ -9,6 +9,7 @@ import gm.engine.api.GuessMarketEngine;
 import gm.engine.core.Event;
 import gm.engine.core.GuessMarket;
 import gm.engine.core.Trade;
+import gm.engine.core.User;
 import gm.engine.exception.NoSystemLoadedException;
 import gm.engine.state.SystemStateSerializer;
 import gm.engine.util.InputText;
@@ -57,18 +58,30 @@ public class GuessMarketEngineImpl implements GuessMarketEngine {
     }
 
     @Override
-    public PurchaseResultDTO buyShares(int eventId, int optionIndex, long quantity) {
-        Event event = requireLoadedMarket().getEvent(eventId);
-        Trade trade = event.buy(optionIndex, quantity);
+    public MarketStateDTO openEvent(int eventId, String userName) {
+        GuessMarket loadedMarket = requireLoadedMarket();
+        Event event = loadedMarket.getEvent(eventId);
+        event.open(loadedMarket.getUser(userName));
+        return dtoFactory.toMarketState(event);
+    }
+
+    @Override
+    public PurchaseResultDTO buyShares(int eventId, String userName, int optionIndex, long quantity) {
+        GuessMarket loadedMarket = requireLoadedMarket();
+        Event event = loadedMarket.getEvent(eventId);
+        User buyer = loadedMarket.getUser(userName);
+        Trade trade = event.buy(buyer, optionIndex, quantity);
         return new PurchaseResultDTO(event.getOptionName(trade.getOptionIndex()), trade.getShares(),
                 trade.getSharesCost(), trade.getCommission(), trade.getTotalPaid(),
+                buyer.getAccount().getBalance(), buyer.getAccount().isBlocked(),
                 dtoFactory.toMarketState(event));
     }
 
     @Override
-    public MarketStateDTO closeEvent(int eventId, int winningOptionIndex) {
-        Event event = requireLoadedMarket().getEvent(eventId);
-        event.close(winningOptionIndex);
+    public MarketStateDTO closeEvent(int eventId, String userName, int winningOptionIndex) {
+        GuessMarket loadedMarket = requireLoadedMarket();
+        Event event = loadedMarket.getEvent(eventId);
+        event.close(loadedMarket.getUser(userName), winningOptionIndex);
         return dtoFactory.toMarketState(event);
     }
 

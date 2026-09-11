@@ -3,11 +3,12 @@ package gm.engine.core;
 import java.io.Serializable;
 
 /**
- * The trading account of a single event (the account of its market maker).
+ * The trading account of a single event.
  * <p>
- * The balance holds the subsidy that was invested when the event started, the money that was paid
- * by the participants and the commissions that were collected. The prizes of the winners are paid
- * out of it, so it may also end up with a negative balance.
+ * The balance holds the subsidy the market maker paid when opening the event and the money the
+ * participants paid for their shares. The prizes of the winners are paid out of it when the event is
+ * closed, and whatever is left goes back to the market maker. Commissions are paid straight to the
+ * market maker - this account only keeps track of their total.
  */
 public class EventAccount implements Serializable {
 
@@ -37,9 +38,8 @@ public class EventAccount implements Serializable {
     }
 
     /**
-     * Registers an amount as commission that was collected by this account. The money itself is
-     * either deposited (a commission that is collected on every purchase) or simply kept in the
-     * account instead of being paid to the winners (a commission that is collected on close).
+     * Registers an amount of commission the market maker collected from this event. The money itself
+     * is paid to the market maker, not into this account.
      */
     public void addCollectedCommission(double amount) {
         totalCommissionCollected += amount;

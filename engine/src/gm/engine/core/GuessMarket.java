@@ -106,9 +106,10 @@ public class GuessMarket implements Serializable {
      * @throws UserNotFoundException when no user with this name (ignoring case) exists
      */
     public User getUser(String name) {
-        User user = usersByName.get(name.toLowerCase(Locale.ROOT));
+        String cleanName = name == null ? "" : name.trim();
+        User user = usersByName.get(cleanName.toLowerCase(Locale.ROOT));
         if (user == null) {
-            throw new UserNotFoundException(name);
+            throw new UserNotFoundException(cleanName);
         }
         return user;
     }

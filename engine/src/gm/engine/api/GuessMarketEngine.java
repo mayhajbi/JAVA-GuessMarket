@@ -56,23 +56,37 @@ public interface GuessMarketEngine {
     MarketStateDTO getMarketState(int eventId);
 
     /**
-     * Buys shares of one of the options of an active event.
+     * Opens an inactive event for trading. Only the market maker of the event may open it, and it
+     * pays the initial subsidy from the own account.
      *
-     * @param eventId     id of the event to trade in
-     * @param optionIndex zero based index of the option to buy
-     * @param quantity    amount of shares to buy, must be positive
-     * @return what was paid, and the state of the event right after the purchase
+     * @param eventId  id of the event to open
+     * @param userName name of the user asking to open it
+     * @return the state of the event right after it was opened
      */
-    PurchaseResultDTO buyShares(int eventId, int optionIndex, long quantity);
+    MarketStateDTO openEvent(int eventId, String userName);
 
     /**
-     * Closes an active event, decides its winning option and pays the winners.
+     * Buys shares of one of the options of an active event, on behalf of a user.
+     *
+     * @param eventId     id of the event to trade in
+     * @param userName    name of the buying user
+     * @param optionIndex zero based index of the option to buy
+     * @param quantity    amount of shares to buy, must be positive
+     * @return what was paid, the balance of the buyer, and the state of the event right after the
+     *         purchase
+     */
+    PurchaseResultDTO buyShares(int eventId, String userName, int optionIndex, long quantity);
+
+    /**
+     * Closes an active event, decides its winning option, pays the winners and hands the commission
+     * and what is left in the event account to the market maker. Only the market maker may close it.
      *
      * @param eventId            id of the event to close
+     * @param userName           name of the user asking to close it
      * @param winningOptionIndex zero based index of the winning option
      * @return the final state of the event
      */
-    MarketStateDTO closeEvent(int eventId, int winningOptionIndex);
+    MarketStateDTO closeEvent(int eventId, String userName, int winningOptionIndex);
 
     /**
      * Saves the whole current state of the system into a file, so that it can be loaded again later.

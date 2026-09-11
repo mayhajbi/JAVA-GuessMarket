@@ -18,7 +18,7 @@ the project - the system engine and a console user interface on top of it.
 |----------|--------------|------|
 | `dto`    | `gm.dto`     | Immutable data transfer objects (records) that carry information between the engine and any user interface |
 | `engine` | `gm.engine`  | The system itself: the events, the pricing rules, loading and validating the data file, and the engine interface |
-| `ui`     | `gm.ui`      | The console application of exercise 1: the menu, reading the input of the user and printing the output |
+| `ui`     | `gm.ui`      | The console application of exercise 1. Kept for reference only and not built since exercise 2: the engine now requires a user for every action, which that console does not have |
 | `ui-fx`  | `gm.ui.fx`   | The JavaFX application of exercise 2 (in progress) |
 
 Every user interface module talks to the engine only through the `gm.engine.api.GuessMarketEngine`
@@ -32,9 +32,8 @@ scripts pass it as `--module-path lib/javafx-sdk-22.0.2/lib --add-modules javafx
 
 ```
 build.bat        creates out\ (compiled classes) and jars\ (gm-dto.jar, gm-engine.jar,
-                 gm-ui.jar, gm-ui-fx.jar), and copies lib\ next to them
+                 gm-ui-fx.jar), and copies lib\ next to them
 run.bat          runs the JavaFX application (exercise 2)
-run-console.bat  runs the console application (exercise 1)
 ```
 
 The run scripts also work from inside the `jars` folder, which is the folder that gets submitted.
@@ -66,7 +65,22 @@ messages of the system.
   reference points to an event that exists, and finally that every event has exactly one market
   maker.
 * **Market maker** - exactly one user per event, taken from the `GM-market-maker` blocks of the
-  file. Only that user may later open, fund and close the event.
+  file. Only that user may open and close the event. The market maker may also trade in the own
+  event like any other user.
+* **Event life cycle** - every event is loaded as *inactive* (no trading). The market maker opens
+  it (*active*) and later closes it (*closed*); an event cannot be reopened.
+* **Opening an LMSR event** - the market maker pays the initial subsidy (`b * ln(2)`) from the own
+  account into the event account. Opening must be fully covered: without enough money the event
+  stays inactive and nothing is charged.
+* **Commissions** - both commission types are paid straight to the market maker: an on-purchase
+  commission by the buyer on every purchase, an on-close commission by every winner out of the
+  payout.
+* **Closing an event** - every share of the winning option pays 1 to its holder. Whatever is left
+  in the event account afterwards (the unused part of the subsidy) returns to the market maker.
+* **Negative balance** - a purchase is carried out even if it brings the balance of the buyer below
+  zero; from then on that user is blocked from opening events and buying shares. A blocked user
+  still receives money (a payout, a commission, a returned subsidy), and a blocked market maker may
+  still close the own event, so that the winners can always be paid.
 * **Order book events** - loaded and shown, but not traded yet: pricing, buying and closing for the
   order book method are added in a later stage. `d` must be a positive integer, `initial` must not
   be negative, and `allow-mint` must be `true` or `false`.

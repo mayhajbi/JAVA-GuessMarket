@@ -28,7 +28,8 @@ class DtoFactory {
         }
         return new EventInfoDTO(event.getId(), event.getName(), event.getDescription(),
                 event.getCommissionPercent(), event.getCommissionType(), optionNames,
-                event.getStatus());
+                event.getStatus(), event.getType(), event.getMarketMaker().getName(),
+                event.getAccount().getBalance());
     }
 
     List<EventInfoDTO> toEventInfoList(Iterable<Event> events) {

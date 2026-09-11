@@ -11,7 +11,10 @@ import java.util.List;
  * @param commissionPercent commission of the event, in percent (0 - 90)
  * @param commissionType    the way the commission is collected
  * @param optionNames       the possible outcomes of the event, in their original order
- * @param status            active or closed
+ * @param status            inactive, active or closed
+ * @param type              the trading method family of the event (LMSR or order book)
+ * @param marketMakerName   name of the user that is the market maker of the event
+ * @param accountBalance    the current balance of the event account
  */
 public record EventInfoDTO(int id,
                            String name,
@@ -19,7 +22,10 @@ public record EventInfoDTO(int id,
                            int commissionPercent,
                            CommissionType commissionType,
                            List<String> optionNames,
-                           EventStatus status) {
+                           EventStatus status,
+                           EventType type,
+                           String marketMakerName,
+                           double accountBalance) {
 
     public EventInfoDTO {
         optionNames = List.copyOf(optionNames);

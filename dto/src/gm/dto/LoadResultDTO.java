@@ -5,7 +5,8 @@ package gm.dto;
  *
  * @param filePath      the file that was loaded
  * @param eventsLoaded  amount of events that were loaded from the file
- * @param totalSubsidy  total subsidy that was invested in all the LMSR events of the file
+ * @param totalSubsidy  total subsidy the market makers of the LMSR events of the file will have to
+ *                      invest when they open their events
  */
 public record LoadResultDTO(String filePath, int eventsLoaded, double totalSubsidy) {
 }
