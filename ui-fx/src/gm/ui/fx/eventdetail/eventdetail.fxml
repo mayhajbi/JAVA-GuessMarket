@@ -35,6 +35,36 @@
                 <Label text="Winning option" styleClass="field-name" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
                 <Label fx:id="winnerValue" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
             </GridPane>
+
+            <VBox fx:id="actionsBox" spacing="8" styleClass="actions">
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <Label text="Actions" styleClass="section-title"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label text="Acting user" styleClass="field-name"/>
+                    <ComboBox fx:id="actingUserComboBox" prefWidth="150" promptText="Choose a user"/>
+                    <Label fx:id="actingUserLabel" styleClass="section-title"/>
+                    <Label fx:id="actingUserBlockedLabel" styleClass="blocked" text="Blocked"/>
+                </HBox>
+                <HBox fx:id="openBox" spacing="8" alignment="CENTER_LEFT">
+                    <Button fx:id="openButton" text="Open event" onAction="#onOpen"/>
+                    <Label text="The market maker pays the initial subsidy and trading starts."
+                           styleClass="field-name" wrapText="true"/>
+                </HBox>
+                <HBox fx:id="buyBox" spacing="8" alignment="CENTER_LEFT">
+                    <Label text="Buy" styleClass="field-name"/>
+                    <TextField fx:id="quantityField" promptText="Quantity" prefWidth="80" onAction="#onBuy"/>
+                    <Label text="shares of" styleClass="field-name"/>
+                    <ComboBox fx:id="buyOptionComboBox" prefWidth="170" promptText="Choose an option"/>
+                    <Button fx:id="buyButton" text="Buy" onAction="#onBuy"/>
+                </HBox>
+                <HBox fx:id="closeBox" spacing="8" alignment="CENTER_LEFT">
+                    <Label text="Winning option" styleClass="field-name"/>
+                    <ComboBox fx:id="winnerComboBox" prefWidth="170" promptText="Choose the winner"/>
+                    <Button fx:id="closeButton" text="Close event" onAction="#onClose"/>
+                </HBox>
+                <Label fx:id="actionsHintLabel" styleClass="placeholder" wrapText="true"/>
+            </VBox>
+
             <VBox fx:id="lmsrBox" spacing="10">
                 <Label text="Options" styleClass="section-title"/>
                 <TableView fx:id="optionsTable" prefHeight="100" minHeight="90">

@@ -5,6 +5,7 @@ import gm.dto.EventInfoDTO;
 import gm.dto.EventStatus;
 import gm.dto.EventType;
 import gm.engine.api.GuessMarketEngine;
+import gm.ui.fx.app.AppController;
 import gm.ui.fx.common.Formats;
 import gm.ui.fx.common.ViewUtils;
 import gm.ui.fx.eventdetail.EventDetailController;
@@ -66,15 +67,21 @@ public class EventsController {
         applyFilters();
     }
 
+    public void setMainController(AppController mainController) {
+        eventDetailComponentController.setOnDataChanged(mainController::refreshAll);
+    }
+
     public void setEngine(GuessMarketEngine engine) {
         this.engine = engine;
         eventDetailComponentController.setEngine(engine);
     }
 
     /**
-     * Pulls the events from the engine again. The selected event stays selected when it still exists.
+     * Pulls the events (and the users who may act on them) from the engine again. The selected event
+     * stays selected when it still exists.
      */
     public void refresh() {
+        eventDetailComponentController.setUsers(engine.getAllUsers());
         allEvents = engine.getAllEvents();
         applyFilters();
     }

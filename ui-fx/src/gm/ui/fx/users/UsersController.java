@@ -4,6 +4,7 @@ import gm.dto.UserDetailsDTO;
 import gm.dto.UserEventDTO;
 import gm.dto.UserInfoDTO;
 import gm.engine.api.GuessMarketEngine;
+import gm.ui.fx.app.AppController;
 import gm.ui.fx.common.Formats;
 import gm.ui.fx.common.ViewUtils;
 import gm.ui.fx.eventdetail.EventDetailController;
@@ -52,7 +53,13 @@ public class UsersController {
                 (observable, previous, selected) -> showUser(selected));
         userEventsTable.getSelectionModel().selectedItemProperty().addListener(
                 (observable, previous, selected) -> showUserEvent(selected));
+        // On this screen every action is performed by the selected user.
+        eventDetailComponentController.setFixedActingUser(null);
         showUser(null);
+    }
+
+    public void setMainController(AppController mainController) {
+        eventDetailComponentController.setOnDataChanged(mainController::refreshAll);
     }
 
     public void setEngine(GuessMarketEngine engine) {
@@ -88,6 +95,7 @@ public class UsersController {
             return;
         }
 
+        eventDetailComponentController.setFixedActingUser(user);
         UserDetailsDTO details = engine.getUserDetails(user.name());
         userNameLabel.setText(details.name());
         balanceLabel.setText(Formats.decimal(details.balance()));

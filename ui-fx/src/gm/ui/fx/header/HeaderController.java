@@ -60,7 +60,7 @@ public class HeaderController {
             filePathLabel.setTooltip(new Tooltip(result.filePath()));
             statusLabel.setText("Loaded " + result.eventsLoaded() + " events and " + result.usersLoaded()
                     + " users.");
-            mainController.onSystemLoaded();
+            mainController.refreshAll();
         });
         task.setOnFailed(event -> {
             setLoading(false);

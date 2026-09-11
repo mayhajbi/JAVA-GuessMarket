@@ -19,6 +19,8 @@ public class AppController {
     @FXML
     private void initialize() {
         headerComponentController.setMainController(this);
+        eventsComponentController.setMainController(this);
+        usersComponentController.setMainController(this);
     }
 
     public void setEngine(GuessMarketEngine engine) {
@@ -28,10 +30,10 @@ public class AppController {
     }
 
     /**
-     * Called after a data file was loaded successfully: every screen pulls the new data from the
-     * engine.
+     * Called whenever the data in the engine changed - a file was loaded or an action was performed.
+     * The engine never pushes updates, so every screen pulls the current data again.
      */
-    public void onSystemLoaded() {
+    public void refreshAll() {
         eventsComponentController.refresh();
         usersComponentController.refresh();
     }
