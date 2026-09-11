@@ -1,8 +1,10 @@
-# Guess Market - Exercise 1 (Console application)
+# Guess Market - Exercise 2 (JavaFX application)
 
-A prediction market engine: events with two possible outcomes are loaded from an XML file, traded
-with the LMSR pricing rule, and finally closed and decided. This repository holds the first stage of
-the project - the system engine and a console user interface on top of it.
+A prediction market: events with two possible outcomes and the users who trade in them are loaded
+from an XML file. Every event has a market maker who opens it, funds it and finally closes and
+decides it. An event is traded either with the LMSR pricing rule or through an order book (bids,
+asks and minting, in the spirit of Polymarket). This stage of the project replaces the console of
+exercise 1 with a JavaFX application on top of the same passive engine.
 
 ## Requirements
 
@@ -38,22 +40,29 @@ run.bat          runs the JavaFX application (exercise 2)
 
 The run scripts also work from inside the `jars` folder, which is the folder that gets submitted.
 
-## Menu
+## Screens
 
-1. Load an events file (XML)
-2. Show all the events in the system
-3. Show the trading state of an event
-4. Participate in an event (buy shares)
-5. Close an event and decide its result
-6. Save the current state of the system to a file
-7. Load a saved state of the system from a file
-8. Exit
+* **Header** - *Load File...* opens a file chooser (XML files only). The file is loaded in the
+  background with a progress bar; a failed load shows the detailed reason and keeps the previous data.
+* **Events** - every event with its status, type, commission, market maker and account balance,
+  filtered by type, status and commission method (each with *All*).
+* **Users** - every user with the balance; for the selected user, the events the user is the market
+  maker of or takes part in.
+* **Event details** (on both screens) - an LMSR event shows its option values and trading history;
+  an order book event shows the order book of every option with LAST / BID / ASK / MID / SPREAD, the
+  participants with their holdings and the trades, and the position of the acting user.
+* **Actions** - performed by the acting user (chosen on the events screen, the selected user on the
+  users screen): *Open event* and *Close event* for the market maker, *Buy* shares of an LMSR event,
+  *Place order* (buy or sell, quantity, option, price) in an order book event.
+
+Every window can be resized freely; when it is small, the screens scroll instead of cutting content.
 
 ## Sample data files
 
-`samples/` holds one valid file and several invalid ones (duplicate event id, an illegal commission,
-a single option, a zero liquidity value and a file that is not XML at all), for checking the error
-messages of the system.
+`samples/` holds the data files of exercise 1 (one valid file and several invalid ones: a duplicate
+event id, an illegal commission, a single option, a zero liquidity value and a file that is not XML
+at all). They use the format of exercise 1, without users, so the application of exercise 2
+rejects every one of them with a detailed message. They are kept as a record of the first stage.
 
 ## Assumptions
 
