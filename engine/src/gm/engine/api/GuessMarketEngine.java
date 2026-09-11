@@ -3,6 +3,9 @@ package gm.engine.api;
 import gm.dto.EventInfoDTO;
 import gm.dto.LoadResultDTO;
 import gm.dto.MarketStateDTO;
+import gm.dto.OrderBookStateDTO;
+import gm.dto.OrderRequestDTO;
+import gm.dto.OrderResultDTO;
 import gm.dto.PurchaseResultDTO;
 import gm.dto.UserDetailsDTO;
 import gm.dto.UserInfoDTO;
@@ -58,20 +61,27 @@ public interface GuessMarketEngine {
     UserDetailsDTO getUserDetails(String userName);
 
     /**
-     * @param eventId id of the requested event
+     * @param eventId id of the requested LMSR event
      * @return the full trading state of that event
      */
     MarketStateDTO getMarketState(int eventId);
 
     /**
+     * @param eventId id of the requested order book event
+     * @return the order books, statistics, participants and trades of that event
+     */
+    OrderBookStateDTO getOrderBookState(int eventId);
+
+    /**
      * Opens an inactive event for trading. Only the market maker of the event may open it, and it
-     * pays the initial subsidy from the own account.
+     * pays from the own account: the initial subsidy of an LMSR event, or the initial investment of an
+     * order book event (receiving the initial pairs of shares).
      *
      * @param eventId  id of the event to open
      * @param userName name of the user asking to open it
-     * @return the state of the event right after it was opened
+     * @return the details of the event right after it was opened
      */
-    MarketStateDTO openEvent(int eventId, String userName);
+    EventInfoDTO openEvent(int eventId, String userName);
 
     /**
      * Buys shares of one of the options of an active event, on behalf of a user.
@@ -86,15 +96,25 @@ public interface GuessMarketEngine {
     PurchaseResultDTO buyShares(int eventId, String userName, int optionIndex, long quantity);
 
     /**
+     * Places an order in the order book of an active order book event, on behalf of a user, and
+     * matches it right away against the waiting orders.
+     *
+     * @param request the event, user, side, option, quantity and price of the order
+     * @return the trades the order created, the balance of the user, and the state of the event right
+     *         after the order
+     */
+    OrderResultDTO submitOrder(OrderRequestDTO request);
+
+    /**
      * Closes an active event, decides its winning option, pays the winners and hands the commission
      * and what is left in the event account to the market maker. Only the market maker may close it.
      *
      * @param eventId            id of the event to close
      * @param userName           name of the user asking to close it
      * @param winningOptionIndex zero based index of the winning option
-     * @return the final state of the event
+     * @return the details of the event after it was closed
      */
-    MarketStateDTO closeEvent(int eventId, String userName, int winningOptionIndex);
+    EventInfoDTO closeEvent(int eventId, String userName, int winningOptionIndex);
 
     /**
      * Saves the whole current state of the system into a file, so that it can be loaded again later.

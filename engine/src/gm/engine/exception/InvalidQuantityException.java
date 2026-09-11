@@ -9,6 +9,6 @@ public class InvalidQuantityException extends GuessMarketException {
 
     public InvalidQuantityException(long quantity) {
         super("The requested amount of shares is " + quantity
-                + ". The amount of shares to buy must be a positive number (1 or more).");
+                + ". The amount of shares to buy or sell must be a positive number (1 or more).");
     }
 }

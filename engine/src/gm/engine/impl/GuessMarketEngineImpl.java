@@ -3,6 +3,9 @@ package gm.engine.impl;
 import gm.dto.EventInfoDTO;
 import gm.dto.LoadResultDTO;
 import gm.dto.MarketStateDTO;
+import gm.dto.OrderBookStateDTO;
+import gm.dto.OrderRequestDTO;
+import gm.dto.OrderResultDTO;
 import gm.dto.PurchaseResultDTO;
 import gm.dto.UserDetailsDTO;
 import gm.dto.UserInfoDTO;
@@ -11,6 +14,8 @@ import gm.engine.core.Event;
 import gm.engine.core.GuessMarket;
 import gm.engine.core.Trade;
 import gm.engine.core.User;
+import gm.engine.core.orderbook.OrderOutcome;
+import gm.engine.exception.InvalidOrderException;
 import gm.engine.exception.NoSystemLoadedException;
 import gm.engine.state.SystemStateSerializer;
 import gm.engine.util.InputText;
@@ -66,11 +71,16 @@ public class GuessMarketEngineImpl implements GuessMarketEngine {
     }
 
     @Override
-    public MarketStateDTO openEvent(int eventId, String userName) {
+    public OrderBookStateDTO getOrderBookState(int eventId) {
+        return dtoFactory.toOrderBookState(requireLoadedMarket().getEvent(eventId));
+    }
+
+    @Override
+    public EventInfoDTO openEvent(int eventId, String userName) {
         GuessMarket loadedMarket = requireLoadedMarket();
         Event event = loadedMarket.getEvent(eventId);
         event.open(loadedMarket.getUser(userName));
-        return dtoFactory.toMarketState(event);
+        return dtoFactory.toEventInfo(event);
     }
 
     @Override
@@ -86,11 +96,26 @@ public class GuessMarketEngineImpl implements GuessMarketEngine {
     }
 
     @Override
-    public MarketStateDTO closeEvent(int eventId, String userName, int winningOptionIndex) {
+    public OrderResultDTO submitOrder(OrderRequestDTO request) {
+        if (request == null) {
+            throw InvalidOrderException.missingRequest();
+        }
+        GuessMarket loadedMarket = requireLoadedMarket();
+        Event event = loadedMarket.getEvent(request.eventId());
+        User user = loadedMarket.getUser(request.userName());
+        OrderOutcome outcome = event.placeOrder(user, request.side(), request.optionIndex(),
+                request.quantity(), request.price());
+        return new OrderResultDTO(dtoFactory.toOrderBookTrades(event, outcome.trades()),
+                outcome.filledQuantity(), outcome.restingQuantity(), user.getAccount().getBalance(),
+                user.getAccount().isBlocked(), dtoFactory.toOrderBookState(event));
+    }
+
+    @Override
+    public EventInfoDTO closeEvent(int eventId, String userName, int winningOptionIndex) {
         GuessMarket loadedMarket = requireLoadedMarket();
         Event event = loadedMarket.getEvent(eventId);
         event.close(loadedMarket.getUser(userName), winningOptionIndex);
-        return dtoFactory.toMarketState(event);
+        return dtoFactory.toEventInfo(event);
     }
 
     @Override

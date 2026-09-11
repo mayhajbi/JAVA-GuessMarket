@@ -189,10 +189,10 @@ public class EventDetailController {
     private void onOpen() {
         String marketMakerName = actingUser().name();
         String eventName = currentEvent.name();
-        MarketStateDTO state = engine.openEvent(currentEvent.id(), marketMakerName);
+        EventInfoDTO openedEvent = engine.openEvent(currentEvent.id(), marketMakerName);
         onDataChanged.run();
         Dialogs.showInformation("The event was opened", marketMakerName + " opened [" + eventName
-                + "] and paid the initial subsidy of " + Formats.decimal(state.accountBalance())
+                + "] and paid the initial subsidy of " + Formats.decimal(openedEvent.accountBalance())
                 + ". Trading in the event is now allowed.");
     }
 

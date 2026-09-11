@@ -191,6 +191,9 @@ public class EventsMapper {
         if (orderBook != null) {
             int baseValue = readOrderBookBaseValue(orderBook, id, name, location);
             int initialInvestment = readOrderBookInitialInvestment(orderBook, id, name, location);
+            if (initialInvestment % baseValue != 0) {
+                throw InvalidOrderBookException.initialNotDivisible(id, name, initialInvestment, baseValue);
+            }
             boolean allowMint = readOrderBookAllowMint(orderBook, id, name, location);
             return Event.orderBook(id, name, description, commissionPercent, commissionType, options,
                     baseValue, allowMint, initialInvestment);

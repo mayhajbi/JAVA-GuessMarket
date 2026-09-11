@@ -3,14 +3,19 @@ package gm.engine.core;
 import gm.dto.CommissionType;
 import gm.dto.EventStatus;
 import gm.dto.EventType;
+import gm.dto.OrderSide;
 import gm.engine.core.method.TradingMethod;
+import gm.engine.core.orderbook.OrderBookMarket;
+import gm.engine.core.orderbook.OrderOutcome;
 import gm.engine.exception.EventAlreadyOpenedException;
 import gm.engine.exception.EventNotActiveException;
 import gm.engine.exception.InsufficientFundsException;
 import gm.engine.exception.InvalidOptionSelectionException;
+import gm.engine.exception.InvalidOrderException;
 import gm.engine.exception.InvalidQuantityException;
 import gm.engine.exception.NotEventMarketMakerException;
 import gm.engine.exception.UserBlockedException;
+import gm.engine.exception.WrongTradingMethodException;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -24,16 +29,19 @@ import java.util.Optional;
  * A single event in the system: its details, its options, its trading account and its history.
  * <p>
  * All the money rules of an event live here. The life cycle is INACTIVE (as loaded) to ACTIVE (the
- * market maker opens it and pays the initial subsidy) to CLOSED (the market maker decides the winning
- * option, the winners are paid and the market maker receives the commission and what is left in the
- * event account).
+ * market maker opens it and pays the initial subsidy or investment) to CLOSED (the market maker
+ * decides the winning option, the winners are paid and the market maker receives the commission and
+ * what is left in the event account).
+ * <p>
+ * An LMSR event is priced by its {@link TradingMethod} and shares are bought directly. An order book
+ * event is traded through the orders of its {@link OrderBookMarket}.
  */
 public class Event implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /** The amount that is paid at the end of the event for every share of the winning option. */
-    private static final double PAYOUT_PER_WINNING_SHARE = 1.0;
+    /** The amount that is paid at the end of an LMSR event for every share of the winning option. */
+    private static final double LMSR_PAYOUT_PER_WINNING_SHARE = 1.0;
 
     private static final double PERCENT = 100.0;
 
@@ -46,13 +54,11 @@ public class Event implements Serializable {
     private final EventType type;
     /** The pricing rules of an LMSR event; {@code null} for an order book event. */
     private final TradingMethod tradingMethod;
+    /** The order books of an order book event; {@code null} for an LMSR event. */
+    private final OrderBookMarket orderBook;
     private final EventAccount account = new EventAccount(0);
+    /** The purchases of an LMSR event (an order book event keeps its trades in its order book). */
     private final List<Trade> trades = new ArrayList<>();
-
-    /** Order book parameters; all {@code null} for an LMSR event. */
-    private final Integer orderBookBaseValue;
-    private final Boolean orderBookAllowMint;
-    private final Integer orderBookInitialInvestment;
 
     private EventStatus status = EventStatus.INACTIVE;
     private Integer winningOptionIndex;
@@ -71,7 +77,7 @@ public class Event implements Serializable {
                              List<EventOption> options,
                              TradingMethod tradingMethod) {
         return new Event(id, name, description, commissionPercent, commissionType, options,
-                EventType.LMSR, tradingMethod, null, null, null);
+                EventType.LMSR, tradingMethod, null);
     }
 
     /**
@@ -92,7 +98,8 @@ public class Event implements Serializable {
                                   boolean allowMint,
                                   int initialInvestment) {
         return new Event(id, name, description, commissionPercent, commissionType, options,
-                EventType.ORDER_BOOK, null, baseValue, allowMint, initialInvestment);
+                EventType.ORDER_BOOK, null,
+                new OrderBookMarket(options.size(), baseValue, allowMint, initialInvestment));
     }
 
     private Event(int id,
@@ -103,9 +110,7 @@ public class Event implements Serializable {
                   List<EventOption> options,
                   EventType type,
                   TradingMethod tradingMethod,
-                  Integer orderBookBaseValue,
-                  Boolean orderBookAllowMint,
-                  Integer orderBookInitialInvestment) {
+                  OrderBookMarket orderBook) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -114,9 +119,7 @@ public class Event implements Serializable {
         this.options = new ArrayList<>(options);
         this.type = type;
         this.tradingMethod = tradingMethod;
-        this.orderBookBaseValue = orderBookBaseValue;
-        this.orderBookAllowMint = orderBookAllowMint;
-        this.orderBookInitialInvestment = orderBookInitialInvestment;
+        this.orderBook = orderBook;
     }
 
     public int getId() {
@@ -159,22 +162,12 @@ public class Event implements Serializable {
         this.marketMaker = marketMaker;
     }
 
-    /** The base value (d) of an order book event. */
-    public int getOrderBookBaseValue() {
-        requireOrderBook();
-        return orderBookBaseValue;
-    }
-
-    /** Whether minting is allowed on an order book event. */
-    public boolean isOrderBookMintAllowed() {
-        requireOrderBook();
-        return orderBookAllowMint;
-    }
-
-    /** The amount the market maker invests when an order book event is opened. */
-    public int getOrderBookInitialInvestment() {
-        requireOrderBook();
-        return orderBookInitialInvestment;
+    /**
+     * @return the order books of an order book event
+     */
+    public OrderBookMarket getOrderBook() {
+        requireOrderBook("show order books");
+        return orderBook;
     }
 
     public boolean isActive() {
@@ -206,12 +199,12 @@ public class Event implements Serializable {
     }
 
     /**
-     * The current value of a single share of the requested option, between 0 and 1.
+     * The current value of a single share of the requested option of an LMSR event, between 0 and 1.
      *
      * @param optionIndex zero based index of the option
      */
     public double getOptionValue(int optionIndex) {
-        requireLmsr();
+        requireLmsr("show LMSR option values");
         validateOptionIndex(optionIndex);
         return tradingMethod.optionValue(sharesPerOption(), optionIndex);
     }
@@ -230,34 +223,39 @@ public class Event implements Serializable {
     }
 
     /**
-     * Opens the event for trading. The market maker pays the initial subsidy from the own account
-     * into the event account. Unlike a purchase, opening must be fully covered: when the balance of
-     * the market maker is not enough, nothing happens and the event stays inactive.
+     * Opens the event for trading. The market maker pays from the own account into the event account:
+     * the initial subsidy of an LMSR event, or the initial investment of an order book event - which
+     * also gives the market maker the initial pairs of shares. Unlike a trade, opening must be fully
+     * covered: when the balance of the market maker is not enough, nothing happens and the event stays
+     * inactive.
      *
      * @param user the user asking to open the event - must be its market maker
      */
     public void open(User user) {
-        requireLmsr();
         requireMarketMaker(user, "open");
         if (status != EventStatus.INACTIVE) {
             throw new EventAlreadyOpenedException(id, name, status);
         }
         requireNotBlocked(user, "open the event [" + name + "]");
 
-        double subsidy = getInitialSubsidy();
+        boolean isLmsr = type == EventType.LMSR;
+        double required = isLmsr ? getInitialSubsidy() : orderBook.getInitialInvestment();
         double balance = user.getAccount().getBalance();
-        if (balance < subsidy) {
-            throw new InsufficientFundsException(user.getName(),
-                    "open the event [" + name + "] (the initial subsidy)", subsidy, balance);
+        if (balance < required) {
+            throw new InsufficientFundsException(user.getName(), "open the event [" + name + "] ("
+                    + (isLmsr ? "the initial subsidy" : "the initial investment") + ")", required, balance);
         }
 
-        user.getAccount().withdraw(subsidy);
-        account.deposit(subsidy);
+        user.getAccount().withdraw(required);
+        account.deposit(required);
+        if (!isLmsr) {
+            orderBook.allocateInitialPairs(user);
+        }
         status = EventStatus.ACTIVE;
     }
 
     /**
-     * Buys shares of one of the options of this event.
+     * Buys shares of one of the options of an LMSR event.
      * <p>
      * The buyer pays the price of the shares, calculated by the trading method, into the event
      * account. When the commission of the event is collected on every purchase, the buyer pays it on
@@ -270,7 +268,7 @@ public class Event implements Serializable {
      * @return the trade that was created
      */
     public Trade buy(User buyer, int optionIndex, long quantity) {
-        requireLmsr();
+        requireLmsr("buy shares directly");
         requireActive();
         requireNotBlocked(buyer, "buy shares");
         validateOptionIndex(optionIndex);
@@ -297,12 +295,39 @@ public class Event implements Serializable {
     }
 
     /**
+     * Places an order in the order book of one option of an order book event, and matches it right
+     * away (see {@link OrderBookMarket#placeOrder}). Like a purchase, a trade is carried out even if it
+     * brings the balance of a buyer below zero, which blocks that buyer.
+     *
+     * @param user        the user who places the order
+     * @param side        buy or sell
+     * @param optionIndex zero based index of the option
+     * @param quantity    amount of shares, must be positive
+     * @param price       price per share, in whole cents, between 0.01 and d - 0.01
+     */
+    public OrderOutcome placeOrder(User user, OrderSide side, int optionIndex, long quantity, double price) {
+        requireOrderBook("place orders");
+        requireActive();
+        requireNotBlocked(user, "place orders");
+        validateOptionIndex(optionIndex);
+        if (side == null) {
+            throw InvalidOrderException.missingSide(id, name);
+        }
+        if (quantity <= 0) {
+            throw new InvalidQuantityException(quantity);
+        }
+        long priceCents = orderBook.toPriceCents(this, price);
+        return orderBook.placeOrder(this, user, side, optionIndex, quantity, priceCents);
+    }
+
+    /**
      * Closes the event and decides its winning option.
      * <p>
-     * Every holder of the winning option is paid {@value #PAYOUT_PER_WINNING_SHARE} per share out of
-     * the event account. When the commission of the event is collected on close, it is taken out of
-     * that payment and goes to the market maker. Whatever is left in the event account afterwards
-     * (the unused part of the subsidy) is returned to the market maker as well.
+     * Every holder of the winning option is paid out of the event account - 1 per share in an LMSR
+     * event, the base value (d) per share in an order book event. When the commission of the event is
+     * collected on close, it is taken out of that payment and goes to the market maker. Whatever is
+     * left in the event account afterwards (the unused part of an LMSR subsidy) is returned to the
+     * market maker as well. The waiting orders of an order book event are cancelled.
      * <p>
      * A blocked market maker may still close the event: deciding the result is not a trading action,
      * and without it the winners could never be paid.
@@ -311,26 +336,38 @@ public class Event implements Serializable {
      * @param winningOptionIndex zero based index of the winning option
      */
     public void close(User user, int winningOptionIndex) {
-        requireLmsr();
         requireMarketMaker(user, "close");
         requireActive();
         validateOptionIndex(winningOptionIndex);
 
-        for (Map.Entry<User, Long> holding : holdingsOf(winningOptionIndex).entrySet()) {
-            double payout = holding.getValue() * PAYOUT_PER_WINNING_SHARE;
+        boolean isLmsr = type == EventType.LMSR;
+        double payoutPerShare = isLmsr ? LMSR_PAYOUT_PER_WINNING_SHARE : orderBook.getBaseValue();
+        Map<User, Long> holdings = isLmsr
+                ? lmsrHoldingsOf(winningOptionIndex)
+                : orderBook.holdingsOf(winningOptionIndex);
+        for (Map.Entry<User, Long> holding : holdings.entrySet()) {
+            User holder = holding.getKey();
+            double payout = holding.getValue() * payoutPerShare;
             double commission = commissionType == CommissionType.ON_CLOSE
                     ? payout * commissionPercent / PERCENT
                     : 0;
             account.withdraw(payout);
-            holding.getKey().getAccount().deposit(payout - commission);
+            holder.getAccount().deposit(payout - commission);
             if (commission > 0) {
                 marketMaker.getAccount().deposit(commission);
                 account.addCollectedCommission(commission);
             }
+            if (!isLmsr) {
+                orderBook.recordPayout(holder, payout, commission);
+            }
+        }
+        if (!isLmsr) {
+            orderBook.cancelAllOrders();
         }
 
-        // LMSR keeps the account at C(q), which is never below the payout, so this is the unused part
-        // of the subsidy. A negative balance (not reachable with LMSR) is left as is.
+        // LMSR keeps the account at C(q) and an order book keeps d per pair of shares, so the account
+        // never falls below the payout and this is the unused part of the money. A negative balance
+        // (not reachable with these methods) is left as is.
         double leftover = account.getBalance();
         if (leftover > 0) {
             account.withdraw(leftover);
@@ -342,9 +379,12 @@ public class Event implements Serializable {
     }
 
     /**
-     * @return whether the user has traded in this event (participation starts with the first action)
+     * @return whether the user takes part in this event (participation starts with the first action)
      */
     public boolean hasParticipant(User user) {
+        if (type == EventType.ORDER_BOOK) {
+            return orderBook.hasParticipant(user);
+        }
         for (Trade trade : trades) {
             if (trade.getBuyer() == user) {
                 return true;
@@ -363,9 +403,10 @@ public class Event implements Serializable {
     }
 
     /**
-     * The amount of shares every user holds of one option, in the order the users first bought it.
+     * The amount of shares every user holds of one option of an LMSR event, in the order the users
+     * first bought it.
      */
-    private Map<User, Long> holdingsOf(int optionIndex) {
+    private Map<User, Long> lmsrHoldingsOf(int optionIndex) {
         Map<User, Long> holdings = new LinkedHashMap<>();
         for (Trade trade : trades) {
             if (trade.getOptionIndex() == optionIndex) {
@@ -394,21 +435,15 @@ public class Event implements Serializable {
         }
     }
 
-    /**
-     * Order book trading (opening, pricing, buying, closing) is built in a later step of the exercise.
-     * Until then any such call on an order book event fails loudly instead of misbehaving.
-     */
-    private void requireLmsr() {
+    private void requireLmsr(String action) {
         if (type != EventType.LMSR) {
-            throw new UnsupportedOperationException("Event [" + name + "] (id " + id + ") uses the "
-                    + "order book method, whose trading is not implemented yet.");
+            throw new WrongTradingMethodException(id, name, type, action);
         }
     }
 
-    private void requireOrderBook() {
+    private void requireOrderBook(String action) {
         if (type != EventType.ORDER_BOOK) {
-            throw new UnsupportedOperationException("Event [" + name + "] (id " + id + ") is not an "
-                    + "order book event.");
+            throw new WrongTradingMethodException(id, name, type, action);
         }
     }
 
