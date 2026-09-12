@@ -14,9 +14,10 @@ graph is part of the users screen. The engine records a point whenever the value
 so the graphs describe the whole session from the moment the data file was loaded.
 
 **Skins (5 points)** - *Skin* in the header switches the whole window between three looks: the
-regular one and two more, *Midnight* (dark, narrow sans serif) and *Parchment* (warm paper, large
-serif). Each of them changes the background, the look of the buttons, and the font and its size of
-every label. **The application starts in the regular look.**
+regular one and two more, *Midnight* (dark, sans serif) and *Parchment* (warm paper, serif). Each of
+them changes the background, the look of the buttons, and the font and its size of every label -
+including the windows the application opens on its own, the message dialogs and the form of a new
+event, so one look never shows two fonts. **The application starts in the regular look.**
 
 **Animations (5 points)** - *Animations* in the header turns on three animations: the window fades
 in when a data file finished loading (0.8s), the name of an event is pulsed when it is opened or

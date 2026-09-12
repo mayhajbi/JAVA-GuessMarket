@@ -8,6 +8,7 @@ import gm.dto.EventType;
 import gm.dto.NewEventRequestDTO;
 import gm.engine.api.GuessMarketEngine;
 import gm.ui.fx.common.Dialogs;
+import gm.ui.fx.common.Skin;
 import gm.ui.fx.app.AppController;
 import gm.ui.fx.common.Formats;
 import gm.ui.fx.common.ViewUtils;
@@ -124,6 +125,7 @@ public class EventsController {
         } catch (IOException failure) {
             throw new UncheckedIOException(failure);
         }
+        Skin.dress(dialogPane);
         NewEventController form = loader.getController();
         form.setUsers(engine.getAllUsers(), eventDetailComponentController.actingUserName());
 

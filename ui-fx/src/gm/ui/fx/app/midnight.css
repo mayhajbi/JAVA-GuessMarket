@@ -4,7 +4,7 @@
  */
 
 .root {
-    -fx-font-family: "Segoe UI Semibold", "Segoe UI", sans-serif;
+    -fx-font-family: "Segoe UI", "Segoe UI Semibold", sans-serif;
     -fx-font-size: 13px;
     -fx-background-color: #1b2130;
 }
@@ -154,4 +154,23 @@
 
 .chart-legend {
     -fx-background-color: transparent;
+}
+
+/* A dialog and the form of a new event open in windows of their own; without these they would keep
+   the default look while the main window is dark. */
+.dialog-pane {
+    -fx-background-color: #1b2130;
+}
+
+.dialog-pane > .header-panel {
+    -fx-background-color: #232b3d;
+}
+
+.dialog-pane > .header-panel .label {
+    -fx-text-fill: #a8c4f0;
+}
+
+.dialog-pane .content.label,
+.dialog-pane .label {
+    -fx-text-fill: #dde3ee;
 }

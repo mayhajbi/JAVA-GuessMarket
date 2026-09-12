@@ -60,6 +60,8 @@ public final class Dialogs {
         alert.setHeaderText(header);
         alert.setResizable(true);
         alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
+        // A dialog opens in a window of its own, which carries none of the styling of the main one.
+        Skin.dress(alert.getDialogPane());
         return alert;
     }
 

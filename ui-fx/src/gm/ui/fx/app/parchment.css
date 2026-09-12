@@ -157,3 +157,22 @@
 .chart-legend {
     -fx-background-color: transparent;
 }
+
+/* A dialog and the form of a new event open in windows of their own; without these they would keep
+   the default look while the main window is warm paper. */
+.dialog-pane {
+    -fx-background-color: #f6efdf;
+}
+
+.dialog-pane > .header-panel {
+    -fx-background-color: #e9dcc0;
+}
+
+.dialog-pane > .header-panel .label {
+    -fx-text-fill: #6b4420;
+}
+
+.dialog-pane .content.label,
+.dialog-pane .label {
+    -fx-text-fill: #402f1d;
+}
