@@ -133,7 +133,6 @@ public class GuessMarketEngineImpl implements GuessMarketEngine {
         String description = trim(request.description());
         List<EventOption> options = List.of(new EventOption(trim(request.firstOption())),
                 new EventOption(trim(request.secondOption())));
-        EventValidator.requireTwoOptions(id, name, options.size());
 
         if (request.type() == EventType.LMSR) {
             EventValidator.requireLiquidityPositive(id, name, request.liquidity());
