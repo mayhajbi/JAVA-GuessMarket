@@ -3,11 +3,15 @@ package gm.ui.fx.header;
 import gm.dto.LoadResultDTO;
 import gm.engine.api.GuessMarketEngine;
 import gm.ui.fx.app.AppController;
+import gm.ui.fx.common.Animations;
 import gm.ui.fx.common.Dialogs;
+import gm.ui.fx.common.Skin;
 import gm.ui.fx.common.ViewUtils;
 import gm.ui.fx.task.LoadEventsTask;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.Tooltip;
@@ -18,7 +22,8 @@ import java.io.File;
 
 /**
  * The header of the application: the button that loads a data file, the path of the file that is
- * currently loaded, and the progress of a load that is running.
+ * currently loaded, the progress of a load that is running, and the two bonus switches - the skin of
+ * the window and whether the animations are played.
  */
 public class HeaderController {
 
@@ -31,9 +36,26 @@ public class HeaderController {
     @FXML private ProgressBar loadProgressBar;
     @FXML private Label loadMessageLabel;
     @FXML private Label statusLabel;
+    @FXML private ComboBox<Skin> skinComboBox;
+    @FXML private CheckBox animationsCheckBox;
 
     private AppController mainController;
     private GuessMarketEngine engine;
+
+    /**
+     * Both bonuses start turned off, exactly as they are submitted: the regular look and no
+     * animations. The user turns them on here.
+     */
+    @FXML
+    private void initialize() {
+        skinComboBox.getItems().setAll(Skin.values());
+        skinComboBox.setValue(Skin.DEFAULT);
+        skinComboBox.valueProperty().addListener(
+                (observable, previous, chosen) -> Skin.apply(skinComboBox, chosen));
+        animationsCheckBox.setSelected(false);
+        animationsCheckBox.selectedProperty().addListener(
+                (observable, previous, playing) -> Animations.setEnabled(playing));
+    }
 
     public void setMainController(AppController mainController) {
         this.mainController = mainController;
@@ -61,6 +83,7 @@ public class HeaderController {
             statusLabel.setText("Loaded " + result.eventsLoaded() + " events and " + result.usersLoaded()
                     + " users.");
             mainController.refreshAll();
+            Animations.fadeIn(loadFileButton.getScene().getRoot());
         });
         task.setOnFailed(event -> {
             setLoading(false);

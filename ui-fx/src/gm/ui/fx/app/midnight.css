@@ -1,0 +1,157 @@
+/*
+ * The Midnight skin: a dark screen with light text, blue accents and a narrow sans serif font.
+ * Loaded on top of app.css, so it only says what is different.
+ */
+
+.root {
+    -fx-font-family: "Segoe UI Semibold", "Segoe UI", sans-serif;
+    -fx-font-size: 13px;
+    -fx-background-color: #1b2130;
+}
+
+.label,
+.check-box,
+.radio-button {
+    -fx-text-fill: #dde3ee;
+}
+
+.app-title {
+    -fx-font-size: 24px;
+    -fx-text-fill: #7fb2ff;
+}
+
+.section-title {
+    -fx-font-size: 15px;
+    -fx-text-fill: #a8c4f0;
+}
+
+.field-name {
+    -fx-text-fill: #8b98ae;
+}
+
+.placeholder {
+    -fx-text-fill: #7c8899;
+}
+
+.blocked {
+    -fx-text-fill: #ff8a8a;
+}
+
+.header {
+    -fx-background-color: #141926;
+    -fx-border-color: transparent transparent #2f3a52 transparent;
+}
+
+.actions {
+    -fx-background-color: #232b3d;
+    -fx-border-color: #38435a;
+}
+
+.button,
+.combo-box-base,
+.text-field {
+    -fx-background-color: #2c3648;
+    -fx-text-fill: #e8edf7;
+    -fx-border-color: #4a5771;
+    -fx-border-radius: 3;
+    -fx-background-radius: 3;
+    -fx-padding: 5 12 5 12;
+}
+
+.combo-box-base .list-cell {
+    -fx-text-fill: #e8edf7;
+    -fx-background-color: transparent;
+}
+
+.combo-box-popup .list-view {
+    -fx-background-color: #2c3648;
+    -fx-border-color: #4a5771;
+}
+
+.combo-box-popup .list-view .list-cell:hover {
+    -fx-background-color: #3d4c68;
+}
+
+.button:hover,
+.combo-box-base:hover {
+    -fx-background-color: #3d4c68;
+}
+
+.button:pressed {
+    -fx-background-color: #52658a;
+}
+
+.button:disabled {
+    -fx-opacity: 0.45;
+}
+
+.text-field {
+    -fx-prompt-text-fill: #7c8899;
+}
+
+.tab-pane .tab-header-background {
+    -fx-background-color: #141926;
+}
+
+.tab-pane .tab {
+    -fx-background-color: #232b3d;
+}
+
+.tab-pane .tab:selected {
+    -fx-background-color: #34405a;
+}
+
+.tab-pane .tab-label {
+    -fx-text-fill: #dde3ee;
+}
+
+.table-view,
+.table-view .viewport,
+.split-pane,
+.scroll-pane,
+.scroll-pane > .viewport {
+    -fx-background-color: #1b2130;
+}
+
+.table-view .column-header-background,
+.table-view .column-header {
+    -fx-background-color: #2a3448;
+}
+
+.table-view .column-header .label {
+    -fx-text-fill: #c6d2e6;
+}
+
+.table-row-cell {
+    -fx-background-color: #202839;
+    -fx-border-color: transparent transparent #2c3648 transparent;
+}
+
+.table-row-cell:odd {
+    -fx-background-color: #242d41;
+}
+
+.table-row-cell:selected {
+    -fx-background-color: #3c5a8c;
+}
+
+.table-cell {
+    -fx-text-fill: #dde3ee;
+}
+
+.chart-plot-background {
+    -fx-background-color: #232b3d;
+}
+
+.axis {
+    -fx-tick-label-fill: #a8b4c8;
+}
+
+.axis-label,
+.chart-legend-item {
+    -fx-text-fill: #dde3ee;
+}
+
+.chart-legend {
+    -fx-background-color: transparent;
+}

@@ -14,6 +14,9 @@
         <Button fx:id="loadFileButton" text="Load File..." onAction="#onLoadFile" minWidth="-Infinity"/>
         <Label fx:id="filePathLabel" text="No file loaded" textOverrun="LEADING_ELLIPSIS" maxWidth="Infinity"
                HBox.hgrow="ALWAYS"/>
+        <Label text="Skin" styleClass="field-name"/>
+        <ComboBox fx:id="skinComboBox" prefWidth="130"/>
+        <CheckBox fx:id="animationsCheckBox" text="Animations"/>
     </HBox>
     <HBox spacing="10" alignment="CENTER_LEFT">
         <HBox fx:id="progressBox" spacing="10" alignment="CENTER_LEFT" visible="false" managed="false">

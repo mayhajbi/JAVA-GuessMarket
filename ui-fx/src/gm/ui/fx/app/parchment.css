@@ -1,0 +1,159 @@
+/*
+ * The Parchment skin: a warm paper coloured screen, brown buttons and a large serif font.
+ * Loaded on top of app.css, so it only says what is different.
+ */
+
+.root {
+    -fx-font-family: Georgia, "Times New Roman", serif;
+    -fx-font-size: 15px;
+    -fx-background-color: #f6efdf;
+}
+
+.label,
+.check-box,
+.radio-button {
+    -fx-text-fill: #402f1d;
+}
+
+.app-title {
+    -fx-font-size: 27px;
+    -fx-text-fill: #7a4a1c;
+}
+
+.section-title {
+    -fx-font-size: 17px;
+    -fx-text-fill: #6b4420;
+}
+
+.field-name {
+    -fx-text-fill: #8a7458;
+}
+
+.placeholder {
+    -fx-text-fill: #93826a;
+}
+
+.blocked {
+    -fx-text-fill: #9b2c1f;
+}
+
+.header {
+    -fx-background-color: #e9dcc0;
+    -fx-border-color: transparent transparent #c8b590 transparent;
+}
+
+.actions {
+    -fx-background-color: #efe5cd;
+    -fx-border-color: #cbb894;
+}
+
+.button,
+.combo-box-base,
+.text-field {
+    -fx-background-color: #b98a4e;
+    -fx-text-fill: #fdf8ee;
+    -fx-border-color: #8a6231;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-padding: 6 14 6 14;
+}
+
+.combo-box-base .list-cell {
+    -fx-text-fill: #fdf8ee;
+    -fx-background-color: transparent;
+}
+
+.combo-box-popup .list-view {
+    -fx-background-color: #b98a4e;
+    -fx-border-color: #8a6231;
+}
+
+.combo-box-popup .list-view .list-cell:hover {
+    -fx-background-color: #a5763c;
+}
+
+.button:hover,
+.combo-box-base:hover {
+    -fx-background-color: #a5763c;
+}
+
+.button:pressed {
+    -fx-background-color: #8a6231;
+}
+
+.button:disabled {
+    -fx-opacity: 0.45;
+}
+
+.text-field {
+    -fx-background-color: #fdf8ee;
+    -fx-text-fill: #402f1d;
+    -fx-prompt-text-fill: #a2917a;
+}
+
+.tab-pane .tab-header-background {
+    -fx-background-color: #e9dcc0;
+}
+
+.tab-pane .tab {
+    -fx-background-color: #dfcfad;
+}
+
+.tab-pane .tab:selected {
+    -fx-background-color: #f6efdf;
+}
+
+.tab-pane .tab-label {
+    -fx-text-fill: #533a1d;
+}
+
+.table-view,
+.table-view .viewport,
+.split-pane,
+.scroll-pane,
+.scroll-pane > .viewport {
+    -fx-background-color: #f6efdf;
+}
+
+.table-view .column-header-background,
+.table-view .column-header {
+    -fx-background-color: #e2d2b0;
+}
+
+.table-view .column-header .label {
+    -fx-text-fill: #533a1d;
+}
+
+.table-row-cell {
+    -fx-background-color: #fbf6ea;
+    -fx-border-color: transparent transparent #e0d3b6 transparent;
+}
+
+.table-row-cell:odd {
+    -fx-background-color: #f3ead5;
+}
+
+.table-row-cell:selected {
+    -fx-background-color: #e6d3a8;
+}
+
+.table-cell {
+    -fx-text-fill: #402f1d;
+}
+
+.chart-plot-background {
+    -fx-background-color: #fbf6ea;
+}
+
+.axis {
+    -fx-tick-label-fill: #6b5a42;
+}
+
+.axis-label,
+.chart-legend-item {
+    -fx-text-fill: #402f1d;
+}
+
+.chart-legend {
+    -fx-background-color: transparent;
+}

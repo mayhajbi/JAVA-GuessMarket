@@ -6,13 +6,22 @@ decides it. An event is traded either with the LMSR pricing rule or through an o
 asks and minting, in the spirit of Polymarket). This stage of the project replaces the console of
 exercise 1 with a JavaFX application on top of the same passive engine.
 
-## Implemented bonus
+## Implemented bonuses
 
 **Graphs (8 points)** - a price over time graph for every event and a balance over time graph for
-every user. Both are always on, there is nothing to turn on: the price graph is part of the event
-details on both screens, and the balance graph is part of the users screen. The engine records a
-point whenever the value actually changes, so the graphs describe the whole session from the moment
-the data file was loaded.
+every user. Always on: the price graph is part of the event details on both screens, and the balance
+graph is part of the users screen. The engine records a point whenever the value actually changes,
+so the graphs describe the whole session from the moment the data file was loaded.
+
+**Skins (5 points)** - *Skin* in the header switches the whole window between three looks: the
+regular one and two more, *Midnight* (dark, narrow sans serif) and *Parchment* (warm paper, large
+serif). Each of them changes the background, the look of the buttons, and the font and its size of
+every label. **The application starts in the regular look.**
+
+**Animations (5 points)** - *Animations* in the header turns on three animations: the window fades
+in when a data file finished loading (0.8s), the name of an event is pulsed when it is opened or
+closed (0.6s), and the details of an event slide in when a different event is chosen (0.5s).
+**The application starts with the animations turned off.**
 
 ## Requirements
 
@@ -29,7 +38,7 @@ the data file was loaded.
 | `dto`    | `gm.dto`     | Immutable data transfer objects (records) that carry information between the engine and any user interface |
 | `engine` | `gm.engine`  | The system itself: the events, the pricing rules, loading and validating the data file, and the engine interface |
 | `ui`     | `gm.ui`      | The console application of exercise 1. Kept for reference only and not built since exercise 2: the engine now requires a user for every action, which that console does not have |
-| `ui-fx`  | `gm.ui.fx`   | The JavaFX application of exercise 2: a header that loads a data file in the background, the events screen (filters, table, event details) and the users screen (balances, the events of a user, event details). The event details show the options and history of an LMSR event, or the order book of every option (with LAST/BID/ASK/MID/SPREAD), the participants and trades of an order book event, and offer the actions of the acting user: open, buy, place an order, close. Every screen is an FXML file with its own controller, connected by `app.AppController`. `common.HistoryChart` draws the two graphs of the bonus |
+| `ui-fx`  | `gm.ui.fx`   | The JavaFX application of exercise 2: a header that loads a data file in the background, the events screen (filters, table, event details) and the users screen (balances, the events of a user, event details). The event details show the options and history of an LMSR event, or the order book of every option (with LAST/BID/ASK/MID/SPREAD), the participants and trades of an order book event, and offer the actions of the acting user: open, buy, place an order, close. Every screen is an FXML file with its own controller, connected by `app.AppController`. `common.HistoryChart` draws the graphs, `common.Skin` the skins and `common.Animations` the animations of the bonuses |
 
 Every user interface module talks to the engine only through the `gm.engine.api.GuessMarketEngine`
 interface, and receives answers only as `gm.dto` objects, so the inner objects of the engine are
@@ -67,6 +76,10 @@ The run scripts also work from inside the `jars` folder, which is the folder tha
 * **Actions** - performed by the acting user (chosen on the events screen, the selected user on the
   users screen): *Open event* and *Close event* for the market maker, *Buy* shares of an LMSR event,
   *Place order* (buy or sell, quantity, option, price) in an order book event.
+
+* **Skin / Animations** (header, both bonuses) - both start off, exactly as submitted, and are
+  switched on by hand: a skin applies at once to the whole window, and the animations play from the
+  next action.
 
 Every window can be resized freely; when it is small, the screens scroll instead of cutting content.
 

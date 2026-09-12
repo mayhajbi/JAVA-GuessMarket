@@ -17,6 +17,7 @@ import gm.dto.PurchaseResultDTO;
 import gm.dto.TradeRecordDTO;
 import gm.dto.UserInfoDTO;
 import gm.engine.api.GuessMarketEngine;
+import gm.ui.fx.common.Animations;
 import gm.ui.fx.common.Dialogs;
 import gm.ui.fx.common.Formats;
 import gm.ui.fx.common.HistoryChart;
@@ -211,7 +212,8 @@ public class EventDetailController {
     public void showEvent(EventInfoDTO event) {
         ViewUtils.show(placeholderLabel, false);
         ViewUtils.show(detailsBox, true);
-        if (currentEvent == null || currentEvent.id() != event.id()) {
+        boolean isAnotherEvent = currentEvent == null || currentEvent.id() != event.id();
+        if (isAnotherEvent) {
             quantityField.clear();
             orderQuantityField.clear();
             orderPriceField.clear();
@@ -237,6 +239,9 @@ public class EventDetailController {
         fillOptionChoices(currentEvent.optionNames());
         showPriceChart();
         updateActions();
+        if (isAnotherEvent) {
+            Animations.slideIn(detailsBox);
+        }
     }
 
     /**
@@ -286,6 +291,7 @@ public class EventDetailController {
                     + " shares of every option, which may now be offered for sale. Trading in the event "
                     + "is now allowed.");
         }
+        Animations.pulse(eventNameLabel);
     }
 
     @FXML
@@ -373,6 +379,7 @@ public class EventDetailController {
                 + marketMakerName + " with [" + winnerName + "] as the winning option. The winners "
                 + "were paid, and the commission and what was left in the event account went to "
                 + "the market maker.");
+        Animations.pulse(eventNameLabel);
     }
 
     private Long parseQuantity(TextField field, String action) {
