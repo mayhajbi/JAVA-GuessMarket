@@ -1,6 +1,7 @@
 package gm.ui.fx.events;
 
 import gm.dto.CommissionType;
+import gm.dto.EventFilterDTO;
 import gm.dto.EventInfoDTO;
 import gm.dto.EventStatus;
 import gm.dto.EventType;
@@ -15,12 +16,12 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.FlowPane;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The events screen: every event in the system, filtered by type, status and commission method, and
- * the details of the selected event.
+ * The events screen: the events of the system, filtered by type, status and commission method, and
+ * the details of the selected event. The filtering itself is done by the engine - this screen only
+ * sends the selected values.
  */
 public class EventsController {
 
@@ -39,7 +40,9 @@ public class EventsController {
     @FXML private EventDetailController eventDetailComponentController;
 
     private GuessMarketEngine engine;
-    private List<EventInfoDTO> allEvents = List.of();
+    /** Whether a file was loaded - before that the engine has no events to ask for. */
+    private boolean isSystemLoaded;
+    private int totalEventCount;
     private FilterGroup<EventType> typeFilter;
     private FilterGroup<EventStatus> statusFilter;
     private FilterGroup<CommissionType> commissionFilter;
@@ -82,22 +85,20 @@ public class EventsController {
      */
     public void refresh() {
         eventDetailComponentController.setUsers(engine.getAllUsers());
-        allEvents = engine.getAllEvents();
+        totalEventCount = engine.getAllEvents().size();
+        isSystemLoaded = true;
         applyFilters();
     }
 
     private void applyFilters() {
         EventInfoDTO selected = eventsTable.getSelectionModel().getSelectedItem();
-        List<EventInfoDTO> visibleEvents = new ArrayList<>();
-        for (EventInfoDTO event : allEvents) {
-            if (typeFilter.accepts(event.type()) && statusFilter.accepts(event.status())
-                    && commissionFilter.accepts(event.commissionType())) {
-                visibleEvents.add(event);
-            }
-        }
+        List<EventInfoDTO> visibleEvents = isSystemLoaded
+                ? engine.getEvents(new EventFilterDTO(typeFilter.selectedValues(),
+                        statusFilter.selectedValues(), commissionFilter.selectedValues()))
+                : List.of();
         eventsTable.getSelectionModel().clearSelection();
         eventsTable.getItems().setAll(visibleEvents);
-        eventsCountLabel.setText("Showing " + visibleEvents.size() + " of " + allEvents.size()
+        eventsCountLabel.setText("Showing " + visibleEvents.size() + " of " + totalEventCount
                 + " events");
         if (selected != null) {
             reselect(selected.id());

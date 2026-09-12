@@ -59,6 +59,8 @@ public class Event implements Serializable {
     private final EventAccount account = new EventAccount(0);
     /** The purchases of an LMSR event (an order book event keeps its trades in its order book). */
     private final List<Trade> trades = new ArrayList<>();
+    /** The value of every option over time - one list of points per option, in the order of the options. */
+    private final List<List<HistoryPoint>> priceHistory = new ArrayList<>();
 
     private EventStatus status = EventStatus.INACTIVE;
     private Integer winningOptionIndex;
@@ -120,6 +122,9 @@ public class Event implements Serializable {
         this.type = type;
         this.tradingMethod = tradingMethod;
         this.orderBook = orderBook;
+        for (int index = 0; index < this.options.size(); index++) {
+            priceHistory.add(new ArrayList<>());
+        }
     }
 
     public int getId() {
@@ -184,6 +189,18 @@ public class Event implements Serializable {
 
     public List<Trade> getTrades() {
         return Collections.unmodifiableList(trades);
+    }
+
+    /**
+     * The value of a single share of the requested option over time: one point for every moment the
+     * value of the event could change (it was opened, traded in, or closed), in the order they
+     * happened. An option that never had a price yet has no points at all.
+     *
+     * @param optionIndex zero based index of the option
+     */
+    public List<HistoryPoint> getPriceHistory(int optionIndex) {
+        validateOptionIndex(optionIndex);
+        return Collections.unmodifiableList(priceHistory.get(optionIndex));
     }
 
     public int getOptionCount() {
@@ -252,6 +269,7 @@ public class Event implements Serializable {
             orderBook.allocateInitialPairs(user);
         }
         status = EventStatus.ACTIVE;
+        recordPrices();
     }
 
     /**
@@ -291,6 +309,7 @@ public class Event implements Serializable {
 
         Trade trade = new Trade(buyer, optionIndex, quantity, sharesCost, commission);
         trades.add(trade);
+        recordPrices();
         return trade;
     }
 
@@ -317,7 +336,9 @@ public class Event implements Serializable {
             throw new InvalidQuantityException(quantity);
         }
         long priceCents = orderBook.toPriceCents(this, price);
-        return orderBook.placeOrder(this, user, side, optionIndex, quantity, priceCents);
+        OrderOutcome outcome = orderBook.placeOrder(this, user, side, optionIndex, quantity, priceCents);
+        recordPrices();
+        return outcome;
     }
 
     /**
@@ -376,6 +397,43 @@ public class Event implements Serializable {
 
         this.winningOptionIndex = winningOptionIndex;
         this.status = EventStatus.CLOSED;
+        recordPrices();
+    }
+
+    /**
+     * Adds the value of every option right now to its history. Called after every action that can
+     * change those values, so that the history follows the event from the moment it was opened until
+     * it was closed.
+     */
+    private void recordPrices() {
+        long timeMillis = System.currentTimeMillis();
+        for (int index = 0; index < options.size(); index++) {
+            Double value = currentValueOf(index);
+            if (value != null) {
+                priceHistory.get(index).add(new HistoryPoint(timeMillis, value));
+            }
+        }
+    }
+
+    /**
+     * The value of a single share of an option right now, for the history. A closed event is worth
+     * what it actually pays - the full payout for the winning option and nothing for the others.
+     *
+     * @return the value, or {@code null} when the option of an order book event has no price yet
+     */
+    private Double currentValueOf(int optionIndex) {
+        if (status == EventStatus.CLOSED) {
+            double payoutPerShare = type == EventType.LMSR
+                    ? LMSR_PAYOUT_PER_WINNING_SHARE
+                    : orderBook.getBaseValue();
+            return winningOptionIndex == optionIndex ? payoutPerShare : 0.0;
+        }
+        // Not a ternary: an order book option may have no price at all, and mixing that null with
+        // the double of the LMSR branch would unbox it.
+        if (type == EventType.LMSR) {
+            return tradingMethod.optionValue(sharesPerOption(), optionIndex);
+        }
+        return orderBook.getShareValue(optionIndex, Optional.empty());
     }
 
     /**

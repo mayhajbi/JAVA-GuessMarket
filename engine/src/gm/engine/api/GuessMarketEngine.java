@@ -1,11 +1,14 @@
 package gm.engine.api;
 
+import gm.dto.EventFilterDTO;
 import gm.dto.EventInfoDTO;
+import gm.dto.HistoryPointDTO;
 import gm.dto.LoadResultDTO;
 import gm.dto.MarketStateDTO;
 import gm.dto.OrderBookStateDTO;
 import gm.dto.OrderRequestDTO;
 import gm.dto.OrderResultDTO;
+import gm.dto.PriceHistoryDTO;
 import gm.dto.PurchaseResultDTO;
 import gm.dto.UserDetailsDTO;
 import gm.dto.UserInfoDTO;
@@ -49,6 +52,13 @@ public interface GuessMarketEngine {
     List<EventInfoDTO> getActiveEvents();
 
     /**
+     * @param filter the selected types, statuses and commission methods
+     * @return general details of the events that match all three selections, in the order of the
+     *         data file
+     */
+    List<EventInfoDTO> getEvents(EventFilterDTO filter);
+
+    /**
      * @return general details of all the users in the system, in the order of the data file
      */
     List<UserInfoDTO> getAllUsers();
@@ -71,6 +81,24 @@ public interface GuessMarketEngine {
      * @return the order books, statistics, participants and trades of that event
      */
     OrderBookStateDTO getOrderBookState(int eventId);
+
+    /**
+     * The value of every option of an event over time: the value right after the event was opened,
+     * and one point for every action that could change it, until the event was closed.
+     *
+     * @param eventId id of the requested event
+     * @return one series of points per option, in the order of the options
+     */
+    List<PriceHistoryDTO> getEventPriceHistory(int eventId);
+
+    /**
+     * The balance of a user over time: the amount the user started with, and one point for every
+     * change since then.
+     *
+     * @param userName name of the requested user
+     * @return the points, in the order they happened
+     */
+    List<HistoryPointDTO> getUserBalanceHistory(String userName);
 
     /**
      * Opens an inactive event for trading. Only the market maker of the event may open it, and it

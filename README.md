@@ -6,6 +6,14 @@ decides it. An event is traded either with the LMSR pricing rule or through an o
 asks and minting, in the spirit of Polymarket). This stage of the project replaces the console of
 exercise 1 with a JavaFX application on top of the same passive engine.
 
+## Implemented bonus
+
+**Graphs (8 points)** - a price over time graph for every event and a balance over time graph for
+every user. Both are always on, there is nothing to turn on: the price graph is part of the event
+details on both screens, and the balance graph is part of the users screen. The engine records a
+point whenever the value actually changes, so the graphs describe the whole session from the moment
+the data file was loaded.
+
 ## Requirements
 
 * JDK 25
@@ -21,7 +29,7 @@ exercise 1 with a JavaFX application on top of the same passive engine.
 | `dto`    | `gm.dto`     | Immutable data transfer objects (records) that carry information between the engine and any user interface |
 | `engine` | `gm.engine`  | The system itself: the events, the pricing rules, loading and validating the data file, and the engine interface |
 | `ui`     | `gm.ui`      | The console application of exercise 1. Kept for reference only and not built since exercise 2: the engine now requires a user for every action, which that console does not have |
-| `ui-fx`  | `gm.ui.fx`   | The JavaFX application of exercise 2: a header that loads a data file in the background, the events screen (filters, table, event details) and the users screen (balances, the events of a user, event details). The event details show the options and history of an LMSR event, or the order book of every option (with LAST/BID/ASK/MID/SPREAD), the participants and trades of an order book event, and offer the actions of the acting user: open, buy, place an order, close. Every screen is an FXML file with its own controller, connected by `app.AppController` |
+| `ui-fx`  | `gm.ui.fx`   | The JavaFX application of exercise 2: a header that loads a data file in the background, the events screen (filters, table, event details) and the users screen (balances, the events of a user, event details). The event details show the options and history of an LMSR event, or the order book of every option (with LAST/BID/ASK/MID/SPREAD), the participants and trades of an order book event, and offer the actions of the acting user: open, buy, place an order, close. Every screen is an FXML file with its own controller, connected by `app.AppController`. `common.HistoryChart` draws the two graphs of the bonus |
 
 Every user interface module talks to the engine only through the `gm.engine.api.GuessMarketEngine`
 interface, and receives answers only as `gm.dto` objects, so the inner objects of the engine are
@@ -47,10 +55,15 @@ The run scripts also work from inside the `jars` folder, which is the folder tha
 * **Events** - every event with its status, type, commission, market maker and account balance,
   filtered by type, status and commission method (each with *All*).
 * **Users** - every user with the balance; for the selected user, the events the user is the market
-  maker of or takes part in.
+  maker of or takes part in, and *Balance over time* - the amount the user started with and every
+  change since then.
 * **Event details** (on both screens) - an LMSR event shows its option values and trading history;
   an order book event shows the order book of every option with LAST / BID / ASK / MID / SPREAD, the
-  participants with their holdings and the trades, and the position of the acting user.
+  participants with their holdings and the trades, and the position of the acting user. Below them,
+  *Price over time* draws the value of one share of every option, from the moment the event was
+  opened until it was closed (where the winning option is worth its full payout and the other one
+  nothing). An event that was never opened, and an order book option that never had both a bid and
+  an ask, have no prices to draw yet.
 * **Actions** - performed by the acting user (chosen on the events screen, the selected user on the
   users screen): *Open event* and *Close event* for the market maker, *Buy* shares of an LMSR event,
   *Place order* (buy or sell, quantity, option, price) in an order book event.

@@ -1,5 +1,8 @@
 package gm.engine.core;
 
+import gm.dto.CommissionType;
+import gm.dto.EventStatus;
+import gm.dto.EventType;
 import gm.engine.exception.DuplicateEventIdException;
 import gm.engine.exception.DuplicateUserNameException;
 import gm.engine.exception.EventNotFoundException;
@@ -13,6 +16,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * The system itself: all the events that are currently loaded.
@@ -74,6 +78,22 @@ public class GuessMarket implements Serializable {
             }
         }
         return activeEvents;
+    }
+
+    /**
+     * @return the events whose type, status and commission method are all among the given values, in
+     *         the order of the data file
+     */
+    public List<Event> getEvents(Set<EventType> types, Set<EventStatus> statuses,
+                                 Set<CommissionType> commissionTypes) {
+        List<Event> matchingEvents = new ArrayList<>();
+        for (Event event : eventsById.values()) {
+            if (types.contains(event.getType()) && statuses.contains(event.getStatus())
+                    && commissionTypes.contains(event.getCommissionType())) {
+                matchingEvents.add(event);
+            }
+        }
+        return matchingEvents;
     }
 
     public int getEventCount() {

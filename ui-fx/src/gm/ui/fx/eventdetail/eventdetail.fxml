@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
@@ -144,6 +145,21 @@
                                      styleClass="numeric"/>
                     </columns>
                 </TableView>
+            </VBox>
+
+            <VBox fx:id="priceChartBox" spacing="4">
+                <Label text="Price over time" styleClass="section-title"/>
+                <Label fx:id="priceChartPlaceholder" styleClass="placeholder" wrapText="true"
+                       text="No prices yet. The graph starts when the event is opened and traded."/>
+                <LineChart fx:id="priceChart" prefHeight="240" minHeight="180" animated="false"
+                           legendSide="BOTTOM">
+                    <xAxis>
+                        <NumberAxis label="Seconds since the first price" forceZeroInRange="false"/>
+                    </xAxis>
+                    <yAxis>
+                        <NumberAxis label="Value of one share" forceZeroInRange="false"/>
+                    </yAxis>
+                </LineChart>
             </VBox>
         </VBox>
     </VBox>

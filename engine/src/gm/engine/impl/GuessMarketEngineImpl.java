@@ -1,11 +1,14 @@
 package gm.engine.impl;
 
+import gm.dto.EventFilterDTO;
 import gm.dto.EventInfoDTO;
+import gm.dto.HistoryPointDTO;
 import gm.dto.LoadResultDTO;
 import gm.dto.MarketStateDTO;
 import gm.dto.OrderBookStateDTO;
 import gm.dto.OrderRequestDTO;
 import gm.dto.OrderResultDTO;
+import gm.dto.PriceHistoryDTO;
 import gm.dto.PurchaseResultDTO;
 import gm.dto.UserDetailsDTO;
 import gm.dto.UserInfoDTO;
@@ -55,6 +58,16 @@ public class GuessMarketEngineImpl implements GuessMarketEngine {
     }
 
     @Override
+    public List<EventInfoDTO> getEvents(EventFilterDTO filter) {
+        GuessMarket loadedMarket = requireLoadedMarket();
+        if (filter == null) {
+            return dtoFactory.toEventInfoList(loadedMarket.getAllEvents());
+        }
+        return dtoFactory.toEventInfoList(
+                loadedMarket.getEvents(filter.types(), filter.statuses(), filter.commissionTypes()));
+    }
+
+    @Override
     public List<UserInfoDTO> getAllUsers() {
         return dtoFactory.toUserInfoList(requireLoadedMarket().getAllUsers());
     }
@@ -73,6 +86,16 @@ public class GuessMarketEngineImpl implements GuessMarketEngine {
     @Override
     public OrderBookStateDTO getOrderBookState(int eventId) {
         return dtoFactory.toOrderBookState(requireLoadedMarket().getEvent(eventId));
+    }
+
+    @Override
+    public List<PriceHistoryDTO> getEventPriceHistory(int eventId) {
+        return dtoFactory.toPriceHistory(requireLoadedMarket().getEvent(eventId));
+    }
+
+    @Override
+    public List<HistoryPointDTO> getUserBalanceHistory(String userName) {
+        return dtoFactory.toBalanceHistory(requireLoadedMarket().getUser(userName));
     }
 
     @Override

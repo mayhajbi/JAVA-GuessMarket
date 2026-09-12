@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
@@ -55,6 +56,18 @@
                         <TableColumn fx:id="userEventRoleColumn" text="Role" prefWidth="160"/>
                     </columns>
                 </TableView>
+                <Label text="Balance over time" styleClass="section-title"/>
+                <Label fx:id="balanceChartPlaceholder" styleClass="placeholder" wrapText="true"
+                       text="Only the amount this user started with. The graph grows with every action."/>
+                <LineChart fx:id="balanceChart" prefHeight="200" minHeight="160" animated="false"
+                           legendVisible="false">
+                    <xAxis>
+                        <NumberAxis label="Seconds since the file was loaded" forceZeroInRange="false"/>
+                    </xAxis>
+                    <yAxis>
+                        <NumberAxis label="Balance" forceZeroInRange="false"/>
+                    </yAxis>
+                </LineChart>
                 <fx:include fx:id="eventDetailComponent" source="../eventdetail/eventdetail.fxml"
                             VBox.vgrow="ALWAYS"/>
             </VBox>

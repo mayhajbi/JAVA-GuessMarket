@@ -1,18 +1,24 @@
 package gm.ui.fx.users;
 
+import gm.dto.HistoryPointDTO;
 import gm.dto.UserDetailsDTO;
 import gm.dto.UserEventDTO;
 import gm.dto.UserInfoDTO;
 import gm.engine.api.GuessMarketEngine;
 import gm.ui.fx.app.AppController;
 import gm.ui.fx.common.Formats;
+import gm.ui.fx.common.HistoryChart;
 import gm.ui.fx.common.ViewUtils;
 import gm.ui.fx.eventdetail.EventDetailController;
 import javafx.fxml.FXML;
+import javafx.scene.chart.LineChart;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.VBox;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * The users screen: every user with the balance, and for the selected user the events the user is
@@ -34,6 +40,8 @@ public class UsersController {
     @FXML private TableColumn<UserEventDTO, String> userEventStatusColumn;
     @FXML private TableColumn<UserEventDTO, String> userEventTypeColumn;
     @FXML private TableColumn<UserEventDTO, String> userEventRoleColumn;
+    @FXML private Label balanceChartPlaceholder;
+    @FXML private LineChart<Number, Number> balanceChart;
     @FXML private EventDetailController eventDetailComponentController;
 
     private GuessMarketEngine engine;
@@ -100,6 +108,7 @@ public class UsersController {
         userNameLabel.setText(details.name());
         balanceLabel.setText(Formats.decimal(details.balance()));
         ViewUtils.show(blockedLabel, details.blocked());
+        showBalanceChart(details.name());
         userEventsTable.getItems().setAll(details.events());
         if (selectedEvent != null) {
             for (UserEventDTO row : userEventsTable.getItems()) {
@@ -109,6 +118,22 @@ public class UsersController {
                 }
             }
         }
+    }
+
+    /**
+     * Draws the balance of the user over time. A user that did nothing yet has only the amount of the
+     * data file, which is a message rather than a line.
+     */
+    private void showBalanceChart(String userName) {
+        List<HistoryPointDTO> points = engine.getUserBalanceHistory(userName);
+        boolean hasChanges = points.size() > 1;
+        if (hasChanges) {
+            HistoryChart.fill(balanceChart, Map.of(userName, points));
+        } else {
+            balanceChart.getData().clear();
+        }
+        ViewUtils.show(balanceChart, hasChanges);
+        ViewUtils.show(balanceChartPlaceholder, !hasChanges);
     }
 
     private void showUserEvent(UserEventDTO row) {

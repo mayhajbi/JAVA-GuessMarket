@@ -3,6 +3,7 @@ package gm.ui.fx.eventdetail;
 import gm.dto.EventInfoDTO;
 import gm.dto.EventStatus;
 import gm.dto.EventType;
+import gm.dto.HistoryPointDTO;
 import gm.dto.MarketStateDTO;
 import gm.dto.OptionStateDTO;
 import gm.dto.OrderBookParticipantDTO;
@@ -11,14 +12,17 @@ import gm.dto.OrderBookTradeDTO;
 import gm.dto.OrderRequestDTO;
 import gm.dto.OrderResultDTO;
 import gm.dto.OrderSide;
+import gm.dto.PriceHistoryDTO;
 import gm.dto.PurchaseResultDTO;
 import gm.dto.TradeRecordDTO;
 import gm.dto.UserInfoDTO;
 import gm.engine.api.GuessMarketEngine;
 import gm.ui.fx.common.Dialogs;
 import gm.ui.fx.common.Formats;
+import gm.ui.fx.common.HistoryChart;
 import gm.ui.fx.common.ViewUtils;
 import javafx.fxml.FXML;
+import javafx.scene.chart.LineChart;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -33,8 +37,10 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * The details of a single event and the actions that can be performed on it. Used by both screens:
@@ -110,6 +116,9 @@ public class EventDetailController {
     @FXML private TableColumn<OrderBookTradeDTO, String> obSharesColumn;
     @FXML private TableColumn<OrderBookTradeDTO, String> obPriceColumn;
     @FXML private TableColumn<OrderBookTradeDTO, String> obCommissionColumn;
+
+    @FXML private Label priceChartPlaceholder;
+    @FXML private LineChart<Number, Number> priceChart;
 
     private final List<OptionBookView> optionBookViews = new ArrayList<>();
     private GuessMarketEngine engine;
@@ -226,7 +235,22 @@ public class EventDetailController {
         ViewUtils.show(lmsrBox, isLmsr);
         ViewUtils.show(orderBookBox, !isLmsr);
         fillOptionChoices(currentEvent.optionNames());
+        showPriceChart();
         updateActions();
+    }
+
+    /**
+     * Draws the value of every option of the shown event over time, one line per option. An event
+     * that was never opened, and an order book option that was never quoted, have nothing to draw.
+     */
+    private void showPriceChart() {
+        Map<String, List<HistoryPointDTO>> pointsByOption = new LinkedHashMap<>();
+        for (PriceHistoryDTO series : engine.getEventPriceHistory(currentEvent.id())) {
+            pointsByOption.put(series.optionName(), series.points());
+        }
+        boolean hasPrices = HistoryChart.fill(priceChart, pointsByOption);
+        ViewUtils.show(priceChart, hasPrices);
+        ViewUtils.show(priceChartPlaceholder, !hasPrices);
     }
 
     public void clear() {
@@ -238,6 +262,7 @@ public class EventDetailController {
         historyTable.getItems().clear();
         participantsTable.getItems().clear();
         orderBookTradesTable.getItems().clear();
+        priceChart.getData().clear();
     }
 
     @FXML

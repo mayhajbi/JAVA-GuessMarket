@@ -4,7 +4,9 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.Pane;
 
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 /**
@@ -40,8 +42,17 @@ class FilterGroup<T> {
         container.getChildren().addAll(valueButtons.values());
     }
 
-    boolean accepts(T value) {
-        return valueButtons.get(value).isSelected();
+    /**
+     * @return the values whose buttons are currently selected
+     */
+    Set<T> selectedValues() {
+        Set<T> selected = new LinkedHashSet<>();
+        for (Map.Entry<T, ToggleButton> entry : valueButtons.entrySet()) {
+            if (entry.getValue().isSelected()) {
+                selected.add(entry.getKey());
+            }
+        }
+        return selected;
     }
 
     private boolean areAllSelected() {

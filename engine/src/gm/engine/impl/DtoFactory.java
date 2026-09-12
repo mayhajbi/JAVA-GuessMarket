@@ -1,6 +1,7 @@
 package gm.engine.impl;
 
 import gm.dto.EventInfoDTO;
+import gm.dto.HistoryPointDTO;
 import gm.dto.MarketStateDTO;
 import gm.dto.OptionStateDTO;
 import gm.dto.OrderBookOptionDTO;
@@ -8,12 +9,14 @@ import gm.dto.OrderBookParticipantDTO;
 import gm.dto.OrderBookStateDTO;
 import gm.dto.OrderBookTradeDTO;
 import gm.dto.OrderDTO;
+import gm.dto.PriceHistoryDTO;
 import gm.dto.TradeRecordDTO;
 import gm.dto.UserDetailsDTO;
 import gm.dto.UserEventDTO;
 import gm.dto.UserInfoDTO;
 import gm.engine.core.Event;
 import gm.engine.core.EventOption;
+import gm.engine.core.HistoryPoint;
 import gm.engine.core.Trade;
 import gm.engine.core.User;
 import gm.engine.core.orderbook.Order;
@@ -77,6 +80,33 @@ class DtoFactory {
             userInfoList.add(toUserInfo(user));
         }
         return userInfoList;
+    }
+
+    /**
+     * The value of every option of the event over time, one series per option.
+     */
+    List<PriceHistoryDTO> toPriceHistory(Event event) {
+        List<PriceHistoryDTO> series = new ArrayList<>();
+        for (int index = 0; index < event.getOptionCount(); index++) {
+            series.add(new PriceHistoryDTO(event.getOptionName(index),
+                    toHistoryPoints(event.getPriceHistory(index))));
+        }
+        return series;
+    }
+
+    /**
+     * The balance of the account of the user over time.
+     */
+    List<HistoryPointDTO> toBalanceHistory(User user) {
+        return toHistoryPoints(user.getAccount().getBalanceHistory());
+    }
+
+    private List<HistoryPointDTO> toHistoryPoints(List<HistoryPoint> points) {
+        List<HistoryPointDTO> pointDtos = new ArrayList<>();
+        for (HistoryPoint point : points) {
+            pointDtos.add(new HistoryPointDTO(point.getTimeMillis(), point.getValue()));
+        }
+        return pointDtos;
     }
 
     MarketStateDTO toMarketState(Event event) {
