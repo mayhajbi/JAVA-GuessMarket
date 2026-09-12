@@ -444,6 +444,15 @@ public class EventDetailController {
         return text.toString();
     }
 
+    /**
+     * @return the name of the user who performs the actions here, or {@code null} when none is
+     *         chosen. Used to start the form of a new event with the user already at hand.
+     */
+    public String actingUserName() {
+        UserInfoDTO user = actingUser();
+        return user == null ? null : user.name();
+    }
+
     private UserInfoDTO actingUser() {
         if (isActingUserFixed) {
             return fixedActingUser;

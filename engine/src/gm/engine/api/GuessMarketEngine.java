@@ -5,6 +5,7 @@ import gm.dto.EventInfoDTO;
 import gm.dto.HistoryPointDTO;
 import gm.dto.LoadResultDTO;
 import gm.dto.MarketStateDTO;
+import gm.dto.NewEventRequestDTO;
 import gm.dto.OrderBookStateDTO;
 import gm.dto.OrderRequestDTO;
 import gm.dto.OrderResultDTO;
@@ -99,6 +100,16 @@ public interface GuessMarketEngine {
      * @return the points, in the order they happened
      */
     List<HistoryPointDTO> getUserBalanceHistory(String userName);
+
+    /**
+     * Creates a new event on behalf of a user, who becomes its market maker (bonus). The event is
+     * created inactive and gets an id no other event uses; the same user then opens it like any
+     * other event of theirs. Every rule a data file has to obey is checked here as well.
+     *
+     * @param request the details of the event, including the fields of the chosen trading method
+     * @return the details of the event that was created
+     */
+    EventInfoDTO createEvent(NewEventRequestDTO request);
 
     /**
      * Opens an inactive event for trading. Only the market maker of the event may open it, and it

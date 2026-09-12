@@ -23,6 +23,14 @@ in when a data file finished loading (0.8s), the name of an event is pulsed when
 closed (0.6s), and the details of an event slide in when a different event is chosen (0.5s).
 **The application starts with the animations turned off.**
 
+**Creating an event (10 points)** - *New event...* on the events screen opens a form where a user
+creates an event of their own and becomes its market maker. The form asks for the details every
+event has, and then only the fields of the trading method that was chosen: the liquidity (b) of an
+LMSR event, or the base value (d), the initial investment and whether minting is allowed of an order
+book event. The event is created inactive with an id no other event uses, and the same user opens,
+trades in and closes it like any other event of theirs. Always on. Every rule a data file has to
+obey is checked here as well - the engine shares one validator between the two ways in.
+
 ## Requirements
 
 * JDK 25
@@ -36,9 +44,9 @@ closed (0.6s), and the details of an event slide in when a different event is ch
 | Module   | Package      | Role |
 |----------|--------------|------|
 | `dto`    | `gm.dto`     | Immutable data transfer objects (records) that carry information between the engine and any user interface |
-| `engine` | `gm.engine`  | The system itself: the events, the pricing rules, loading and validating the data file, and the engine interface |
+| `engine` | `gm.engine`  | The system itself: the events, the pricing rules, loading and validating the data file, and the engine interface. `core.EventValidator` holds the rules an event has to obey, whether it came from a data file or from a user |
 | `ui`     | `gm.ui`      | The console application of exercise 1. Kept for reference only and not built since exercise 2: the engine now requires a user for every action, which that console does not have |
-| `ui-fx`  | `gm.ui.fx`   | The JavaFX application of exercise 2: a header that loads a data file in the background, the events screen (filters, table, event details) and the users screen (balances, the events of a user, event details). The event details show the options and history of an LMSR event, or the order book of every option (with LAST/BID/ASK/MID/SPREAD), the participants and trades of an order book event, and offer the actions of the acting user: open, buy, place an order, close. Every screen is an FXML file with its own controller, connected by `app.AppController`. `common.HistoryChart` draws the graphs, `common.Skin` the skins and `common.Animations` the animations of the bonuses |
+| `ui-fx`  | `gm.ui.fx`   | The JavaFX application of exercise 2: a header that loads a data file in the background, the events screen (filters, table, event details) and the users screen (balances, the events of a user, event details). The event details show the options and history of an LMSR event, or the order book of every option (with LAST/BID/ASK/MID/SPREAD), the participants and trades of an order book event, and offer the actions of the acting user: open, buy, place an order, close. Every screen is an FXML file with its own controller, connected by `app.AppController`. `common.HistoryChart` draws the graphs, `common.Skin` the skins, `common.Animations` the animations and `newevent.NewEventController` the form of a new event |
 
 Every user interface module talks to the engine only through the `gm.engine.api.GuessMarketEngine`
 interface, and receives answers only as `gm.dto` objects, so the inner objects of the engine are
@@ -77,6 +85,8 @@ The run scripts also work from inside the `jars` folder, which is the folder tha
   users screen): *Open event* and *Close event* for the market maker, *Buy* shares of an LMSR event,
   *Place order* (buy or sell, quantity, option, price) in an order book event.
 
+* **New event...** (events screen, bonus) - the form of a new event. It stays open until the engine
+  accepted the event, so a rejected event keeps whatever was already typed into it.
 * **Skin / Animations** (header, both bonuses) - both start off, exactly as submitted, and are
   switched on by hand: a skin applies at once to the whole window, and the animations play from the
   next action.

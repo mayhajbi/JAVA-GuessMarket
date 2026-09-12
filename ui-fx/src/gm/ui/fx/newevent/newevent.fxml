@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<DialogPane xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="gm.ui.fx.newevent.NewEventController" prefWidth="520" stylesheets="@../app/app.css">
+    <content>
+        <VBox spacing="10" minWidth="440">
+            <padding>
+                <Insets top="6" right="4" bottom="4" left="4"/>
+            </padding>
+
+            <GridPane hgap="12" vgap="7">
+                <columnConstraints>
+                    <ColumnConstraints minWidth="120"/>
+                    <ColumnConstraints hgrow="ALWAYS"/>
+                </columnConstraints>
+                <Label text="Created by" styleClass="field-name" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                <ComboBox fx:id="userComboBox" maxWidth="Infinity" promptText="Choose a user"
+                          GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                <Label text="Name" styleClass="field-name" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                <TextField fx:id="nameField" promptText="What is the event called"
+                           GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                <Label text="Description" styleClass="field-name" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                <TextArea fx:id="descriptionArea" prefRowCount="2" wrapText="true"
+                          promptText="What the event is about and how it will be decided"
+                          GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                <Label text="Option 1" styleClass="field-name" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                <TextField fx:id="firstOptionField" promptText="First possible outcome"
+                           GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+                <Label text="Option 2" styleClass="field-name" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                <TextField fx:id="secondOptionField" promptText="Second possible outcome"
+                           GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+                <Label text="Commission" styleClass="field-name" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+                <HBox spacing="8" alignment="CENTER_LEFT" GridPane.rowIndex="5" GridPane.columnIndex="1">
+                    <TextField fx:id="commissionField" prefWidth="70" promptText="0 - 90"/>
+                    <Label text="\%" styleClass="field-name"/>
+                    <ComboBox fx:id="commissionTypeComboBox" prefWidth="150"/>
+                </HBox>
+            </GridPane>
+
+            <HBox spacing="12" alignment="CENTER_LEFT">
+                <Label text="Trading method" styleClass="field-name" minWidth="120"/>
+                <fx:define>
+                    <ToggleGroup fx:id="methodGroup"/>
+                </fx:define>
+                <RadioButton fx:id="lmsrToggle" text="LMSR" toggleGroup="$methodGroup" selected="true"/>
+                <RadioButton fx:id="orderBookToggle" text="Order Book" toggleGroup="$methodGroup"/>
+            </HBox>
+
+            <VBox fx:id="lmsrFields" spacing="6" styleClass="actions">
+                <Label text="LMSR" styleClass="section-title"/>
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <Label text="Liquidity (b)" styleClass="field-name" minWidth="110"/>
+                    <TextField fx:id="liquidityField" prefWidth="90" promptText="100"/>
+                    <Label text="A positive whole number. The larger it is, the slower the prices move."
+                           styleClass="placeholder" wrapText="true" HBox.hgrow="ALWAYS"/>
+                </HBox>
+            </VBox>
+
+            <VBox fx:id="orderBookFields" spacing="6" styleClass="actions">
+                <Label text="Order Book" styleClass="section-title"/>
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <Label text="Base value (d)" styleClass="field-name" minWidth="110"/>
+                    <TextField fx:id="baseValueField" prefWidth="90" promptText="1"/>
+                    <Label text="What one winning share pays, and the highest price allowed."
+                           styleClass="placeholder" wrapText="true" HBox.hgrow="ALWAYS"/>
+                </HBox>
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <Label text="Initial investment" styleClass="field-name" minWidth="110"/>
+                    <TextField fx:id="initialInvestmentField" prefWidth="90" promptText="100"/>
+                    <Label text="Paid on opening, for one pair of shares per base value. Must divide by d."
+                           styleClass="placeholder" wrapText="true" HBox.hgrow="ALWAYS"/>
+                </HBox>
+                <CheckBox fx:id="allowMintCheckBox" text="Allow minting new pairs of shares"/>
+            </VBox>
+        </VBox>
+    </content>
+</DialogPane>

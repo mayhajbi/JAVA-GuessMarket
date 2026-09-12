@@ -48,6 +48,17 @@ public class GuessMarket implements Serializable {
     }
 
     /**
+     * @return an id no event in the system uses, for an event a user creates (bonus)
+     */
+    public int nextEventId() {
+        int highestId = 0;
+        for (int id : eventsById.keySet()) {
+            highestId = Math.max(highestId, id);
+        }
+        return highestId + 1;
+    }
+
+    /**
      * @throws EventNotFoundException when no event with this id exists
      */
     public Event getEvent(int eventId) {

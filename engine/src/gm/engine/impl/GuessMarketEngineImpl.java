@@ -5,6 +5,7 @@ import gm.dto.EventInfoDTO;
 import gm.dto.HistoryPointDTO;
 import gm.dto.LoadResultDTO;
 import gm.dto.MarketStateDTO;
+import gm.dto.NewEventRequestDTO;
 import gm.dto.OrderBookStateDTO;
 import gm.dto.OrderRequestDTO;
 import gm.dto.OrderResultDTO;
@@ -13,11 +14,16 @@ import gm.dto.PurchaseResultDTO;
 import gm.dto.UserDetailsDTO;
 import gm.dto.UserInfoDTO;
 import gm.engine.api.GuessMarketEngine;
+import gm.dto.EventType;
 import gm.engine.core.Event;
+import gm.engine.core.EventOption;
+import gm.engine.core.EventValidator;
 import gm.engine.core.GuessMarket;
 import gm.engine.core.Trade;
 import gm.engine.core.User;
+import gm.engine.core.method.LmsrTradingMethod;
 import gm.engine.core.orderbook.OrderOutcome;
+import gm.engine.exception.InvalidEventDetailsException;
 import gm.engine.exception.InvalidOrderException;
 import gm.engine.exception.NoSystemLoadedException;
 import gm.engine.state.SystemStateSerializer;
@@ -96,6 +102,57 @@ public class GuessMarketEngineImpl implements GuessMarketEngine {
     @Override
     public List<HistoryPointDTO> getUserBalanceHistory(String userName) {
         return dtoFactory.toBalanceHistory(requireLoadedMarket().getUser(userName));
+    }
+
+    @Override
+    public EventInfoDTO createEvent(NewEventRequestDTO request) {
+        if (request == null) {
+            throw InvalidEventDetailsException.missingName();
+        }
+        GuessMarket loadedMarket = requireLoadedMarket();
+        User marketMaker = loadedMarket.getUser(request.userName());
+
+        String name = trim(request.name());
+        EventValidator.requireName(name);
+        EventValidator.requireDescription(name, request.description());
+        EventValidator.requireOptionNames(name, request.firstOption(), request.secondOption());
+
+        int id = loadedMarket.nextEventId();
+        EventValidator.requireCommissionInRange(id, name, request.commissionPercent());
+        Event event = buildEvent(request, id, name);
+        event.setMarketMaker(marketMaker);
+        loadedMarket.addEvent(event);
+        return dtoFactory.toEventInfo(event);
+    }
+
+    /**
+     * Builds the event itself, once its shared details are known to be legal, out of the fields that
+     * belong to the trading method the user chose.
+     */
+    private Event buildEvent(NewEventRequestDTO request, int id, String name) {
+        String description = trim(request.description());
+        List<EventOption> options = List.of(new EventOption(trim(request.firstOption())),
+                new EventOption(trim(request.secondOption())));
+        EventValidator.requireTwoOptions(id, name, options.size());
+
+        if (request.type() == EventType.LMSR) {
+            EventValidator.requireLiquidityPositive(id, name, request.liquidity());
+            return Event.lmsr(id, name, description, request.commissionPercent(),
+                    request.commissionType(), options, new LmsrTradingMethod(request.liquidity()));
+        }
+        EventValidator.requireBaseValuePositive(id, name, request.baseValue());
+        EventValidator.requireInitialInvestment(id, name, request.initialInvestment(),
+                request.baseValue());
+        return Event.orderBook(id, name, description, request.commissionPercent(),
+                request.commissionType(), options, request.baseValue(), request.allowMint(),
+                request.initialInvestment());
+    }
+
+    /**
+     * Cleans a value a user typed the same way a value out of a data file is cleaned.
+     */
+    private static String trim(String value) {
+        return value == null ? "" : value.trim().replaceAll("\s+", " ");
     }
 
     @Override

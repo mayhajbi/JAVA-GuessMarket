@@ -11,7 +11,12 @@
             <padding>
                 <Insets top="10" right="10" bottom="10" left="10"/>
             </padding>
-            <Label text="Events" styleClass="section-title"/>
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label text="Events" styleClass="section-title"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button fx:id="newEventButton" text="New event..." onAction="#onNewEvent"
+                        minWidth="-Infinity"/>
+            </HBox>
             <GridPane hgap="8" vgap="6">
                 <columnConstraints>
                     <ColumnConstraints minWidth="80"/>

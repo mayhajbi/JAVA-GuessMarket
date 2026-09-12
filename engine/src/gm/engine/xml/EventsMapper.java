@@ -3,14 +3,13 @@ package gm.engine.xml;
 import gm.dto.CommissionType;
 import gm.engine.core.Event;
 import gm.engine.core.EventOption;
+import gm.engine.core.EventValidator;
 import gm.engine.core.GuessMarket;
 import gm.engine.core.User;
 import gm.engine.core.method.LmsrTradingMethod;
 import gm.engine.core.method.TradingMethod;
 import gm.engine.exception.InvalidCommissionException;
 import gm.engine.exception.InvalidInitialCashException;
-import gm.engine.exception.InvalidLiquidityException;
-import gm.engine.exception.InvalidOptionsException;
 import gm.engine.exception.InvalidOrderBookException;
 import gm.engine.exception.MarketMakerEventNotFoundException;
 import gm.engine.exception.MissingMarketMakerException;
@@ -43,9 +42,6 @@ import java.util.List;
  */
 public class EventsMapper {
 
-    private static final int MIN_COMMISSION = 0;
-    private static final int MAX_COMMISSION = 90;
-    private static final int REQUIRED_OPTIONS = 2;
     private static final String ALLOW_MINT_TRUE = "true";
     private static final String ALLOW_MINT_FALSE = "false";
 
@@ -123,9 +119,7 @@ public class EventsMapper {
         if (value == null) {
             throw new MissingXmlDataException("commission", location);
         }
-        if (value < MIN_COMMISSION || value > MAX_COMMISSION) {
-            throw InvalidCommissionException.outOfRange(id, name, value);
-        }
+        EventValidator.requireCommissionInRange(id, name, value);
         return value;
     }
 
@@ -158,9 +152,7 @@ public class EventsMapper {
             throw new MissingXmlDataException("GM-options", location);
         }
         List<String> optionNames = xmlOptions.getOptionList();
-        if (optionNames.size() != REQUIRED_OPTIONS) {
-            throw new InvalidOptionsException(id, name, optionNames.size());
-        }
+        EventValidator.requireTwoOptions(id, name, optionNames.size());
 
         List<EventOption> options = new ArrayList<>();
         for (String optionName : optionNames) {
@@ -191,9 +183,7 @@ public class EventsMapper {
         if (orderBook != null) {
             int baseValue = readOrderBookBaseValue(orderBook, id, name, location);
             int initialInvestment = readOrderBookInitialInvestment(orderBook, id, name, location);
-            if (initialInvestment % baseValue != 0) {
-                throw InvalidOrderBookException.initialNotDivisible(id, name, initialInvestment, baseValue);
-            }
+            EventValidator.requireInitialInvestment(id, name, initialInvestment, baseValue);
             boolean allowMint = readOrderBookAllowMint(orderBook, id, name, location);
             return Event.orderBook(id, name, description, commissionPercent, commissionType, options,
                     baseValue, allowMint, initialInvestment);
@@ -206,9 +196,7 @@ public class EventsMapper {
         if (liquidity == null) {
             throw new MissingXmlDataException("b", location);
         }
-        if (liquidity <= 0) {
-            throw new InvalidLiquidityException(id, name, liquidity);
-        }
+        EventValidator.requireLiquidityPositive(id, name, liquidity);
         return new LmsrTradingMethod(liquidity);
     }
 
@@ -217,9 +205,7 @@ public class EventsMapper {
         if (d == null) {
             throw new MissingXmlDataException("d attribute of <GM-order-book>", location);
         }
-        if (d <= 0) {
-            throw InvalidOrderBookException.baseValueNotPositive(id, name, d);
-        }
+        EventValidator.requireBaseValuePositive(id, name, d);
         return d;
     }
 
@@ -228,9 +214,6 @@ public class EventsMapper {
         Integer initial = orderBook.getInitial();
         if (initial == null) {
             throw new MissingXmlDataException("initial attribute of <GM-order-book>", location);
-        }
-        if (initial < 0) {
-            throw InvalidOrderBookException.initialInvestmentNegative(id, name, initial);
         }
         return initial;
     }
