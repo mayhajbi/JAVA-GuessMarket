@@ -40,7 +40,8 @@ Every window can be resized freely; when it is small, the screens scroll instead
   *Midnight* (dark, sans serif) and *Parchment* (warm paper, serif). Each changes the background,
   the buttons, and the font and its size of every label - including the message dialogs and the form
   of a new event. The application starts in the regular look.
-* **Animations** - *Animations* in the header turns on three animations: the window fades in when a
-  data file finished loading (0.8s), the name of an event is pulsed when it is opened or closed
-  (0.6s), and the details of an event slide in when a different event is chosen (0.5s). The
-  application starts with the animations turned off.
+* **Animations** - *Animations* in the header turns on three animations: the window fades in once a
+  data file was loaded successfully (0.9s), the status of an event pulses after it was opened or
+  closed, as soon as the confirmation message is closed (0.7s), and the details of an event slide in
+  from the side when a different event is chosen (0.45s). A file that failed to load plays none of
+  them. The application starts with the animations turned off.
