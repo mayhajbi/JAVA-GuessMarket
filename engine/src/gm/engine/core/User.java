@@ -1,5 +1,7 @@
 package gm.engine.core;
 
+import gm.engine.exception.UserBlockedException;
+
 import java.io.Serializable;
 
 /**
@@ -26,5 +28,17 @@ public class User implements Serializable {
 
     public Account getAccount() {
         return account;
+    }
+
+    /**
+     * Makes sure the user may start a new action: a blocked user may not.
+     *
+     * @param action what the user tried to do, for the message (for example "buy shares")
+     * @throws UserBlockedException when the balance of the user dropped below zero at some point
+     */
+    public void requireNotBlocked(String action) {
+        if (account.isBlocked()) {
+            throw new UserBlockedException(name, action);
+        }
     }
 }

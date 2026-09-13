@@ -46,13 +46,17 @@ public final class EventValidator {
         }
     }
 
-    public static void requireOptionNames(String eventName, String firstOption, String secondOption) {
+    /**
+     * Both options must be named, and the two names must differ (ignoring case).
+     */
+    public static void requireOptionNames(int id, String eventName, String firstOption,
+                                          String secondOption) {
         if (firstOption == null || firstOption.isBlank() || secondOption == null
                 || secondOption.isBlank()) {
             throw InvalidEventDetailsException.missingOptionName(eventName);
         }
         if (firstOption.trim().equalsIgnoreCase(secondOption.trim())) {
-            throw InvalidEventDetailsException.sameOptionNames(eventName, firstOption.trim());
+            throw InvalidEventDetailsException.sameOptionNames(id, eventName, firstOption.trim());
         }
     }
 

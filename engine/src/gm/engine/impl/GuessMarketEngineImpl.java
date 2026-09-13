@@ -1,6 +1,8 @@
 package gm.engine.impl;
 
+import gm.dto.CommissionType;
 import gm.dto.EventFilterDTO;
+import gm.dto.EventStatus;
 import gm.dto.EventInfoDTO;
 import gm.dto.HistoryPointDTO;
 import gm.dto.LoadResultDTO;
@@ -30,6 +32,7 @@ import gm.engine.state.SystemStateSerializer;
 import gm.engine.util.InputText;
 import gm.engine.xml.EventsFileLoader;
 
+import java.util.EnumSet;
 import java.util.List;
 
 /**
@@ -48,8 +51,7 @@ public class GuessMarketEngineImpl implements GuessMarketEngine {
     public LoadResultDTO loadEventsFile(String xmlFilePath) {
         GuessMarket loadedMarket = fileLoader.loadFile(xmlFilePath);
         this.market = loadedMarket;
-        String cleanPath = xmlFilePath == null ? "" : InputText.stripSurroundingQuotes(xmlFilePath.trim());
-        return new LoadResultDTO(cleanPath, loadedMarket.getEventCount(),
+        return new LoadResultDTO(InputText.cleanPath(xmlFilePath), loadedMarket.getEventCount(),
                 loadedMarket.getAllUsers().size(), loadedMarket.getTotalSubsidy());
     }
 
@@ -60,7 +62,8 @@ public class GuessMarketEngineImpl implements GuessMarketEngine {
 
     @Override
     public List<EventInfoDTO> getActiveEvents() {
-        return dtoFactory.toEventInfoList(requireLoadedMarket().getActiveEvents());
+        return getEvents(new EventFilterDTO(EnumSet.allOf(EventType.class), EnumSet.of(EventStatus.ACTIVE),
+                EnumSet.allOf(CommissionType.class)));
     }
 
     @Override
@@ -111,13 +114,13 @@ public class GuessMarketEngineImpl implements GuessMarketEngine {
         }
         GuessMarket loadedMarket = requireLoadedMarket();
         User marketMaker = loadedMarket.getUser(request.userName());
-
-        String name = trim(request.name());
-        EventValidator.requireName(name);
-        EventValidator.requireDescription(name, request.description());
-        EventValidator.requireOptionNames(name, request.firstOption(), request.secondOption());
+        marketMaker.requireNotBlocked("create events");
 
         int id = loadedMarket.nextEventId();
+        String name = InputText.normalize(request.name());
+        EventValidator.requireName(name);
+        EventValidator.requireDescription(name, request.description());
+        EventValidator.requireOptionNames(id, name, request.firstOption(), request.secondOption());
         EventValidator.requireCommissionInRange(id, name, request.commissionPercent());
         Event event = buildEvent(request, id, name);
         event.setMarketMaker(marketMaker);
@@ -127,12 +130,13 @@ public class GuessMarketEngineImpl implements GuessMarketEngine {
 
     /**
      * Builds the event itself, once its shared details are known to be legal, out of the fields that
-     * belong to the trading method the user chose.
+     * belong to the trading method the user chose. The texts are cleaned the same way a value out of
+     * a data file is cleaned.
      */
     private Event buildEvent(NewEventRequestDTO request, int id, String name) {
-        String description = trim(request.description());
-        List<EventOption> options = List.of(new EventOption(trim(request.firstOption())),
-                new EventOption(trim(request.secondOption())));
+        String description = InputText.normalize(request.description());
+        List<EventOption> options = List.of(new EventOption(InputText.normalize(request.firstOption())),
+                new EventOption(InputText.normalize(request.secondOption())));
 
         if (request.type() == EventType.LMSR) {
             EventValidator.requireLiquidityPositive(id, name, request.liquidity());
@@ -145,13 +149,6 @@ public class GuessMarketEngineImpl implements GuessMarketEngine {
         return Event.orderBook(id, name, description, request.commissionPercent(),
                 request.commissionType(), options, request.baseValue(), request.allowMint(),
                 request.initialInvestment());
-    }
-
-    /**
-     * Cleans a value a user typed the same way a value out of a data file is cleaned.
-     */
-    private static String trim(String value) {
-        return value == null ? "" : value.trim().replaceAll("\s+", " ");
     }
 
     @Override

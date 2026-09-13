@@ -42,15 +42,7 @@ public enum Skin {
      */
     public static void apply(Node nodeInWindow, Skin skin) {
         current = skin;
-        List<String> styleSheets = nodeInWindow.getScene().getRoot().getStylesheets();
-        for (Skin other : values()) {
-            if (other.styleSheet != null) {
-                styleSheets.remove(other.styleSheetUrl());
-            }
-        }
-        if (skin.styleSheet != null) {
-            styleSheets.add(skin.styleSheetUrl());
-        }
+        useCurrentSkin(nodeInWindow.getScene().getRoot().getStylesheets());
     }
 
     /**
@@ -63,6 +55,13 @@ public enum Skin {
         if (!styleSheets.contains(baseUrl)) {
             styleSheets.add(baseUrl);
         }
+        useCurrentSkin(styleSheets);
+    }
+
+    /**
+     * Replaces the extra style sheet of whatever skin is in the list with the one of the current skin.
+     */
+    private static void useCurrentSkin(List<String> styleSheets) {
         for (Skin other : values()) {
             if (other.styleSheet != null) {
                 styleSheets.remove(other.styleSheetUrl());

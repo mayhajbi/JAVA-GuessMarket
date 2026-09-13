@@ -14,7 +14,6 @@ import gm.engine.exception.InvalidOptionSelectionException;
 import gm.engine.exception.InvalidOrderException;
 import gm.engine.exception.InvalidQuantityException;
 import gm.engine.exception.NotEventMarketMakerException;
-import gm.engine.exception.UserBlockedException;
 import gm.engine.exception.WrongTradingMethodException;
 
 import java.io.Serializable;
@@ -171,7 +170,7 @@ public class Event implements Serializable {
      * @return the order books of an order book event
      */
     public OrderBookMarket getOrderBook() {
-        requireOrderBook("show order books");
+        requireType(EventType.ORDER_BOOK, "show order books");
         return orderBook;
     }
 
@@ -221,7 +220,7 @@ public class Event implements Serializable {
      * @param optionIndex zero based index of the option
      */
     public double getOptionValue(int optionIndex) {
-        requireLmsr("show LMSR option values");
+        requireType(EventType.LMSR, "show LMSR option values");
         validateOptionIndex(optionIndex);
         return tradingMethod.optionValue(sharesPerOption(), optionIndex);
     }
@@ -253,7 +252,7 @@ public class Event implements Serializable {
         if (status != EventStatus.INACTIVE) {
             throw new EventAlreadyOpenedException(id, name, status);
         }
-        requireNotBlocked(user, "open the event [" + name + "]");
+        user.requireNotBlocked("open the event [" + name + "]");
 
         boolean isLmsr = type == EventType.LMSR;
         double required = isLmsr ? getInitialSubsidy() : orderBook.getInitialInvestment();
@@ -286,26 +285,21 @@ public class Event implements Serializable {
      * @return the trade that was created
      */
     public Trade buy(User buyer, int optionIndex, long quantity) {
-        requireLmsr("buy shares directly");
+        requireType(EventType.LMSR, "buy shares directly");
         requireActive();
-        requireNotBlocked(buyer, "buy shares");
+        buyer.requireNotBlocked("buy shares");
         validateOptionIndex(optionIndex);
         if (quantity <= 0) {
             throw new InvalidQuantityException(quantity);
         }
 
         double sharesCost = tradingMethod.buyCost(sharesPerOption(), optionIndex, quantity);
-        double commission = commissionType == CommissionType.ON_PURCHASE
-                ? sharesCost * commissionPercent / PERCENT
-                : 0;
+        double commission = commissionOn(sharesCost, CommissionType.ON_PURCHASE);
 
         options.get(optionIndex).addShares(quantity);
         buyer.getAccount().withdraw(sharesCost + commission);
         account.deposit(sharesCost);
-        if (commission > 0) {
-            marketMaker.getAccount().deposit(commission);
-            account.addCollectedCommission(commission);
-        }
+        payCommission(commission);
 
         Trade trade = new Trade(buyer, optionIndex, quantity, sharesCost, commission);
         trades.add(trade);
@@ -325,9 +319,9 @@ public class Event implements Serializable {
      * @param price       price per share, in whole cents, between 0.01 and d - 0.01
      */
     public OrderOutcome placeOrder(User user, OrderSide side, int optionIndex, long quantity, double price) {
-        requireOrderBook("place orders");
+        requireType(EventType.ORDER_BOOK, "place orders");
         requireActive();
-        requireNotBlocked(user, "place orders");
+        user.requireNotBlocked("place orders");
         validateOptionIndex(optionIndex);
         if (side == null) {
             throw InvalidOrderException.missingSide(id, name);
@@ -362,22 +356,17 @@ public class Event implements Serializable {
         validateOptionIndex(winningOptionIndex);
 
         boolean isLmsr = type == EventType.LMSR;
-        double payoutPerShare = isLmsr ? LMSR_PAYOUT_PER_WINNING_SHARE : orderBook.getBaseValue();
+        double payoutPerShare = payoutPerWinningShare();
         Map<User, Long> holdings = isLmsr
                 ? lmsrHoldingsOf(winningOptionIndex)
                 : orderBook.holdingsOf(winningOptionIndex);
         for (Map.Entry<User, Long> holding : holdings.entrySet()) {
             User holder = holding.getKey();
             double payout = holding.getValue() * payoutPerShare;
-            double commission = commissionType == CommissionType.ON_CLOSE
-                    ? payout * commissionPercent / PERCENT
-                    : 0;
+            double commission = commissionOn(payout, CommissionType.ON_CLOSE);
             account.withdraw(payout);
             holder.getAccount().deposit(payout - commission);
-            if (commission > 0) {
-                marketMaker.getAccount().deposit(commission);
-                account.addCollectedCommission(commission);
-            }
+            payCommission(commission);
             if (!isLmsr) {
                 orderBook.recordPayout(holder, payout, commission);
             }
@@ -398,6 +387,52 @@ public class Event implements Serializable {
         this.winningOptionIndex = winningOptionIndex;
         this.status = EventStatus.CLOSED;
         recordPrices();
+    }
+
+    /**
+     * The commission the event takes out of an amount, when its commission is collected at the moment
+     * that amount is paid.
+     *
+     * @param collectedOn the moment the amount is paid: on a purchase, or on close
+     * @return the commission, or 0 when the commission of the event is collected at the other moment
+     */
+    public double commissionOn(double amount, CommissionType collectedOn) {
+        return commissionType == collectedOn ? amount * commissionPercent / PERCENT : 0;
+    }
+
+    /**
+     * Hands a commission, which was already taken from its payer, to the market maker, and counts it
+     * as collected by the event.
+     */
+    public void payCommission(double commission) {
+        if (commission > 0) {
+            marketMaker.getAccount().deposit(commission);
+            account.addCollectedCommission(commission);
+        }
+    }
+
+    /**
+     * @return whether the user takes part in this event (participation starts with the first action)
+     */
+    public boolean hasParticipant(User user) {
+        if (type == EventType.ORDER_BOOK) {
+            return orderBook.hasParticipant(user);
+        }
+        for (Trade trade : trades) {
+            if (trade.getBuyer() == user) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Makes sure the given zero based option index belongs to this event.
+     */
+    public void validateOptionIndex(int optionIndex) {
+        if (optionIndex < 0 || optionIndex >= options.size()) {
+            throw new InvalidOptionSelectionException(id, options.size(), optionIndex + 1);
+        }
     }
 
     /**
@@ -423,10 +458,7 @@ public class Event implements Serializable {
      */
     private Double currentValueOf(int optionIndex) {
         if (status == EventStatus.CLOSED) {
-            double payoutPerShare = type == EventType.LMSR
-                    ? LMSR_PAYOUT_PER_WINNING_SHARE
-                    : orderBook.getBaseValue();
-            return winningOptionIndex == optionIndex ? payoutPerShare : 0.0;
+            return winningOptionIndex == optionIndex ? payoutPerWinningShare() : 0.0;
         }
         // Not a ternary: an order book option may have no price at all, and mixing that null with
         // the double of the LMSR branch would unbox it.
@@ -437,27 +469,11 @@ public class Event implements Serializable {
     }
 
     /**
-     * @return whether the user takes part in this event (participation starts with the first action)
+     * What every share of the winning option pays when the event is closed: 1 in an LMSR event, the
+     * base value (d) in an order book event.
      */
-    public boolean hasParticipant(User user) {
-        if (type == EventType.ORDER_BOOK) {
-            return orderBook.hasParticipant(user);
-        }
-        for (Trade trade : trades) {
-            if (trade.getBuyer() == user) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Makes sure the given zero based option index belongs to this event.
-     */
-    public void validateOptionIndex(int optionIndex) {
-        if (optionIndex < 0 || optionIndex >= options.size()) {
-            throw new InvalidOptionSelectionException(id, options.size(), optionIndex + 1);
-        }
+    private double payoutPerWinningShare() {
+        return type == EventType.LMSR ? LMSR_PAYOUT_PER_WINNING_SHARE : orderBook.getBaseValue();
     }
 
     /**
@@ -487,20 +503,8 @@ public class Event implements Serializable {
         }
     }
 
-    private void requireNotBlocked(User user, String action) {
-        if (user.getAccount().isBlocked()) {
-            throw new UserBlockedException(user.getName(), action);
-        }
-    }
-
-    private void requireLmsr(String action) {
-        if (type != EventType.LMSR) {
-            throw new WrongTradingMethodException(id, name, type, action);
-        }
-    }
-
-    private void requireOrderBook(String action) {
-        if (type != EventType.ORDER_BOOK) {
+    private void requireType(EventType requiredType, String action) {
+        if (type != requiredType) {
             throw new WrongTradingMethodException(id, name, type, action);
         }
     }

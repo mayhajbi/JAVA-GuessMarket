@@ -81,16 +81,6 @@ public class GuessMarket implements Serializable {
         return Collections.unmodifiableCollection(eventsById.values());
     }
 
-    public List<Event> getActiveEvents() {
-        List<Event> activeEvents = new ArrayList<>();
-        for (Event event : eventsById.values()) {
-            if (event.isActive()) {
-                activeEvents.add(event);
-            }
-        }
-        return activeEvents;
-    }
-
     /**
      * @return the events whose type, status and commission method are all among the given values, in
      *         the order of the data file

@@ -48,7 +48,7 @@ public interface GuessMarketEngine {
     List<EventInfoDTO> getAllEvents();
 
     /**
-     * @return general details of the events that are still active
+     * @return general details of the events that are still active, in the order of the data file
      */
     List<EventInfoDTO> getActiveEvents();
 

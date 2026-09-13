@@ -13,25 +13,18 @@ public class Order implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /** Orders with the same price are matched by the order they arrived in. */
-    private final long sequence;
     private final User owner;
     private final OrderSide side;
     private final int optionIndex;
     private final long priceCents;
     private long remainingQuantity;
 
-    Order(long sequence, User owner, OrderSide side, int optionIndex, long priceCents, long quantity) {
-        this.sequence = sequence;
+    Order(User owner, OrderSide side, int optionIndex, long priceCents, long quantity) {
         this.owner = owner;
         this.side = side;
         this.optionIndex = optionIndex;
         this.priceCents = priceCents;
         this.remainingQuantity = quantity;
-    }
-
-    public long getSequence() {
-        return sequence;
     }
 
     public User getOwner() {

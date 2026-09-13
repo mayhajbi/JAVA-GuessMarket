@@ -148,7 +148,7 @@ public class EventsController {
         Optional<ButtonType> answer = dialog.showAndWait();
         if (answer.isPresent() && answer.get() == ButtonType.OK && created[0] != null) {
             refresh();
-            reselect(created[0].id());
+            ViewUtils.selectFirst(eventsTable, event -> event.id() == created[0].id());
             Dialogs.showInformation("The event was created", "[" + created[0].name() + "] (id "
                     + created[0].id() + ") was created by " + created[0].marketMakerName()
                     + ", who is now its market maker. The event is inactive until "
@@ -184,16 +184,7 @@ public class EventsController {
         eventsCountLabel.setText("Showing " + visibleEvents.size() + " of " + totalEventCount
                 + " events");
         if (selected != null) {
-            reselect(selected.id());
-        }
-    }
-
-    private void reselect(int eventId) {
-        for (EventInfoDTO event : eventsTable.getItems()) {
-            if (event.id() == eventId) {
-                eventsTable.getSelectionModel().select(event);
-                return;
-            }
+            ViewUtils.selectFirst(eventsTable, event -> event.id() == selected.id());
         }
     }
 

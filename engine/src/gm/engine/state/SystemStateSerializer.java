@@ -62,7 +62,7 @@ public class SystemStateSerializer {
     }
 
     private Path toStateFilePath(String rawPath) {
-        String path = rawPath == null ? "" : InputText.stripSurroundingQuotes(rawPath.trim());
+        String path = InputText.cleanPath(rawPath);
         if (path.isEmpty()) {
             throw new SystemStateFileException("No file path was given. Please enter the full path of "
                     + "the file, without an extension.");

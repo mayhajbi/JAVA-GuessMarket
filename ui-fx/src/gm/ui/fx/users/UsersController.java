@@ -84,12 +84,7 @@ public class UsersController {
         usersTable.getSelectionModel().clearSelection();
         usersTable.getItems().setAll(engine.getAllUsers());
         if (selected != null) {
-            for (UserInfoDTO user : usersTable.getItems()) {
-                if (user.name().equals(selected.name())) {
-                    usersTable.getSelectionModel().select(user);
-                    return;
-                }
-            }
+            ViewUtils.selectFirst(usersTable, user -> user.name().equals(selected.name()));
         }
     }
 
@@ -111,12 +106,7 @@ public class UsersController {
         showBalanceChart(details.name());
         userEventsTable.getItems().setAll(details.events());
         if (selectedEvent != null) {
-            for (UserEventDTO row : userEventsTable.getItems()) {
-                if (row.event().id() == selectedEvent.event().id()) {
-                    userEventsTable.getSelectionModel().select(row);
-                    return;
-                }
-            }
+            ViewUtils.selectFirst(userEventsTable, row -> row.event().id() == selectedEvent.event().id());
         }
     }
 

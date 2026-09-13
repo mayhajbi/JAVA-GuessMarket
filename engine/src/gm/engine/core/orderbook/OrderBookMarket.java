@@ -32,7 +32,6 @@ public class OrderBookMarket implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private static final int CENTS_PER_UNIT = 100;
-    private static final double PERCENT = 100.0;
     private static final double WHOLE_CENTS_TOLERANCE = 1e-6;
 
     private final int baseValue;
@@ -43,7 +42,6 @@ public class OrderBookMarket implements Serializable {
     private final Long[] lastPriceCents;
     private final Map<User, Position> positions = new LinkedHashMap<>();
     private final List<OrderBookTrade> trades = new ArrayList<>();
-    private long nextSequence = 1;
 
     public OrderBookMarket(int optionCount, int baseValue, boolean mintAllowed, int initialInvestment) {
         this.baseValue = baseValue;
@@ -54,6 +52,15 @@ public class OrderBookMarket implements Serializable {
             bids.add(new ArrayList<>());
             asks.add(new ArrayList<>());
         }
+    }
+
+    /**
+     * Converts a price in whole cents into money.
+     *
+     * @return the price, or {@code null} when there is no price
+     */
+    public static Double toPrice(Long priceCents) {
+        return priceCents == null ? null : priceCents / (double) CENTS_PER_UNIT;
     }
 
     public int getBaseValue() {
@@ -73,13 +80,7 @@ public class OrderBookMarket implements Serializable {
      * included - such a user may not buy anymore, so those orders will never be carried out.
      */
     public List<Order> getBids(int optionIndex) {
-        List<Order> activeBids = new ArrayList<>();
-        for (Order bid : bids.get(optionIndex)) {
-            if (!bid.getOwner().getAccount().isBlocked()) {
-                activeBids.add(bid);
-            }
-        }
-        return Collections.unmodifiableList(activeBids);
+        return Collections.unmodifiableList(activeBids(optionIndex));
     }
 
     /**
@@ -96,20 +97,35 @@ public class OrderBookMarket implements Serializable {
 
     /** @return the highest waiting buy price of the option, or {@code null} when there is none */
     public Long getBestBidCents(int optionIndex) {
-        List<Order> activeBids = getBids(optionIndex);
-        return activeBids.isEmpty() ? null : activeBids.get(0).getPriceCents();
+        Order bestBid = bestActiveBid(optionIndex);
+        return bestBid == null ? null : bestBid.getPriceCents();
     }
 
     /** @return the lowest waiting sell price of the option, or {@code null} when there is none */
     public Long getBestAskCents(int optionIndex) {
-        List<Order> optionAsks = asks.get(optionIndex);
-        return optionAsks.isEmpty() ? null : optionAsks.get(0).getPriceCents();
+        Order bestAsk = bestAsk(optionIndex);
+        return bestAsk == null ? null : bestAsk.getPriceCents();
+    }
+
+    /**
+     * The mid price of an option: the average of its best bid and its best ask, which is the best
+     * estimate of the value of a share.
+     *
+     * @return the mid price, or {@code null} unless both a bid and an ask are waiting
+     */
+    public Double getMidPrice(int optionIndex) {
+        Long bestBid = getBestBidCents(optionIndex);
+        Long bestAsk = getBestAskCents(optionIndex);
+        if (bestBid == null || bestAsk == null) {
+            return null;
+        }
+        return (bestBid + bestAsk) / (2.0 * CENTS_PER_UNIT);
     }
 
     /**
      * The value of a single share of an option. Once the event is closed it is the base value for the
      * winning option and 0 for the other. Before that it is the mid price when both a bid and an ask
-     * are waiting (the best estimate of the value of a share), otherwise the price of the last trade.
+     * are waiting, otherwise the price of the last trade.
      *
      * @return the value, or {@code null} when the option has no price at all yet
      */
@@ -117,13 +133,8 @@ public class OrderBookMarket implements Serializable {
         if (winningOptionIndex.isPresent()) {
             return winningOptionIndex.get() == optionIndex ? (double) baseValue : 0.0;
         }
-        Long bestBid = getBestBidCents(optionIndex);
-        Long bestAsk = getBestAskCents(optionIndex);
-        if (bestBid != null && bestAsk != null) {
-            return (bestBid + bestAsk) / (2.0 * CENTS_PER_UNIT);
-        }
-        Long lastPrice = lastPriceCents[optionIndex];
-        return lastPrice == null ? null : lastPrice / (double) CENTS_PER_UNIT;
+        Double midPrice = getMidPrice(optionIndex);
+        return midPrice != null ? midPrice : toPrice(lastPriceCents[optionIndex]);
     }
 
     /** Every participant, in the order they joined the event. */
@@ -186,7 +197,7 @@ public class OrderBookMarket implements Serializable {
         // Placing an order makes the user a participant, even if the order is never matched.
         positionOf(user);
 
-        Order order = new Order(nextSequence++, user, side, optionIndex, priceCents, quantity);
+        Order order = new Order(user, side, optionIndex, priceCents, quantity);
         int tradesBefore = trades.size();
         if (side == OrderSide.BUY) {
             matchBuyOrder(event, order);
@@ -289,10 +300,10 @@ public class OrderBookMarket implements Serializable {
         long priceCents = waiting.getPriceCents();
 
         double amount = toMoney(priceCents, quantity);
-        double commission = purchaseCommission(event, amount);
+        double commission = event.commissionOn(amount, CommissionType.ON_PURCHASE);
         buyer.getAccount().withdraw(amount + commission);
         seller.getAccount().deposit(amount);
-        payCommission(event, commission);
+        event.payCommission(commission);
         positionOf(buyer).recordPurchase(optionIndex, quantity, amount, commission);
         positionOf(seller).recordSale(optionIndex, quantity, amount);
 
@@ -317,12 +328,12 @@ public class OrderBookMarket implements Serializable {
 
         double incomingAmount = toMoney(incomingPriceCents, quantity);
         double waitingAmount = toMoney(waitingPriceCents, quantity);
-        double incomingCommission = purchaseCommission(event, incomingAmount);
-        double waitingCommission = purchaseCommission(event, waitingAmount);
+        double incomingCommission = event.commissionOn(incomingAmount, CommissionType.ON_PURCHASE);
+        double waitingCommission = event.commissionOn(waitingAmount, CommissionType.ON_PURCHASE);
         incomingBuyer.getAccount().withdraw(incomingAmount + incomingCommission);
         waitingBuyer.getAccount().withdraw(waitingAmount + waitingCommission);
         event.getAccount().deposit(incomingAmount + waitingAmount);
-        payCommission(event, incomingCommission + waitingCommission);
+        event.payCommission(incomingCommission + waitingCommission);
         positionOf(incomingBuyer).recordPurchase(incomingOption, quantity, incomingAmount, incomingCommission);
         positionOf(waitingBuyer).recordPurchase(waitingOption, quantity, waitingAmount, waitingCommission);
 
@@ -365,14 +376,19 @@ public class OrderBookMarket implements Serializable {
         return optionAsks.isEmpty() ? null : optionAsks.get(0);
     }
 
-    /**
-     * The best waiting buy order of an option. Orders of users that became blocked are removed on the
-     * way, since they can no longer be carried out.
-     */
     private Order bestActiveBid(int optionIndex) {
+        List<Order> optionBids = activeBids(optionIndex);
+        return optionBids.isEmpty() ? null : optionBids.get(0);
+    }
+
+    /**
+     * The waiting buy orders of an option, best first. Orders of users that became blocked are removed
+     * on the way, since such a user may not buy anymore and those orders can never be carried out.
+     */
+    private List<Order> activeBids(int optionIndex) {
         List<Order> optionBids = bids.get(optionIndex);
         optionBids.removeIf(bid -> bid.getOwner().getAccount().isBlocked());
-        return optionBids.isEmpty() ? null : optionBids.get(0);
+        return optionBids;
     }
 
     /**
@@ -391,19 +407,6 @@ public class OrderBookMarket implements Serializable {
         return order.getSide() == OrderSide.BUY
                 ? order.getPriceCents() > other.getPriceCents()
                 : order.getPriceCents() < other.getPriceCents();
-    }
-
-    private double purchaseCommission(Event event, double amount) {
-        return event.getCommissionType() == CommissionType.ON_PURCHASE
-                ? amount * event.getCommissionPercent() / PERCENT
-                : 0;
-    }
-
-    private void payCommission(Event event, double commission) {
-        if (commission > 0) {
-            event.getMarketMaker().getAccount().deposit(commission);
-            event.getAccount().addCollectedCommission(commission);
-        }
     }
 
     private Position positionOf(User user) {

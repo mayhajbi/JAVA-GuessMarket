@@ -14,22 +14,19 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * The form a user fills in to create a new event (bonus). It collects the details that every event
  * has, and then only the fields of the trading method that was chosen.
  * <p>
- * Whatever the user types here is checked again by the engine, exactly like the content of a data
- * file. The checks in this class only save the user a rejected form: a number that is not a number
- * at all, an empty field, or a value that is obviously outside its range.
+ * Whatever the user types here is checked by the engine, exactly like the content of a data file -
+ * including the ranges of the numbers. The checks in this class only save the user a rejected form:
+ * an empty field, or a number that is not a number at all.
  */
 public class NewEventController {
 
     private static final String HEADER = "Creating an event";
-    private static final int MIN_COMMISSION = 0;
-    private static final int MAX_COMMISSION = 90;
 
     @FXML private ComboBox<String> userComboBox;
     @FXML private TextField nameField;
@@ -62,10 +59,7 @@ public class NewEventController {
      * @param preselectedName the user to start with, when one is already selected on the screen
      */
     public void setUsers(List<UserInfoDTO> users, String preselectedName) {
-        List<String> names = new ArrayList<>();
-        for (UserInfoDTO user : users) {
-            names.add(user.name());
-        }
+        List<String> names = users.stream().map(UserInfoDTO::name).toList();
         userComboBox.getItems().setAll(names);
         if (names.contains(preselectedName)) {
             userComboBox.setValue(preselectedName);
@@ -97,10 +91,6 @@ public class NewEventController {
         Integer commission = readNumber(commissionField, "the commission");
         if (commission == null) {
             return null;
-        }
-        if (commission < MIN_COMMISSION || commission > MAX_COMMISSION) {
-            return missing("The commission is " + commission + "%. It must be between "
-                    + MIN_COMMISSION + " and " + MAX_COMMISSION + ".");
         }
 
         boolean isLmsr = lmsrToggle.isSelected();

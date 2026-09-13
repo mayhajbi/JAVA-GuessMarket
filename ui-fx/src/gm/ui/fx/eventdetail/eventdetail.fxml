@@ -37,7 +37,7 @@
                 <Label fx:id="winnerValue" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
             </GridPane>
 
-            <VBox fx:id="actionsBox" spacing="8" styleClass="actions">
+            <VBox spacing="8" styleClass="actions">
                 <HBox spacing="8" alignment="CENTER_LEFT">
                     <Label text="Actions" styleClass="section-title"/>
                     <Region HBox.hgrow="ALWAYS"/>
@@ -62,7 +62,7 @@
                         <ToggleGroup fx:id="orderSideGroup"/>
                     </fx:define>
                     <RadioButton fx:id="orderBuyToggle" text="Buy" toggleGroup="$orderSideGroup" selected="true"/>
-                    <RadioButton fx:id="orderSellToggle" text="Sell" toggleGroup="$orderSideGroup"/>
+                    <RadioButton text="Sell" toggleGroup="$orderSideGroup"/>
                     <TextField fx:id="orderQuantityField" promptText="Quantity" prefWidth="80"/>
                     <Label text="shares of" styleClass="field-name"/>
                     <ComboBox fx:id="orderOptionComboBox" prefWidth="150" promptText="Choose an option"/>
@@ -73,7 +73,7 @@
                 <HBox fx:id="closeBox" spacing="8" alignment="CENTER_LEFT">
                     <Label text="Winning option" styleClass="field-name"/>
                     <ComboBox fx:id="winnerComboBox" prefWidth="170" promptText="Choose the winner"/>
-                    <Button fx:id="closeButton" text="Close event" onAction="#onClose"/>
+                    <Button text="Close event" onAction="#onClose"/>
                 </HBox>
                 <Label fx:id="actionsHintLabel" styleClass="placeholder" wrapText="true"/>
             </VBox>
@@ -147,7 +147,7 @@
                 </TableView>
             </VBox>
 
-            <VBox fx:id="priceChartBox" spacing="4">
+            <VBox spacing="4">
                 <Label text="Price over time" styleClass="section-title"/>
                 <Label fx:id="priceChartPlaceholder" styleClass="placeholder" wrapText="true"
                        text="No prices yet. The graph starts when the event is opened and traded."/>

@@ -24,8 +24,8 @@ The choices made wherever the exercise did not decide.
   book). Whatever is left in the event account afterwards (the unused part of an LMSR subsidy)
   returns to the market maker, and the waiting orders of an order book are cancelled.
 * **Negative balance** - a purchase or a trade is carried out even if it brings the balance of the
-  buyer below zero; from then on that user is blocked from opening events, buying shares and placing
-  orders. The waiting buy orders of a blocked user are cancelled, since they can no longer be paid
+  buyer below zero; from then on that user is blocked from opening and creating events, buying shares
+  and placing orders. The waiting buy orders of a blocked user are cancelled, since they can no longer be paid
   for. A blocked user still receives money (a sale, a payout, a commission, a returned subsidy), and
   a blocked market maker may still close the own event, so that the winners can always be paid.
 * **Order book file values** - `d` must be a positive integer, `initial` must not be negative and
@@ -45,5 +45,11 @@ The choices made wherever the exercise did not decide.
   itself, MID is their average and SPREAD their difference; LAST is the price of the last trade.
   The value of a holding is shares times MID (or LAST when there is no MID); after closing, `d` for
   the winning option and 0 for the other.
+* **Options** - the two options of an event must have different names (compared without case),
+  whether the event comes from a data file or is created by a user.
+* **Users screen** - lists every event the selected user is the market maker of or has taken part
+  in, in any status and not only the active ones: the details the exercise asks for include those of
+  a closed event (the shares of every option and the winner, or the profit / loss), so a closed
+  event stays in the list.
 * **Text** - every textual value is compared without case, and whitespace at the edges (or line
-  breaks inside a value) is ignored.
+  breaks and tabs inside a value, including a value typed into the form of a new event) is ignored.

@@ -147,8 +147,8 @@ class DtoFactory {
         for (OrderBookTrade trade : trades) {
             tradeDtos.add(new OrderBookTradeDTO(trade.getBuyer().getName(),
                     trade.getCounterparty().getName(), event.getOptionName(trade.getOptionIndex()),
-                    trade.getQuantity(), toPrice(trade.getPriceCents()), trade.getCommission(),
-                    trade.isMinted()));
+                    trade.getQuantity(), OrderBookMarket.toPrice(trade.getPriceCents()),
+                    trade.getCommission(), trade.isMinted()));
         }
         return tradeDtos;
     }
@@ -156,19 +156,19 @@ class DtoFactory {
     private OrderBookOptionDTO toOrderBookOption(Event event, OrderBookMarket market, int optionIndex) {
         Long bestBid = market.getBestBidCents(optionIndex);
         Long bestAsk = market.getBestAskCents(optionIndex);
-        boolean isQuoted = bestBid != null && bestAsk != null;
+        Long spreadCents = bestBid == null || bestAsk == null ? null : bestAsk - bestBid;
         return new OrderBookOptionDTO(event.getOptionName(optionIndex),
                 toOrders(market.getBids(optionIndex)), toOrders(market.getAsks(optionIndex)),
-                toPrice(market.getLastPriceCents(optionIndex)), toPrice(bestBid), toPrice(bestAsk),
-                isQuoted ? (bestBid + bestAsk) / 200.0 : null,
-                isQuoted ? toPrice(bestAsk - bestBid) : null);
+                OrderBookMarket.toPrice(market.getLastPriceCents(optionIndex)),
+                OrderBookMarket.toPrice(bestBid), OrderBookMarket.toPrice(bestAsk),
+                market.getMidPrice(optionIndex), OrderBookMarket.toPrice(spreadCents));
     }
 
     private List<OrderDTO> toOrders(List<Order> orders) {
         List<OrderDTO> orderDtos = new ArrayList<>();
         for (Order order : orders) {
             orderDtos.add(new OrderDTO(order.getOwner().getName(), order.getRemainingQuantity(),
-                    toPrice(order.getPriceCents())));
+                    OrderBookMarket.toPrice(order.getPriceCents())));
         }
         return orderDtos;
     }
@@ -188,10 +188,6 @@ class DtoFactory {
         return new OrderBookParticipantDTO(user.getName(), shares, holdingValues, paid,
                 position.getInitialInvestmentPaid(), position.getCommissionPaid(), position.getReceived(),
                 position.getProfitOrLoss());
-    }
-
-    private static Double toPrice(Long priceCents) {
-        return priceCents == null ? null : priceCents / 100.0;
     }
 
     /**

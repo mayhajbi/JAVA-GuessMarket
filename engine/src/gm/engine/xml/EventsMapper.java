@@ -15,6 +15,7 @@ import gm.engine.exception.MarketMakerEventNotFoundException;
 import gm.engine.exception.MissingMarketMakerException;
 import gm.engine.exception.MissingXmlDataException;
 import gm.engine.exception.MultipleMarketMakersException;
+import gm.engine.util.InputText;
 import gm.engine.xml.generated.XmlCommission;
 import gm.engine.xml.generated.XmlEvent;
 import gm.engine.xml.generated.XmlEvents;
@@ -94,13 +95,13 @@ public class EventsMapper {
         if (id == null) {
             throw new MissingXmlDataException("id", location);
         }
-        String name = trim(xmlEvent.getName());
+        String name = InputText.normalize(xmlEvent.getName());
         if (name.isEmpty()) {
             throw new MissingXmlDataException("name attribute", "the event with id " + id);
         }
         location = "the event [" + name + "] (id " + id + ")";
 
-        String description = trim(xmlEvent.getDescription());
+        String description = InputText.normalize(xmlEvent.getDescription());
         if (description.isEmpty()) {
             throw new MissingXmlDataException("description", location);
         }
@@ -126,7 +127,7 @@ public class EventsMapper {
     private CommissionType readCommissionType(XmlEvent xmlEvent, int id, String name,
                                               String location) {
         XmlCommission commission = requireCommission(xmlEvent, location);
-        String type = trim(commission.getType());
+        String type = InputText.normalize(commission.getType());
         if (type.isEmpty()) {
             throw new MissingXmlDataException("type attribute of <commission>", location);
         }
@@ -156,12 +157,13 @@ public class EventsMapper {
 
         List<EventOption> options = new ArrayList<>();
         for (String optionName : optionNames) {
-            String trimmedName = trim(optionName);
+            String trimmedName = InputText.normalize(optionName);
             if (trimmedName.isEmpty()) {
                 throw new MissingXmlDataException("GM-option", location);
             }
             options.add(new EventOption(trimmedName));
         }
+        EventValidator.requireOptionNames(id, name, options.get(0).getName(), options.get(1).getName());
         return options;
     }
 
@@ -182,7 +184,7 @@ public class EventsMapper {
         }
         if (orderBook != null) {
             int baseValue = readOrderBookBaseValue(orderBook, id, name, location);
-            int initialInvestment = readOrderBookInitialInvestment(orderBook, id, name, location);
+            int initialInvestment = readOrderBookInitialInvestment(orderBook, location);
             EventValidator.requireInitialInvestment(id, name, initialInvestment, baseValue);
             boolean allowMint = readOrderBookAllowMint(orderBook, id, name, location);
             return Event.orderBook(id, name, description, commissionPercent, commissionType, options,
@@ -209,8 +211,7 @@ public class EventsMapper {
         return d;
     }
 
-    private int readOrderBookInitialInvestment(XmlOrderBook orderBook, int id, String name,
-                                               String location) {
+    private int readOrderBookInitialInvestment(XmlOrderBook orderBook, String location) {
         Integer initial = orderBook.getInitial();
         if (initial == null) {
             throw new MissingXmlDataException("initial attribute of <GM-order-book>", location);
@@ -220,7 +221,7 @@ public class EventsMapper {
 
     private boolean readOrderBookAllowMint(XmlOrderBook orderBook, int id, String name,
                                            String location) {
-        String value = trim(orderBook.getAllowMint());
+        String value = InputText.normalize(orderBook.getAllowMint());
         if (value.isEmpty()) {
             throw new MissingXmlDataException("allow-mint attribute of <GM-order-book>", location);
         }
@@ -236,7 +237,7 @@ public class EventsMapper {
     private User toUser(XmlUser xmlUser, int positionInFile) {
         String location = "user number " + positionInFile + " in the file";
 
-        String name = trim(xmlUser.getName());
+        String name = InputText.normalize(xmlUser.getName());
         if (name.isEmpty()) {
             throw new MissingXmlDataException("name attribute", location);
         }
@@ -258,7 +259,7 @@ public class EventsMapper {
             if (marketMaker == null) {
                 continue;
             }
-            User user = market.getUser(trim(xmlUser.getName()));
+            User user = market.getUser(InputText.normalize(xmlUser.getName()));
             for (XmlMarketMakerEvent reference : marketMaker.getEventList()) {
                 Integer eventId = reference.getId();
                 if (eventId == null) {
@@ -284,14 +285,5 @@ public class EventsMapper {
                 throw new MissingMarketMakerException(event.getId(), event.getName());
             }
         }
-    }
-
-    /**
-     * Cleans a text value that came from the file: spaces at its edges are removed, and a sequence of
-     * spaces or line breaks inside it (a text that was written on several lines in the file) becomes
-     * a single space.
-     */
-    private String trim(String value) {
-        return value == null ? "" : value.trim().replaceAll("\\s+", " ");
     }
 }

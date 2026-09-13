@@ -34,7 +34,7 @@ public class EventsFileLoader {
      * @return a new system that contains all the events of the file
      */
     public GuessMarket loadFile(String rawPath) {
-        String path = rawPath == null ? "" : InputText.stripSurroundingQuotes(rawPath.trim());
+        String path = InputText.cleanPath(rawPath);
         Path file = validatePath(path);
         XmlGuessMarket xmlSystem = readXmlFile(file, path);
         return new EventsMapper().toGuessMarket(xmlSystem);

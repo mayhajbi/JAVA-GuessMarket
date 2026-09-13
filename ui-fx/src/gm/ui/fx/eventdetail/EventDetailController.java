@@ -190,10 +190,7 @@ public class EventDetailController {
     public void setUsers(List<UserInfoDTO> users) {
         this.users = users;
         String chosenName = actingUserComboBox.getValue();
-        List<String> names = new ArrayList<>();
-        for (UserInfoDTO user : users) {
-            names.add(user.name());
-        }
+        List<String> names = users.stream().map(UserInfoDTO::name).toList();
         actingUserComboBox.getItems().setAll(names);
         actingUserComboBox.setValue(names.contains(chosenName) ? chosenName : null);
         updateActions();
@@ -409,7 +406,7 @@ public class EventDetailController {
         if (isUserBlocked) {
             Dialogs.showWarning(header + " - " + userName + " is now blocked", details
                     + "\n\nThe balance dropped below zero, so " + userName + " is blocked from opening "
-                    + "events, buying shares and placing orders from now on.");
+                    + "and creating events, buying shares and placing orders from now on.");
         } else {
             Dialogs.showInformation(header, details);
         }
@@ -511,8 +508,8 @@ public class EventDetailController {
             return "Choose the user who performs the action.";
         }
         if (isBlocked) {
-            return user.name() + " is blocked (the balance dropped below zero) and cannot open events, "
-                    + "buy shares or place orders." + (isMarketMaker && status == EventStatus.ACTIVE
+            return user.name() + " is blocked (the balance dropped below zero) and cannot open or create "
+                    + "events, buy shares or place orders." + (isMarketMaker && status == EventStatus.ACTIVE
                     ? " As the market maker, " + user.name() + " may still close this event."
                     : "");
         }

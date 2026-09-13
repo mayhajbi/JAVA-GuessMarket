@@ -1,8 +1,9 @@
 package gm.engine.exception;
 
 /**
- * The details a user filled in for a new event are not enough to create it (bonus). A data file
- * reports the same faults with a message that points at the element that is missing.
+ * The details of an event are not enough to create it. Mostly the details a user filled in for a new
+ * event (bonus) - a data file reports a missing value with a message that points at the element that
+ * is missing. Two options with the same name are reported this way for both.
  */
 public class InvalidEventDetailsException extends GuessMarketException {
 
@@ -27,8 +28,9 @@ public class InvalidEventDetailsException extends GuessMarketException {
                 + "] is missing one of its options. Please name both possible outcomes.");
     }
 
-    public static InvalidEventDetailsException sameOptionNames(String eventName, String optionName) {
-        return new InvalidEventDetailsException("Both options of the new event [" + eventName
-                + "] are named [" + optionName + "]. The two possible outcomes must be different.");
+    public static InvalidEventDetailsException sameOptionNames(int id, String eventName, String optionName) {
+        return new InvalidEventDetailsException("Both options of the event [" + eventName + "] (id " + id
+                + ") are named [" + optionName + "]. The two possible outcomes of an event must be "
+                + "different (the names are compared without case).");
     }
 }
