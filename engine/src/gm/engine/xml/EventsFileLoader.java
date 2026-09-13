@@ -15,6 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Locale;
 
 /**
  * Loads a Guess Market data file into the objects of the engine.
@@ -45,7 +46,7 @@ public class EventsFileLoader {
             throw new InvalidFilePathException("No file path was given. Please enter the full path "
                     + "of the XML file you would like to load.");
         }
-        if (!path.toLowerCase().endsWith(XML_EXTENSION)) {
+        if (!path.toLowerCase(Locale.ROOT).endsWith(XML_EXTENSION)) {
             throw new InvalidFilePathException("The path [" + path + "] does not point to an XML "
                     + "file. The file name must end with the .xml extension.");
         }

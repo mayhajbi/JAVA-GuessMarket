@@ -183,7 +183,7 @@ public class GuessMarketEngineImpl implements GuessMarketEngine {
                 request.quantity(), request.price());
         return new OrderResultDTO(dtoFactory.toOrderBookTrades(event, outcome.trades()),
                 outcome.filledQuantity(), outcome.restingQuantity(), user.getAccount().getBalance(),
-                user.getAccount().isBlocked(), dtoFactory.toOrderBookState(event));
+                user.getAccount().isBlocked());
     }
 
     @Override

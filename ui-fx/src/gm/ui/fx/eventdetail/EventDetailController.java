@@ -222,20 +222,25 @@ public class EventDetailController {
         }
 
         boolean isLmsr = event.type() == EventType.LMSR;
+        double commissionCollected;
+        String winner;
         if (isLmsr) {
             MarketStateDTO state = engine.getMarketState(event.id());
             currentEvent = state.eventInfo();
             currentOrderBook = null;
-            showSummary(state.totalCommissionCollected(), state.winningOption().orElse(NOT_AVAILABLE));
+            commissionCollected = state.totalCommissionCollected();
+            winner = state.winningOption().orElse(NOT_AVAILABLE);
             optionsTable.getItems().setAll(state.optionStates());
             historyTable.getItems().setAll(state.tradeHistory());
         } else {
             OrderBookStateDTO state = engine.getOrderBookState(event.id());
             currentEvent = state.eventInfo();
             currentOrderBook = state;
-            showSummary(state.totalCommissionCollected(), state.winningOption().orElse(NOT_AVAILABLE));
+            commissionCollected = state.totalCommissionCollected();
+            winner = state.winningOption().orElse(NOT_AVAILABLE);
             showOrderBook(state);
         }
+        showSummary(commissionCollected, winner);
         ViewUtils.show(lmsrBox, isLmsr);
         ViewUtils.show(orderBookBox, !isLmsr);
         fillOptionChoices(currentEvent.optionNames());

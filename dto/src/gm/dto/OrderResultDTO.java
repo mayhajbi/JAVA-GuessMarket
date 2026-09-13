@@ -12,14 +12,12 @@ import java.util.List;
  * @param userBalance     the balance of the user right after the order
  * @param userBlocked     whether the user is blocked from further actions - true when this order (or
  *                        an earlier action) brought the balance below zero
- * @param stateAfterOrder the state of the event right after the order
  */
 public record OrderResultDTO(List<OrderBookTradeDTO> trades,
                              long filledQuantity,
                              long restingQuantity,
                              double userBalance,
-                             boolean userBlocked,
-                             OrderBookStateDTO stateAfterOrder) {
+                             boolean userBlocked) {
 
     public OrderResultDTO {
         trades = List.copyOf(trades);

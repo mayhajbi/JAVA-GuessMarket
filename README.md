@@ -32,7 +32,12 @@ run.bat          runs the JavaFX application; works from the project folder or f
 | `dto`    | `gm.dto`     | Immutable data transfer objects (records) between the engine and any user interface |
 | `engine` | `gm.engine`  | The events, users, pricing rules, loading and validating the data file, and the engine interface |
 | `ui-fx`  | `gm.ui.fx`   | The JavaFX application: FXML screens with their controllers |
-| `ui`     | `gm.ui`      | The console application of exercise 1, started by `run-console.bat`. It belongs to the previous implementation and currently does not compile against the engine of exercise 2 (every action now needs a user), so it is not built and `run-console.bat` does not run |
+| `ui`     | `gm.ui`      | The console application of exercise 1, started by `run-console.bat`. It belongs to the previous implementation and currently does not compile against the engine of exercise 2 (every action now needs a user), so it is not built and `run-console.bat` only prints that it is disabled |
+
+The files under `samples/` are data files of exercise 1, written in its schema (`comision` instead of
+`commission`, and no `GM-users`). They belong to the previous implementation, and the application of
+exercise 2, which accepts only the exercise 2 schema, rejects them; the exercise 2 test files are the
+ones published for the course.
 
 A user interface talks to the engine only through `gm.engine.api.GuessMarketEngine` and receives
 only `gm.dto` objects. The engine stays passive - it never reaches back into a user interface.
