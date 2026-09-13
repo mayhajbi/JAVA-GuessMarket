@@ -1,6 +1,7 @@
 package gm.ui.fx.common;
 
 import javafx.animation.FadeTransition;
+import javafx.animation.ParallelTransition;
 import javafx.animation.ScaleTransition;
 import javafx.animation.TranslateTransition;
 import javafx.scene.Node;
@@ -8,8 +9,8 @@ import javafx.util.Duration;
 
 /**
  * The three animations of the application (bonus): the window fades in when a file was loaded, the
- * name of an event is pulsed when it is opened or closed, and the details of an event slide in when
- * a different event is chosen.
+ * status of an event is pulsed once it was opened or closed, and the details of an event slide in
+ * when a different event is chosen.
  * <p>
  * They are all <b>turned off</b> when the application starts and the user turns them on from the
  * header. Every animation leaves the node exactly as it found it, so turning them on and off in the
@@ -17,12 +18,13 @@ import javafx.util.Duration;
  */
 public final class Animations {
 
-    private static final Duration FADE_IN = Duration.millis(800);
-    private static final Duration PULSE = Duration.millis(300);
-    private static final Duration SLIDE_IN = Duration.millis(500);
+    private static final Duration FADE_IN = Duration.millis(900);
+    /** One way; the pulse grows and shrinks back, so it lasts twice as long. */
+    private static final Duration PULSE = Duration.millis(350);
+    private static final Duration SLIDE_IN = Duration.millis(450);
 
-    private static final double PULSE_SCALE = 1.08;
-    private static final double SLIDE_FROM_X = 45;
+    private static final double PULSE_SCALE = 1.3;
+    private static final double SLIDE_FROM_X = 140;
 
     private static boolean enabled;
 
@@ -48,7 +50,7 @@ public final class Animations {
     }
 
     /**
-     * Grows the node a little and back. Used on the name of an event that was just opened or closed.
+     * Grows the node clearly and back. Used on the status of an event that was just opened or closed.
      */
     public static void pulse(Node node) {
         if (!enabled) {
@@ -69,7 +71,8 @@ public final class Animations {
     }
 
     /**
-     * Slides the node into its place from the right. Used on the details of a newly chosen event.
+     * Slides the node into its place from the right while it fades in. Used on the details of a newly
+     * chosen event.
      */
     public static void slideIn(Node node) {
         if (!enabled) {
@@ -78,7 +81,14 @@ public final class Animations {
         TranslateTransition slide = new TranslateTransition(SLIDE_IN, node);
         slide.setFromX(SLIDE_FROM_X);
         slide.setToX(0);
-        slide.setOnFinished(finished -> node.setTranslateX(0));
-        slide.play();
+        FadeTransition fade = new FadeTransition(SLIDE_IN, node);
+        fade.setFromValue(0);
+        fade.setToValue(1);
+        ParallelTransition slideAndFade = new ParallelTransition(slide, fade);
+        slideAndFade.setOnFinished(finished -> {
+            node.setTranslateX(0);
+            node.setOpacity(1);
+        });
+        slideAndFade.play();
     }
 }

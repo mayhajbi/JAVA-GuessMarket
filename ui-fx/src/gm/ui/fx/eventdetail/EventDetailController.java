@@ -130,6 +130,11 @@ public class EventDetailController {
     private EventInfoDTO currentEvent;
     /** The state of the shown order book event; {@code null} while an LMSR event is shown. */
     private OrderBookStateDTO currentOrderBook;
+    /**
+     * The event whose details slid in last. Kept apart from {@link #currentEvent}, which the refresh
+     * after every action clears for a moment - so only a genuinely different event slides in.
+     */
+    private Integer lastSlidEventId;
 
     @FXML
     private void initialize() {
@@ -239,7 +244,8 @@ public class EventDetailController {
         fillOptionChoices(currentEvent.optionNames());
         showPriceChart();
         updateActions();
-        if (isAnotherEvent) {
+        if (lastSlidEventId == null || lastSlidEventId != event.id()) {
+            lastSlidEventId = event.id();
             Animations.slideIn(detailsBox);
         }
     }
@@ -280,18 +286,20 @@ public class EventDetailController {
         onDataChanged.run();
 
         String paid = Formats.decimal(openedEvent.accountBalance());
+        String message;
         if (isLmsr) {
-            Dialogs.showInformation("The event was opened", marketMakerName + " opened [" + eventName
-                    + "] and paid the initial subsidy of " + paid + ". Trading in the event is now allowed.");
+            message = marketMakerName + " opened [" + eventName + "] and paid the initial subsidy of "
+                    + paid + ". Trading in the event is now allowed.";
         } else {
             long pairs = findParticipant(engine.getOrderBookState(eventId), marketMakerName)
                     .sharesPerOption().get(0);
-            Dialogs.showInformation("The event was opened", marketMakerName + " opened [" + eventName
-                    + "], paid the initial investment of " + paid + " and received " + pairs
-                    + " shares of every option, which may now be offered for sale. Trading in the event "
-                    + "is now allowed.");
+            message = marketMakerName + " opened [" + eventName + "], paid the initial investment of "
+                    + paid + " and received " + pairs + " shares of every option, which may now be "
+                    + "offered for sale. Trading in the event is now allowed.";
         }
-        Animations.pulse(eventNameLabel);
+        // The dialog does not block: pulsing right away would happen behind it, unseen.
+        Dialogs.showInformation("The event was opened", message)
+                .setOnHidden(closed -> Animations.pulse(statusValue));
     }
 
     @FXML
@@ -378,8 +386,8 @@ public class EventDetailController {
         Dialogs.showInformation("The event was closed", "[" + eventName + "] was closed by "
                 + marketMakerName + " with [" + winnerName + "] as the winning option. The winners "
                 + "were paid, and the commission and what was left in the event account went to "
-                + "the market maker.");
-        Animations.pulse(eventNameLabel);
+                + "the market maker.")
+                .setOnHidden(closed -> Animations.pulse(statusValue));
     }
 
     private Long parseQuantity(TextField field, String action) {

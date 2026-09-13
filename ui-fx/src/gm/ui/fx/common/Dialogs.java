@@ -30,10 +30,15 @@ public final class Dialogs {
     }
 
     /**
-     * Reports an action that was completed successfully.
+     * Reports an action that was completed successfully. The dialog does not block, so the caller
+     * gets it back to act once the user closed it.
+     *
+     * @return the dialog that is shown
      */
-    public static void showInformation(String header, String message) {
-        create(Alert.AlertType.INFORMATION, header, message).show();
+    public static Alert showInformation(String header, String message) {
+        Alert alert = create(Alert.AlertType.INFORMATION, header, message);
+        alert.show();
+        return alert;
     }
 
     /**
@@ -60,6 +65,9 @@ public final class Dialogs {
         alert.setHeaderText(header);
         alert.setResizable(true);
         alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
+        // JavaFX puts a picture next to the header (a red square with an X for an error), which looks
+        // like a button that does nothing. The title bar and the header already say what happened.
+        alert.setGraphic(null);
         // A dialog opens in a window of its own, which carries none of the styling of the main one.
         Skin.dress(alert.getDialogPane());
         return alert;
