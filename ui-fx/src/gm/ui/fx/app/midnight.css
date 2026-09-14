@@ -48,6 +48,7 @@
 }
 
 .button,
+.toggle-button,
 .combo-box-base,
 .text-field {
     -fx-background-color: #2c3648;
@@ -73,8 +74,14 @@
 }
 
 .button:hover,
+.toggle-button:hover,
 .combo-box-base:hover {
     -fx-background-color: #3d4c68;
+}
+
+/* A filter that is on; after :hover so it stays blue under the mouse. */
+.toggle-button:selected {
+    -fx-background-color: #3c5a8c;
 }
 
 .button:pressed {
@@ -111,6 +118,12 @@
 .scroll-pane,
 .scroll-pane > .viewport {
     -fx-background-color: #1b2130;
+}
+
+/* The border of a table is its outer background layer, so a single colour above would hide it. */
+.table-view {
+    -fx-background-color: #dde3ee, #1b2130;
+    -fx-background-insets: 0, 1;
 }
 
 .table-view .column-header-background,

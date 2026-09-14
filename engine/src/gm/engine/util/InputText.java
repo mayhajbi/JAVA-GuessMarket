@@ -1,5 +1,7 @@
 package gm.engine.util;
 
+import java.util.Locale;
+
 /**
  * Small text-cleanup helpers shared by the engine classes that read raw strings - a value out of a
  * data file, a value a user typed, or a file path. Kept here, inside the engine, so this logic exists
@@ -34,5 +36,20 @@ public final class InputText {
             return path.substring(1, path.length() - 1).trim();
         }
         return path;
+    }
+
+    /**
+     * @return whether the path ends with the given extension, ignoring case
+     */
+    public static boolean hasExtension(String path, String extension) {
+        return path.toLowerCase(Locale.ROOT).endsWith(extension);
+    }
+
+    /**
+     * The message for a path that cannot be a file path on this computer at all.
+     */
+    public static String illegalPathMessage(String path) {
+        return "The path [" + path + "] is not a legal file path on this computer. Please check it and "
+                + "try again.";
     }
 }

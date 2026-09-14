@@ -11,7 +11,6 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Locale;
 
 /**
  * Saves the state of the system to a file and reads it back.
@@ -68,14 +67,13 @@ public class SystemStateSerializer {
             throw new SystemStateFileException("No file path was given. Please enter the full path of "
                     + "the file, without an extension.");
         }
-        if (path.toLowerCase(Locale.ROOT).endsWith(STATE_EXTENSION)) {
+        if (InputText.hasExtension(path, STATE_EXTENSION)) {
             path = path.substring(0, path.length() - STATE_EXTENSION.length());
         }
         try {
             return Paths.get(path + STATE_EXTENSION);
         } catch (InvalidPathException exception) {
-            throw new SystemStateFileException("The path [" + rawPath + "] is not a legal file path "
-                    + "on this computer. Please check it and try again.");
+            throw new SystemStateFileException(InputText.illegalPathMessage(rawPath));
         }
     }
 }

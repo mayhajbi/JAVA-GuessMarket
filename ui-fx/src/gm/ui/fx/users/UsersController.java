@@ -4,12 +4,10 @@ import gm.dto.HistoryPointDTO;
 import gm.dto.UserDetailsDTO;
 import gm.dto.UserEventDTO;
 import gm.dto.UserInfoDTO;
-import gm.engine.api.GuessMarketEngine;
-import gm.ui.fx.app.AppController;
 import gm.ui.fx.common.Formats;
 import gm.ui.fx.common.HistoryChart;
 import gm.ui.fx.common.ViewUtils;
-import gm.ui.fx.eventdetail.EventDetailController;
+import gm.ui.fx.eventdetail.EventDetailScreen;
 import javafx.fxml.FXML;
 import javafx.scene.chart.LineChart;
 import javafx.scene.control.Label;
@@ -24,7 +22,7 @@ import java.util.Map;
  * The users screen: every user with the balance, and for the selected user the events the user is
  * connected to (as market maker or participant) and the details of one of them.
  */
-public class UsersController {
+public class UsersController extends EventDetailScreen {
 
     @FXML private TableView<UserInfoDTO> usersTable;
     @FXML private TableColumn<UserInfoDTO, String> userNameColumn;
@@ -42,9 +40,6 @@ public class UsersController {
     @FXML private TableColumn<UserEventDTO, String> userEventRoleColumn;
     @FXML private Label balanceChartPlaceholder;
     @FXML private LineChart<Number, Number> balanceChart;
-    @FXML private EventDetailController eventDetailComponentController;
-
-    private GuessMarketEngine engine;
 
     @FXML
     private void initialize() {
@@ -60,19 +55,11 @@ public class UsersController {
         usersTable.getSelectionModel().selectedItemProperty().addListener(
                 (observable, previous, selected) -> showUser(selected));
         userEventsTable.getSelectionModel().selectedItemProperty().addListener(
-                (observable, previous, selected) -> showUserEvent(selected));
+                (observable, previous, selected) ->
+                        eventDetailComponentController.showEvent(selected == null ? null : selected.event()));
         // On this screen every action is performed by the selected user.
         eventDetailComponentController.setFixedActingUser(null);
         showUser(null);
-    }
-
-    public void setMainController(AppController mainController) {
-        eventDetailComponentController.setOnDataChanged(mainController::refreshAll);
-    }
-
-    public void setEngine(GuessMarketEngine engine) {
-        this.engine = engine;
-        eventDetailComponentController.setEngine(engine);
     }
 
     /**
@@ -80,21 +67,15 @@ public class UsersController {
      * stays selected when it still exists.
      */
     public void refresh() {
-        UserInfoDTO selected = usersTable.getSelectionModel().getSelectedItem();
-        usersTable.getSelectionModel().clearSelection();
-        usersTable.getItems().setAll(engine.getAllUsers());
-        if (selected != null) {
-            ViewUtils.selectFirst(usersTable, user -> user.name().equals(selected.name()));
-        }
+        ViewUtils.replaceItems(usersTable, engine.getAllUsers(),
+                (user, selected) -> user.name().equals(selected.name()));
     }
 
     private void showUser(UserInfoDTO user) {
         ViewUtils.show(userPlaceholderLabel, user == null);
         ViewUtils.show(userDetailsBox, user != null);
-        UserEventDTO selectedEvent = userEventsTable.getSelectionModel().getSelectedItem();
-        userEventsTable.getSelectionModel().clearSelection();
         if (user == null) {
-            userEventsTable.getItems().clear();
+            showUserEvents(List.of());
             return;
         }
 
@@ -104,10 +85,15 @@ public class UsersController {
         balanceLabel.setText(Formats.decimal(details.balance()));
         ViewUtils.show(blockedLabel, details.blocked());
         showBalanceChart(details.name());
-        userEventsTable.getItems().setAll(details.events());
-        if (selectedEvent != null) {
-            ViewUtils.selectFirst(userEventsTable, row -> row.event().id() == selectedEvent.event().id());
-        }
+        showUserEvents(details.events());
+    }
+
+    /**
+     * The selected event stays selected when the user is still connected to it.
+     */
+    private void showUserEvents(List<UserEventDTO> events) {
+        ViewUtils.replaceItems(userEventsTable, events,
+                (row, selected) -> row.event().id() == selected.event().id());
     }
 
     /**
@@ -124,14 +110,6 @@ public class UsersController {
         }
         ViewUtils.show(balanceChart, hasChanges);
         ViewUtils.show(balanceChartPlaceholder, !hasChanges);
-    }
-
-    private void showUserEvent(UserEventDTO row) {
-        if (row == null) {
-            eventDetailComponentController.clear();
-        } else {
-            eventDetailComponentController.showEvent(row.event());
-        }
     }
 
     private static String describeRole(UserEventDTO row) {

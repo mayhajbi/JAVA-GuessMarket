@@ -9,6 +9,9 @@ import java.util.Locale;
  */
 public final class Formats {
 
+    /** What is shown for a value that does not exist yet. */
+    public static final String NOT_AVAILABLE = "-";
+
     private Formats() {
     }
 
@@ -20,13 +23,20 @@ public final class Formats {
     }
 
     /**
-     * Like {@link #decimal(double)}, for a value that may not exist yet (shown as "-").
+     * Like {@link #decimal(double)}, for a value that may not exist yet (shown as {@value #NOT_AVAILABLE}).
      */
     public static String optionalDecimal(Double value) {
-        return value == null ? "-" : decimal(value);
+        return value == null ? NOT_AVAILABLE : decimal(value);
     }
 
     public static String commission(int percent, CommissionType type) {
         return percent + "% " + type.getDisplayName();
+    }
+
+    /**
+     * An option the way the user sees it, numbered from 1 - for example "1. Yes".
+     */
+    public static String numberedOption(int number, String optionName) {
+        return number + ". " + optionName;
     }
 }

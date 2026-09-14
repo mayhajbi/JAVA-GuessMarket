@@ -135,15 +135,8 @@ public class NewEventController {
      * @return the whole number in the field, or {@code null} after telling the user it is not one
      */
     private Integer readNumber(TextField field, String what) {
-        String text = field.getText().trim();
-        try {
-            return Integer.valueOf(text);
-        } catch (NumberFormatException notANumber) {
-            Dialogs.showWarning(HEADER, "The value of " + what + " is [" + text
-                    + "], which is not a whole number. Please enter a whole number, for example 100.");
-            field.requestFocus();
-            return null;
-        }
+        return ViewUtils.readNumber(field, Integer::valueOf, HEADER, text -> "The value of " + what + " is ["
+                + text + "], which is not a whole number. Please enter a whole number, for example 100.");
     }
 
     private NewEventRequestDTO missing(String message) {

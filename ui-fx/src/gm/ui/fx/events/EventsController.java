@@ -6,13 +6,12 @@ import gm.dto.EventInfoDTO;
 import gm.dto.EventStatus;
 import gm.dto.EventType;
 import gm.dto.NewEventRequestDTO;
-import gm.engine.api.GuessMarketEngine;
+import gm.engine.exception.GuessMarketException;
 import gm.ui.fx.common.Dialogs;
-import gm.ui.fx.common.Skin;
-import gm.ui.fx.app.AppController;
 import gm.ui.fx.common.Formats;
+import gm.ui.fx.common.Skin;
 import gm.ui.fx.common.ViewUtils;
-import gm.ui.fx.eventdetail.EventDetailController;
+import gm.ui.fx.eventdetail.EventDetailScreen;
 import gm.ui.fx.newevent.NewEventController;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -39,7 +38,7 @@ import java.util.Optional;
  * It is also where a user creates an event of their own (bonus), through the form of
  * {@link NewEventController}.
  */
-public class EventsController {
+public class EventsController extends EventDetailScreen {
 
     private static final String NEW_EVENT_FXML = "/gm/ui/fx/newevent/newevent.fxml";
 
@@ -56,9 +55,7 @@ public class EventsController {
     @FXML private TableColumn<EventInfoDTO, String> balanceColumn;
     @FXML private Label eventsCountLabel;
     @FXML private Button newEventButton;
-    @FXML private EventDetailController eventDetailComponentController;
 
-    private GuessMarketEngine engine;
     /** Whether a file was loaded - before that the engine has no events to ask for. */
     private boolean isSystemLoaded;
     private int totalEventCount;
@@ -85,19 +82,10 @@ public class EventsController {
         ViewUtils.bindText(balanceColumn, event -> Formats.decimal(event.accountBalance()));
 
         eventsTable.getSelectionModel().selectedItemProperty().addListener(
-                (observable, previous, selected) -> showDetails(selected));
+                (observable, previous, selected) -> eventDetailComponentController.showEvent(selected));
         // There is nobody to create an event on behalf of until a file was loaded.
         newEventButton.setDisable(true);
         applyFilters();
-    }
-
-    public void setMainController(AppController mainController) {
-        eventDetailComponentController.setOnDataChanged(mainController::refreshAll);
-    }
-
-    public void setEngine(GuessMarketEngine engine) {
-        this.engine = engine;
-        eventDetailComponentController.setEngine(engine);
     }
 
     /**
@@ -149,8 +137,9 @@ public class EventsController {
         if (answer.isPresent() && answer.get() == ButtonType.OK && created[0] != null) {
             refresh();
             ViewUtils.selectFirst(eventsTable, event -> event.id() == created[0].id());
-            Dialogs.showInformation("The event was created", "[" + created[0].name() + "] (id "
-                    + created[0].id() + ") was created by " + created[0].marketMakerName()
+            Dialogs.showInformation("The event was created",
+                    GuessMarketException.describeEvent(created[0].name(), created[0].id())
+                    + " was created by " + created[0].marketMakerName()
                     + ", who is now its market maker. The event is inactive until "
                     + created[0].marketMakerName() + " opens it.");
         }
@@ -174,25 +163,12 @@ public class EventsController {
     }
 
     private void applyFilters() {
-        EventInfoDTO selected = eventsTable.getSelectionModel().getSelectedItem();
         List<EventInfoDTO> visibleEvents = isSystemLoaded
                 ? engine.getEvents(new EventFilterDTO(typeFilter.selectedValues(),
                         statusFilter.selectedValues(), commissionFilter.selectedValues()))
                 : List.of();
-        eventsTable.getSelectionModel().clearSelection();
-        eventsTable.getItems().setAll(visibleEvents);
+        ViewUtils.replaceItems(eventsTable, visibleEvents, (event, selected) -> event.id() == selected.id());
         eventsCountLabel.setText("Showing " + visibleEvents.size() + " of " + totalEventCount
                 + " events");
-        if (selected != null) {
-            ViewUtils.selectFirst(eventsTable, event -> event.id() == selected.id());
-        }
-    }
-
-    private void showDetails(EventInfoDTO event) {
-        if (event == null) {
-            eventDetailComponentController.clear();
-        } else {
-            eventDetailComponentController.showEvent(event);
-        }
     }
 }

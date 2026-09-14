@@ -27,7 +27,9 @@ import gm.engine.core.orderbook.Position;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
+import java.util.function.Function;
+import java.util.function.IntFunction;
+import java.util.stream.IntStream;
 
 /**
  * Builds the data transfer objects the engine returns out of its core objects.
@@ -38,22 +40,15 @@ import java.util.Map;
 class DtoFactory {
 
     EventInfoDTO toEventInfo(Event event) {
-        List<String> optionNames = new ArrayList<>();
-        for (EventOption option : event.getOptions()) {
-            optionNames.add(option.getName());
-        }
         return new EventInfoDTO(event.getId(), event.getName(), event.getDescription(),
-                event.getCommissionPercent(), event.getCommissionType(), optionNames,
+                event.getCommissionPercent(), event.getCommissionType(),
+                mapAll(event.getOptions(), EventOption::getName),
                 event.getStatus(), event.getType(), event.getMarketMaker().getName(),
                 event.getAccount().getBalance());
     }
 
     List<EventInfoDTO> toEventInfoList(Iterable<Event> events) {
-        List<EventInfoDTO> eventInfoList = new ArrayList<>();
-        for (Event event : events) {
-            eventInfoList.add(toEventInfo(event));
-        }
-        return eventInfoList;
+        return mapAll(events, this::toEventInfo);
     }
 
     UserInfoDTO toUserInfo(User user) {
@@ -75,23 +70,15 @@ class DtoFactory {
     }
 
     List<UserInfoDTO> toUserInfoList(Iterable<User> users) {
-        List<UserInfoDTO> userInfoList = new ArrayList<>();
-        for (User user : users) {
-            userInfoList.add(toUserInfo(user));
-        }
-        return userInfoList;
+        return mapAll(users, this::toUserInfo);
     }
 
     /**
      * The value of every option of the event over time, one series per option.
      */
     List<PriceHistoryDTO> toPriceHistory(Event event) {
-        List<PriceHistoryDTO> series = new ArrayList<>();
-        for (int index = 0; index < event.getOptionCount(); index++) {
-            series.add(new PriceHistoryDTO(event.getOptionName(index),
-                    toHistoryPoints(event.getPriceHistory(index))));
-        }
-        return series;
+        return perOption(event, index -> new PriceHistoryDTO(event.getOptionName(index),
+                toHistoryPoints(event.getPriceHistory(index))));
     }
 
     /**
@@ -102,11 +89,7 @@ class DtoFactory {
     }
 
     private List<HistoryPointDTO> toHistoryPoints(List<HistoryPoint> points) {
-        List<HistoryPointDTO> pointDtos = new ArrayList<>();
-        for (HistoryPoint point : points) {
-            pointDtos.add(new HistoryPointDTO(point.getTimeMillis(), point.getValue()));
-        }
-        return pointDtos;
+        return mapAll(points, point -> new HistoryPointDTO(point.getTimeMillis(), point.getValue()));
     }
 
     MarketStateDTO toMarketState(Event event) {
@@ -116,41 +99,26 @@ class DtoFactory {
     }
 
     private List<OptionStateDTO> toOptionStates(Event event) {
-        List<OptionStateDTO> optionStates = new ArrayList<>();
-        for (int index = 0; index < event.getOptionCount(); index++) {
-            EventOption option = event.getOptions().get(index);
-            optionStates.add(new OptionStateDTO(option.getName(), event.getOptionValue(index),
-                    option.getShares()));
-        }
-        return optionStates;
+        return perOption(event, index -> new OptionStateDTO(event.getOptionName(index),
+                event.getOptionValue(index), event.getOptions().get(index).getShares()));
     }
 
     OrderBookStateDTO toOrderBookState(Event event) {
         OrderBookMarket market = event.getOrderBook();
-        List<OrderBookOptionDTO> options = new ArrayList<>();
-        for (int index = 0; index < event.getOptionCount(); index++) {
-            options.add(toOrderBookOption(event, market, index));
-        }
-        List<OrderBookParticipantDTO> participants = new ArrayList<>();
-        for (Map.Entry<User, Position> entry : market.getPositions().entrySet()) {
-            participants.add(toParticipant(event, market, entry.getKey(), entry.getValue()));
-        }
-        List<OrderBookTrade> trades = new ArrayList<>(market.getTrades());
-        Collections.reverse(trades);
+        List<OrderBookOptionDTO> options = perOption(event, index -> toOrderBookOption(event, market, index));
+        List<OrderBookParticipantDTO> participants = mapAll(market.getPositions().entrySet(),
+                entry -> toParticipant(event, market, entry.getKey(), entry.getValue()));
         return new OrderBookStateDTO(toEventInfo(event), market.getBaseValue(), market.isMintAllowed(),
-                market.getInitialInvestment(), options, participants, toOrderBookTrades(event, trades),
+                market.getInitialInvestment(), options, participants,
+                toOrderBookTrades(event, latestFirst(market.getTrades())),
                 event.getAccount().getTotalCommissionCollected(), event.getWinningOptionName().orElse(null));
     }
 
     List<OrderBookTradeDTO> toOrderBookTrades(Event event, List<OrderBookTrade> trades) {
-        List<OrderBookTradeDTO> tradeDtos = new ArrayList<>();
-        for (OrderBookTrade trade : trades) {
-            tradeDtos.add(new OrderBookTradeDTO(trade.getBuyer().getName(),
-                    trade.getCounterparty().getName(), event.getOptionName(trade.getOptionIndex()),
-                    trade.getQuantity(), OrderBookMarket.toPrice(trade.getPriceCents()),
-                    trade.getCommission(), trade.isMinted()));
-        }
-        return tradeDtos;
+        return mapAll(trades, trade -> new OrderBookTradeDTO(trade.getBuyer().getName(),
+                trade.getCounterparty().getName(), event.getOptionName(trade.getOptionIndex()),
+                trade.getQuantity(), OrderBookMarket.toPrice(trade.getPriceCents()),
+                trade.getCommission(), trade.isMinted()));
     }
 
     private OrderBookOptionDTO toOrderBookOption(Event event, OrderBookMarket market, int optionIndex) {
@@ -165,12 +133,8 @@ class DtoFactory {
     }
 
     private List<OrderDTO> toOrders(List<Order> orders) {
-        List<OrderDTO> orderDtos = new ArrayList<>();
-        for (Order order : orders) {
-            orderDtos.add(new OrderDTO(order.getOwner().getName(), order.getRemainingQuantity(),
-                    OrderBookMarket.toPrice(order.getPriceCents())));
-        }
-        return orderDtos;
+        return mapAll(orders, order -> new OrderDTO(order.getOwner().getName(), order.getRemainingQuantity(),
+                OrderBookMarket.toPrice(order.getPriceCents())));
     }
 
     private OrderBookParticipantDTO toParticipant(Event event, OrderBookMarket market, User user,
@@ -194,15 +158,35 @@ class DtoFactory {
      * The trading history of the event, ordered from the latest trade to the first one.
      */
     private List<TradeRecordDTO> toTradeHistory(Event event) {
-        List<Trade> trades = event.getTrades();
-        List<TradeRecordDTO> history = new ArrayList<>();
-        for (int index = trades.size() - 1; index >= 0; index--) {
-            Trade trade = trades.get(index);
-            history.add(new TradeRecordDTO(trade.getBuyer().getName(),
-                    event.getOptionName(trade.getOptionIndex()),
-                    trade.getShares(), trade.getSharesCost(), trade.getCommission(),
-                    trade.getTotalPaid()));
+        return mapAll(latestFirst(event.getTrades()), trade -> new TradeRecordDTO(trade.getBuyer().getName(),
+                event.getOptionName(trade.getOptionIndex()), trade.getShares(), trade.getSharesCost(),
+                trade.getCommission(), trade.getTotalPaid()));
+    }
+
+    /**
+     * @return a copy of the items (kept in the order they happened) from the latest to the first
+     */
+    private static <T> List<T> latestFirst(List<T> items) {
+        List<T> reversed = new ArrayList<>(items);
+        Collections.reverse(reversed);
+        return reversed;
+    }
+
+    /**
+     * Converts every item into a data transfer object, keeping their order.
+     */
+    private static <S, T> List<T> mapAll(Iterable<S> items, Function<S, T> converter) {
+        List<T> converted = new ArrayList<>();
+        for (S item : items) {
+            converted.add(converter.apply(item));
         }
-        return history;
+        return converted;
+    }
+
+    /**
+     * Builds one data transfer object for every option of the event, by its zero based index.
+     */
+    private static <T> List<T> perOption(Event event, IntFunction<T> converter) {
+        return IntStream.range(0, event.getOptionCount()).mapToObj(converter).toList();
     }
 }

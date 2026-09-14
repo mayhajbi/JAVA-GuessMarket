@@ -1,5 +1,6 @@
 package gm.ui.fx.common;
 
+import javafx.animation.Animation;
 import javafx.animation.FadeTransition;
 import javafx.animation.ParallelTransition;
 import javafx.animation.ScaleTransition;
@@ -39,23 +40,13 @@ public final class Animations {
      * Brings the node up from fully transparent. Used on the whole window after a file was loaded.
      */
     public static void fadeIn(Node node) {
-        if (!enabled) {
-            return;
-        }
-        FadeTransition fade = new FadeTransition(FADE_IN, node);
-        fade.setFromValue(0);
-        fade.setToValue(1);
-        fade.setOnFinished(finished -> node.setOpacity(1));
-        fade.play();
+        play(fadeFromTransparent(FADE_IN, node), () -> node.setOpacity(1));
     }
 
     /**
      * Grows the node clearly and back. Used on the status of an event that was just opened or closed.
      */
     public static void pulse(Node node) {
-        if (!enabled) {
-            return;
-        }
         ScaleTransition pulse = new ScaleTransition(PULSE, node);
         pulse.setFromX(1);
         pulse.setFromY(1);
@@ -63,11 +54,10 @@ public final class Animations {
         pulse.setToY(PULSE_SCALE);
         pulse.setCycleCount(2);
         pulse.setAutoReverse(true);
-        pulse.setOnFinished(finished -> {
+        play(pulse, () -> {
             node.setScaleX(1);
             node.setScaleY(1);
         });
-        pulse.play();
     }
 
     /**
@@ -75,20 +65,32 @@ public final class Animations {
      * chosen event.
      */
     public static void slideIn(Node node) {
-        if (!enabled) {
-            return;
-        }
         TranslateTransition slide = new TranslateTransition(SLIDE_IN, node);
         slide.setFromX(SLIDE_FROM_X);
         slide.setToX(0);
-        FadeTransition fade = new FadeTransition(SLIDE_IN, node);
-        fade.setFromValue(0);
-        fade.setToValue(1);
-        ParallelTransition slideAndFade = new ParallelTransition(slide, fade);
-        slideAndFade.setOnFinished(finished -> {
+        play(new ParallelTransition(slide, fadeFromTransparent(SLIDE_IN, node)), () -> {
             node.setTranslateX(0);
             node.setOpacity(1);
         });
-        slideAndFade.play();
+    }
+
+    /**
+     * Plays the animation when the animations are turned on.
+     *
+     * @param restore puts the node back exactly as it was once the animation is over
+     */
+    private static void play(Animation animation, Runnable restore) {
+        if (!enabled) {
+            return;
+        }
+        animation.setOnFinished(finished -> restore.run());
+        animation.play();
+    }
+
+    private static FadeTransition fadeFromTransparent(Duration duration, Node node) {
+        FadeTransition fade = new FadeTransition(duration, node);
+        fade.setFromValue(0);
+        fade.setToValue(1);
+        return fade;
     }
 }

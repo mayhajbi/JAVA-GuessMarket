@@ -29,8 +29,8 @@ public class InvalidEventDetailsException extends GuessMarketException {
     }
 
     public static InvalidEventDetailsException sameOptionNames(int id, String eventName, String optionName) {
-        return new InvalidEventDetailsException("Both options of the event [" + eventName + "] (id " + id
-                + ") are named [" + optionName + "]. The two possible outcomes of an event must be "
+        return new InvalidEventDetailsException("Both options of the event " + describeEvent(eventName, id)
+                + " are named [" + optionName + "]. The two possible outcomes of an event must be "
                 + "different (the names are compared without case).");
     }
 }

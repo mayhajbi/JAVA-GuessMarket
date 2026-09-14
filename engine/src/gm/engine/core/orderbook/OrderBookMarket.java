@@ -14,6 +14,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.DoubleConsumer;
 
 /**
  * The order book trading method of an event: a book of waiting buy orders (bids) and sell orders
@@ -299,13 +300,9 @@ public class OrderBookMarket implements Serializable {
         long quantity = Math.min(incoming.getRemainingQuantity(), waiting.getRemainingQuantity());
         long priceCents = waiting.getPriceCents();
 
-        double amount = toMoney(priceCents, quantity);
-        double commission = event.commissionOn(amount, CommissionType.ON_PURCHASE);
-        buyer.getAccount().withdraw(amount + commission);
-        seller.getAccount().deposit(amount);
-        event.payCommission(commission);
-        positionOf(buyer).recordPurchase(optionIndex, quantity, amount, commission);
-        positionOf(seller).recordSale(optionIndex, quantity, amount);
+        double commission = chargeBuyer(event, buyer, optionIndex, quantity, priceCents,
+                seller.getAccount()::deposit);
+        positionOf(seller).recordSale(optionIndex, quantity, toMoney(priceCents, quantity));
 
         lastPriceCents[optionIndex] = priceCents;
         trades.add(new OrderBookTrade(buyer, seller, optionIndex, quantity, priceCents, commission, false));
@@ -326,16 +323,10 @@ public class OrderBookMarket implements Serializable {
         long waitingPriceCents = waitingBid.getPriceCents();
         long incomingPriceCents = baseValueCents - waitingPriceCents;
 
-        double incomingAmount = toMoney(incomingPriceCents, quantity);
-        double waitingAmount = toMoney(waitingPriceCents, quantity);
-        double incomingCommission = event.commissionOn(incomingAmount, CommissionType.ON_PURCHASE);
-        double waitingCommission = event.commissionOn(waitingAmount, CommissionType.ON_PURCHASE);
-        incomingBuyer.getAccount().withdraw(incomingAmount + incomingCommission);
-        waitingBuyer.getAccount().withdraw(waitingAmount + waitingCommission);
-        event.getAccount().deposit(incomingAmount + waitingAmount);
-        event.payCommission(incomingCommission + waitingCommission);
-        positionOf(incomingBuyer).recordPurchase(incomingOption, quantity, incomingAmount, incomingCommission);
-        positionOf(waitingBuyer).recordPurchase(waitingOption, quantity, waitingAmount, waitingCommission);
+        double incomingCommission = chargeBuyer(event, incomingBuyer, incomingOption, quantity,
+                incomingPriceCents, event.getAccount()::deposit);
+        double waitingCommission = chargeBuyer(event, waitingBuyer, waitingOption, quantity,
+                waitingPriceCents, event.getAccount()::deposit);
 
         lastPriceCents[incomingOption] = incomingPriceCents;
         lastPriceCents[waitingOption] = waitingPriceCents;
@@ -344,6 +335,25 @@ public class OrderBookMarket implements Serializable {
         trades.add(new OrderBookTrade(waitingBuyer, incomingBuyer, waitingOption, quantity,
                 waitingPriceCents, waitingCommission, true));
         fill(incoming, waitingBid, quantity);
+    }
+
+    /**
+     * Charges a buyer for the shares of one trade: the price goes to whoever receives it (the seller of
+     * an existing share, or the event account for a minted one), and the commission of the event is
+     * paid on top of it to the market maker.
+     *
+     * @param receiver deposits the price of the shares
+     * @return the commission the buyer paid
+     */
+    private double chargeBuyer(Event event, User buyer, int optionIndex, long quantity, long priceCents,
+                               DoubleConsumer receiver) {
+        double amount = toMoney(priceCents, quantity);
+        double commission = event.commissionOn(amount, CommissionType.ON_PURCHASE);
+        buyer.getAccount().withdraw(amount + commission);
+        receiver.accept(amount);
+        event.payCommission(commission);
+        positionOf(buyer).recordPurchase(optionIndex, quantity, amount, commission);
+        return commission;
     }
 
     private void fill(Order incoming, Order waiting, long quantity) {

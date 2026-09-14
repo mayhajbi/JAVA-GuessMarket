@@ -8,7 +8,7 @@ public class MissingMarketMakerException extends GuessMarketException {
     private static final long serialVersionUID = 1L;
 
     public MissingMarketMakerException(int eventId, String eventName) {
-        super("The event [" + eventName + "] (id " + eventId + ") has no market maker. "
+        super("The event " + describeEvent(eventName, eventId) + " has no market maker. "
                 + "Exactly one user in the file must be defined as its market maker.");
     }
 }

@@ -1,6 +1,7 @@
 package gm.ui.fx.eventdetail;
 
 import gm.dto.EventInfoDTO;
+import gm.dto.EventStateDTO;
 import gm.dto.EventStatus;
 import gm.dto.EventType;
 import gm.dto.HistoryPointDTO;
@@ -55,7 +56,9 @@ import java.util.Map;
  */
 public class EventDetailController {
 
-    private static final String NOT_AVAILABLE = "-";
+    private static final String CHOOSE_USER = "Choose the user who performs the action.";
+    private static final String BUYING_HEADER = "Buying shares";
+    private static final String ORDER_HEADER = "Placing an order";
 
     @FXML private Label placeholderLabel;
     @FXML private VBox detailsBox;
@@ -90,6 +93,7 @@ public class EventDetailController {
     @FXML private Label actionsHintLabel;
 
     @FXML private VBox lmsrBox;
+    @FXML private VBox lmsrHistoryBox;
     @FXML private TableView<OptionStateDTO> optionsTable;
     @FXML private TableColumn<OptionStateDTO, String> optionNumberColumn;
     @FXML private TableColumn<OptionStateDTO, String> optionNameColumn;
@@ -104,6 +108,7 @@ public class EventDetailController {
     @FXML private TableColumn<TradeRecordDTO, String> totalPaidColumn;
 
     @FXML private VBox orderBookBox;
+    @FXML private VBox orderBookHistoryBox;
     @FXML private Label orderBookInfoLabel;
     @FXML private VBox positionBox;
     @FXML private Label positionTitleLabel;
@@ -210,8 +215,14 @@ public class EventDetailController {
 
     /**
      * Shows the current state of an event, pulled from the engine.
+     *
+     * @param event the event to show, or {@code null} to clear the details when no event is selected
      */
     public void showEvent(EventInfoDTO event) {
+        if (event == null) {
+            clear();
+            return;
+        }
         ViewUtils.show(placeholderLabel, false);
         ViewUtils.show(detailsBox, true);
         boolean isAnotherEvent = currentEvent == null || currentEvent.id() != event.id();
@@ -222,27 +233,25 @@ public class EventDetailController {
         }
 
         boolean isLmsr = event.type() == EventType.LMSR;
-        double commissionCollected;
-        String winner;
+        EventStateDTO state;
         if (isLmsr) {
-            MarketStateDTO state = engine.getMarketState(event.id());
-            currentEvent = state.eventInfo();
+            MarketStateDTO marketState = engine.getMarketState(event.id());
+            optionsTable.getItems().setAll(marketState.optionStates());
+            historyTable.getItems().setAll(marketState.tradeHistory());
             currentOrderBook = null;
-            commissionCollected = state.totalCommissionCollected();
-            winner = state.winningOption().orElse(NOT_AVAILABLE);
-            optionsTable.getItems().setAll(state.optionStates());
-            historyTable.getItems().setAll(state.tradeHistory());
+            state = marketState;
         } else {
-            OrderBookStateDTO state = engine.getOrderBookState(event.id());
-            currentEvent = state.eventInfo();
-            currentOrderBook = state;
-            commissionCollected = state.totalCommissionCollected();
-            winner = state.winningOption().orElse(NOT_AVAILABLE);
-            showOrderBook(state);
+            OrderBookStateDTO orderBookState = engine.getOrderBookState(event.id());
+            showOrderBook(orderBookState);
+            currentOrderBook = orderBookState;
+            state = orderBookState;
         }
-        showSummary(commissionCollected, winner);
+        currentEvent = state.eventInfo();
+        showSummary(state);
         ViewUtils.show(lmsrBox, isLmsr);
+        ViewUtils.show(lmsrHistoryBox, isLmsr);
         ViewUtils.show(orderBookBox, !isLmsr);
+        ViewUtils.show(orderBookHistoryBox, !isLmsr);
         fillOptionChoices(currentEvent.optionNames());
         showPriceChart();
         updateActions();
@@ -299,25 +308,20 @@ public class EventDetailController {
                     + paid + " and received " + pairs + " shares of every option, which may now be "
                     + "offered for sale. Trading in the event is now allowed.";
         }
-        // The dialog does not block: pulsing right away would happen behind it, unseen.
-        Dialogs.showInformation("The event was opened", message)
-                .setOnHidden(closed -> Animations.pulse(statusValue));
+        reportStatusChange("The event was opened", message);
     }
 
     @FXML
     private void onBuy() {
-        int optionIndex = buyOptionComboBox.getSelectionModel().getSelectedIndex();
-        if (optionIndex < 0) {
-            Dialogs.showWarning("Buying shares", "Please choose the option you would like to buy.");
-            return;
-        }
-        Long quantity = parseQuantity(quantityField, "Buying shares");
-        if (quantity == null) {
+        TradeInput input = readTradeInput(BUYING_HEADER, buyOptionComboBox,
+                "Please choose the option you would like to buy.", quantityField);
+        if (input == null) {
             return;
         }
 
-        String buyerName = actingUser().name();
-        PurchaseResultDTO result = engine.buyShares(currentEvent.id(), buyerName, optionIndex, quantity);
+        String buyerName = input.userName();
+        PurchaseResultDTO result = engine.buyShares(currentEvent.id(), buyerName, input.optionIndex(),
+                input.quantity());
         quantityField.clear();
         onDataChanged.run();
 
@@ -332,37 +336,29 @@ public class EventDetailController {
 
     @FXML
     private void onPlaceOrder() {
-        int optionIndex = orderOptionComboBox.getSelectionModel().getSelectedIndex();
-        if (optionIndex < 0) {
-            Dialogs.showWarning("Placing an order",
-                    "Please choose the option whose shares you would like to trade.");
+        TradeInput input = readTradeInput(ORDER_HEADER, orderOptionComboBox,
+                "Please choose the option whose shares you would like to trade.", orderQuantityField);
+        if (input == null) {
             return;
         }
-        Long quantity = parseQuantity(orderQuantityField, "Placing an order");
-        if (quantity == null) {
-            return;
-        }
-        String priceText = orderPriceField.getText().trim();
-        double price;
-        try {
-            price = Double.parseDouble(priceText);
-        } catch (NumberFormatException exception) {
-            Dialogs.showWarning("Placing an order", "The price [" + priceText + "] is not a number. "
-                    + "Please enter the price per share, for example 0.45.");
+        Double price = ViewUtils.readNumber(orderPriceField, Double::valueOf, ORDER_HEADER,
+                text -> "The price [" + text + "] is not a number. Please enter the price per share, for "
+                        + "example 0.45.");
+        if (price == null) {
             return;
         }
 
-        String userName = actingUser().name();
+        String userName = input.userName();
         OrderSide side = orderBuyToggle.isSelected() ? OrderSide.BUY : OrderSide.SELL;
-        String optionName = currentEvent.optionNames().get(optionIndex);
-        OrderResultDTO result = engine.submitOrder(
-                new OrderRequestDTO(currentEvent.id(), userName, side, optionIndex, quantity, price));
+        String optionName = currentEvent.optionNames().get(input.optionIndex());
+        OrderResultDTO result = engine.submitOrder(new OrderRequestDTO(currentEvent.id(), userName, side,
+                input.optionIndex(), input.quantity(), price));
         orderQuantityField.clear();
         orderPriceField.clear();
         onDataChanged.run();
 
         showActionResult("The order was placed", userName,
-                describeOrderResult(userName, side, optionName, quantity, price, result),
+                describeOrderResult(userName, side, optionName, input.quantity(), price, result),
                 result.userBlocked());
     }
 
@@ -385,22 +381,43 @@ public class EventDetailController {
         String marketMakerName = actingUser().name();
         engine.closeEvent(currentEvent.id(), marketMakerName, winnerIndex);
         onDataChanged.run();
-        Dialogs.showInformation("The event was closed", "[" + eventName + "] was closed by "
+        reportStatusChange("The event was closed", "[" + eventName + "] was closed by "
                 + marketMakerName + " with [" + winnerName + "] as the winning option. The winners "
                 + "were paid, and the commission and what was left in the event account went to "
-                + "the market maker.")
-                .setOnHidden(closed -> Animations.pulse(statusValue));
+                + "the market maker.");
     }
 
-    private Long parseQuantity(TextField field, String action) {
-        String text = field.getText().trim();
-        try {
-            return Long.parseLong(text);
-        } catch (NumberFormatException exception) {
-            Dialogs.showWarning(action, "The quantity [" + text + "] is not a whole number. Please enter "
-                    + "the amount of shares as a positive whole number, for example 10.");
+    /**
+     * Reads what every trade needs before it is sent to the engine: the user who performs it, the
+     * chosen option and a quantity that is a whole number. A trade can be started with the Enter key
+     * in its field as well, even while its button is not available.
+     *
+     * @return the details of the trade, or {@code null} after telling the user what is missing
+     */
+    private TradeInput readTradeInput(String header, ComboBox<String> optionComboBox, String chooseOption,
+                                      TextField quantityInput) {
+        UserInfoDTO user = actingUser();
+        if (user == null) {
+            Dialogs.showWarning(header, CHOOSE_USER);
             return null;
         }
+        int optionIndex = optionComboBox.getSelectionModel().getSelectedIndex();
+        if (optionIndex < 0) {
+            Dialogs.showWarning(header, chooseOption);
+            return null;
+        }
+        Long quantity = ViewUtils.readNumber(quantityInput, Long::valueOf, header, text -> "The quantity ["
+                + text + "] is not a whole number. Please enter the amount of shares as a positive whole "
+                + "number, for example 10.");
+        return quantity == null ? null : new TradeInput(user.name(), optionIndex, quantity);
+    }
+
+    /**
+     * Reports that the status of the event changed. The dialog does not block, so the status is
+     * pulsed once the dialog was closed - pulsing right away would happen behind it, unseen.
+     */
+    private void reportStatusChange(String header, String message) {
+        Dialogs.showInformation(header, message).setOnHidden(closed -> Animations.pulse(statusValue));
     }
 
     /**
@@ -510,7 +527,7 @@ public class EventDetailController {
             return "This event is closed - no further actions are possible.";
         }
         if (user == null) {
-            return "Choose the user who performs the action.";
+            return CHOOSE_USER;
         }
         if (isBlocked) {
             return user.name() + " is blocked (the balance dropped below zero) and cannot open or create "
@@ -547,43 +564,26 @@ public class EventDetailController {
 
     /**
      * The participants table has two columns (shares and value) for every option, named after the
-     * options of the shown event.
+     * options of the shown event. The columns are replaced only for options with other names, so the
+     * widths the user gave them stay while the same event is refreshed.
      */
     private void rebuildParticipantColumns(List<String> optionNames) {
-        List<String> headers = new ArrayList<>();
-        headers.add("User");
-        for (String optionName : optionNames) {
-            headers.add(optionName + " shares");
-            headers.add(optionName + " value");
-        }
-        List<String> currentHeaders = new ArrayList<>();
-        for (TableColumn<OrderBookParticipantDTO, ?> column : participantsTable.getColumns()) {
-            currentHeaders.add(column.getText());
-        }
-        if (currentHeaders.equals(headers)) {
-            return;
-        }
-
         List<TableColumn<OrderBookParticipantDTO, String>> columns = new ArrayList<>();
-        TableColumn<OrderBookParticipantDTO, String> userColumn = new TableColumn<>("User");
-        ViewUtils.bindText(userColumn, OrderBookParticipantDTO::userName);
-        columns.add(userColumn);
+        columns.add(ViewUtils.column("User", OrderBookParticipantDTO::userName));
         for (int index = 0; index < optionNames.size(); index++) {
             int optionIndex = index;
-            TableColumn<OrderBookParticipantDTO, String> sharesColumn =
-                    new TableColumn<>(optionNames.get(index) + " shares");
-            ViewUtils.bindText(sharesColumn,
-                    participant -> String.valueOf(participant.sharesPerOption().get(optionIndex)));
-            TableColumn<OrderBookParticipantDTO, String> valueColumn =
-                    new TableColumn<>(optionNames.get(index) + " value");
-            ViewUtils.bindText(valueColumn,
-                    participant -> Formats.optionalDecimal(participant.holdingValuePerOption().get(optionIndex)));
-            sharesColumn.getStyleClass().add("numeric");
-            valueColumn.getStyleClass().add("numeric");
-            columns.add(sharesColumn);
-            columns.add(valueColumn);
+            columns.add(ViewUtils.numericColumn(optionNames.get(index) + " shares",
+                    participant -> String.valueOf(participant.sharesPerOption().get(optionIndex))));
+            columns.add(ViewUtils.numericColumn(optionNames.get(index) + " value",
+                    participant -> Formats.optionalDecimal(participant.holdingValuePerOption().get(optionIndex))));
         }
-        participantsTable.getColumns().setAll(columns);
+        if (!titlesOf(columns).equals(titlesOf(participantsTable.getColumns()))) {
+            participantsTable.getColumns().setAll(columns);
+        }
+    }
+
+    private static List<String> titlesOf(List<? extends TableColumn<?, ?>> columns) {
+        return columns.stream().map(TableColumn::getText).toList();
     }
 
     /**
@@ -604,7 +604,7 @@ public class EventDetailController {
         List<String> optionNames = currentEvent.optionNames();
         int row = 0;
         for (int index = 0; index < optionNames.size(); index++) {
-            addPositionRow(row++, (index + 1) + ". " + optionNames.get(index),
+            addPositionRow(row++, Formats.numberedOption(index + 1, optionNames.get(index)),
                     position.sharesPerOption().get(index) + " shares, value "
                             + Formats.optionalDecimal(position.holdingValuePerOption().get(index))
                             + ", paid " + Formats.decimal(position.paidPerOption().get(index)));
@@ -620,9 +620,7 @@ public class EventDetailController {
     }
 
     private void addPositionRow(int row, String name, String value) {
-        Label nameLabel = new Label(name);
-        nameLabel.getStyleClass().add("field-name");
-        positionGrid.add(nameLabel, 0, row);
+        positionGrid.add(ViewUtils.fieldName(name), 0, row);
         positionGrid.add(new Label(value), 1, row);
     }
 
@@ -638,7 +636,7 @@ public class EventDetailController {
     private void fillOptionChoices(List<String> optionNames) {
         List<String> numberedNames = new ArrayList<>();
         for (int index = 0; index < optionNames.size(); index++) {
-            numberedNames.add((index + 1) + ". " + optionNames.get(index));
+            numberedNames.add(Formats.numberedOption(index + 1, optionNames.get(index)));
         }
         // Refilling a choice box clears its selection, so it is refilled only for a different event.
         if (!buyOptionComboBox.getItems().equals(numberedNames)) {
@@ -648,8 +646,8 @@ public class EventDetailController {
         }
     }
 
-    private void showSummary(double commissionCollected, String winner) {
-        eventNameLabel.setText(currentEvent.name() + " (id " + currentEvent.id() + ")");
+    private void showSummary(EventStateDTO state) {
+        eventNameLabel.setText(currentEvent.name());
         descriptionLabel.setText(currentEvent.description());
         statusValue.setText(currentEvent.status().getDisplayName());
         typeValue.setText(currentEvent.type().getDisplayName());
@@ -657,7 +655,13 @@ public class EventDetailController {
                 Formats.commission(currentEvent.commissionPercent(), currentEvent.commissionType()));
         marketMakerValue.setText(currentEvent.marketMakerName());
         balanceValue.setText(Formats.decimal(currentEvent.accountBalance()));
-        commissionCollectedValue.setText(Formats.decimal(commissionCollected));
-        winnerValue.setText(winner);
+        commissionCollectedValue.setText(Formats.decimal(state.totalCommissionCollected()));
+        winnerValue.setText(state.winningOption().orElse(Formats.NOT_AVAILABLE));
+    }
+
+    /**
+     * The details every trade starts with.
+     */
+    private record TradeInput(String userName, int optionIndex, long quantity) {
     }
 }

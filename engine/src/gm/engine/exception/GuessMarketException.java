@@ -17,4 +17,12 @@ public abstract class GuessMarketException extends RuntimeException {
     protected GuessMarketException(String message, Throwable cause) {
         super(message, cause);
     }
+
+    /**
+     * How every message names an event: its name in brackets and then its id, for example
+     * "[World Cup Winner] (id 2)".
+     */
+    public static String describeEvent(String eventName, int eventId) {
+        return "[" + eventName + "] (id " + eventId + ")";
+    }
 }

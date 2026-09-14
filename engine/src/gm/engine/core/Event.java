@@ -44,7 +44,7 @@ public class Event implements Serializable {
 
     private static final double PERCENT = 100.0;
 
-    private final int       id;
+    private final int id;
     private final String name;
     private final String description;
     private final int commissionPercent;

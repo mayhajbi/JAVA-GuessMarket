@@ -24,7 +24,7 @@ public record OrderBookStateDTO(EventInfoDTO eventInfo,
                                 List<OrderBookParticipantDTO> participants,
                                 List<OrderBookTradeDTO> tradeHistory,
                                 double totalCommissionCollected,
-                                String winningOptionName) {
+                                String winningOptionName) implements EventStateDTO {
 
     public OrderBookStateDTO {
         options = List.copyOf(options);

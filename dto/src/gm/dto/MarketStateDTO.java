@@ -18,7 +18,7 @@ public record MarketStateDTO(EventInfoDTO eventInfo,
                              double accountBalance,
                              double totalCommissionCollected,
                              List<TradeRecordDTO> tradeHistory,
-                             String winningOptionName) {
+                             String winningOptionName) implements EventStateDTO {
 
     public MarketStateDTO {
         optionStates = List.copyOf(optionStates);

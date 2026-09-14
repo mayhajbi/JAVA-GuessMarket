@@ -8,6 +8,7 @@ import gm.engine.core.GuessMarket;
 import gm.engine.core.User;
 import gm.engine.core.method.LmsrTradingMethod;
 import gm.engine.core.method.TradingMethod;
+import gm.engine.exception.GuessMarketException;
 import gm.engine.exception.InvalidCommissionException;
 import gm.engine.exception.InvalidInitialCashException;
 import gm.engine.exception.InvalidOrderBookException;
@@ -99,7 +100,7 @@ public class EventsMapper {
         if (name.isEmpty()) {
             throw new MissingXmlDataException("name attribute", "the event with id " + id);
         }
-        location = "the event [" + name + "] (id " + id + ")";
+        location = "the event " + GuessMarketException.describeEvent(name, id);
 
         String description = InputText.normalize(xmlEvent.getDescription());
         if (description.isEmpty()) {

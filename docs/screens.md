@@ -9,9 +9,11 @@
 * **Users** - every user with the balance; for the selected user, the events the user is the market
   maker of or takes part in, and *Balance over time* - the amount the user started with and every
   change since then.
-* **Event details** (on both screens) - an LMSR event shows its option values and trading history;
-  an order book event shows the order book of every option with LAST / BID / ASK / MID / SPREAD, the
-  participants with their holdings and the trades, and the position of the acting user. Below them,
+* **Event details** (on both screens), laid out as in the sketch of the exercise - the name, the
+  description and the summary of the event, then an LMSR event shows its option values and an order
+  book event the order books of its two options side by side (with LAST / BID / ASK / MID / SPREAD)
+  and the participants with their holdings. Next come the actions (with the position of the acting
+  user in an order book event), and then the trading history or the trades. Below them,
   *Price over time* draws the value of one share of every option, from the moment the event was
   opened until it was closed (where the winning option is worth its full payout and the other one
   nothing). An event that was never opened, and an order book option that never had both a bid and

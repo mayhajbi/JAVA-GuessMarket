@@ -4,7 +4,7 @@
  */
 
 .root {
-    -fx-font-family: Georgia, "Times New Roman", serif;
+    -fx-font-family: "Palatino Linotype", Georgia, serif;
     -fx-font-size: 15px;
     -fx-background-color: #f6efdf;
 }
@@ -48,6 +48,7 @@
 }
 
 .button,
+.toggle-button,
 .combo-box-base,
 .text-field {
     -fx-background-color: #b98a4e;
@@ -73,8 +74,14 @@
 }
 
 .button:hover,
+.toggle-button:hover,
 .combo-box-base:hover {
     -fx-background-color: #a5763c;
+}
+
+/* A filter that is on; after :hover so it stays dark under the mouse. */
+.toggle-button:selected {
+    -fx-background-color: #6e4c22;
 }
 
 .button:pressed {
@@ -113,6 +120,12 @@
 .scroll-pane,
 .scroll-pane > .viewport {
     -fx-background-color: #f6efdf;
+}
+
+/* The border of a table is its outer background layer, so a single colour above would hide it. */
+.table-view {
+    -fx-background-color: #8a6231, #f6efdf;
+    -fx-background-insets: 0, 1;
 }
 
 .table-view .column-header-background,

@@ -11,7 +11,7 @@ public class WrongTradingMethodException extends GuessMarketException {
     private static final long serialVersionUID = 1L;
 
     public WrongTradingMethodException(int eventId, String eventName, EventType type, String action) {
-        super("The event [" + eventName + "] (id " + eventId + ") uses the " + type.getDisplayName()
+        super("The event " + describeEvent(eventName, eventId) + " uses the " + type.getDisplayName()
                 + " method, so it is not possible to " + action + " in it.");
     }
 }
