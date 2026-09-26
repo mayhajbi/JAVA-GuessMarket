@@ -16,6 +16,7 @@ target/
 # the shared configuration (modules.xml, misc.xml, libraries/ and the .iml files) is committed
 # on purpose, so that the project opens correctly after a clone
 .idea/workspace.xml
+.idea/.name
 .idea/tasks.xml
 .idea/usage.statistics.xml
 .idea/shelf/
