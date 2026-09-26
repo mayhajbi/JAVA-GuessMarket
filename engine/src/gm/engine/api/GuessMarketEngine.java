@@ -1,5 +1,6 @@
 package gm.engine.api;
 
+import gm.dto.AccountEntryDTO;
 import gm.dto.EventFilterDTO;
 import gm.dto.EventInfoDTO;
 import gm.dto.HistoryPointDTO;
@@ -11,9 +12,11 @@ import gm.dto.OrderRequestDTO;
 import gm.dto.OrderResultDTO;
 import gm.dto.PriceHistoryDTO;
 import gm.dto.PurchaseResultDTO;
+import gm.dto.UploadResultDTO;
 import gm.dto.UserDetailsDTO;
 import gm.dto.UserInfoDTO;
 
+import java.io.InputStream;
 import java.util.List;
 
 /**
@@ -100,6 +103,45 @@ public interface GuessMarketEngine {
      * @return the points, in the order they happened
      */
     List<HistoryPointDTO> getUserBalanceHistory(String userName);
+
+    /**
+     * Registers a new user, who starts with an empty account.
+     *
+     * @param userName the name the user asked for; names are unique, compared without case
+     * @return the details of the new user
+     */
+    UserInfoDTO registerUser(String userName);
+
+    /**
+     * Adds money to the account of a user. Depositing is always possible, also for a blocked user; once
+     * the balance is back to zero or more, the user is not blocked any more.
+     *
+     * @param userName name of the user
+     * @param amount   the amount to add, must be positive
+     * @return the details of the user after the deposit
+     */
+    UserInfoDTO deposit(String userName, double amount);
+
+    /**
+     * Adds the events of a file to the ones already in the system, and makes the user their market
+     * maker. Unlike {@link #loadEventsFile(String)} nothing is replaced. The whole file is checked
+     * first, and if anything in it is wrong no event of it is added. The content is only read, never
+     * stored.
+     *
+     * @param userName name of the user who uploads the file
+     * @param fileName the name of the file, as the user knows it
+     * @param content  the content of the file; the caller closes it
+     * @return the name of the file and the names of the events it added
+     */
+    UploadResultDTO uploadEvents(String userName, String fileName, InputStream content);
+
+    /**
+     * Every movement of money in the account of a user, from the latest to the first one.
+     *
+     * @param userName name of the requested user
+     * @return the movements, each with its kind, its amount and the balance right after it
+     */
+    List<AccountEntryDTO> getAccountEntries(String userName);
 
     /**
      * Creates a new event on behalf of a user, who becomes its market maker (bonus). The event is

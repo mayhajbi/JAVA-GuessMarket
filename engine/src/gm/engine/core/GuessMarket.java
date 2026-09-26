@@ -4,6 +4,7 @@ import gm.dto.CommissionType;
 import gm.dto.EventStatus;
 import gm.dto.EventType;
 import gm.engine.exception.DuplicateEventIdException;
+import gm.engine.exception.DuplicateEventNameException;
 import gm.engine.exception.DuplicateUserNameException;
 import gm.engine.exception.EventNotFoundException;
 import gm.engine.exception.UserNotFoundException;
@@ -12,6 +13,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -36,7 +38,9 @@ public class GuessMarket implements Serializable {
     /**
      * Adds an event to the system.
      *
-     * @throws DuplicateEventIdException when an event with the same id already exists
+     * @throws DuplicateEventIdException   when an event with the same id already exists
+     * @throws DuplicateEventNameException when an event with the same name (ignoring case) already
+     *                                     exists
      */
     public void addEvent(Event event) {
         Event existingEvent = eventsById.get(event.getId());
@@ -44,7 +48,42 @@ public class GuessMarket implements Serializable {
             throw new DuplicateEventIdException(event.getId(), existingEvent.getName(),
                     event.getName());
         }
+        requireNameNotInUse(event.getName());
         eventsById.put(event.getId(), event);
+    }
+
+    /**
+     * Adds all the events of a file that has no ids, or none of them: the names are checked against
+     * the system and against each other before the first event is added, and the events get the next
+     * ids of the system, in the order of the list.
+     *
+     * @throws DuplicateEventNameException when a name is already in use, or appears twice in the list
+     */
+    public void addEvents(List<Event> events) {
+        Set<String> namesInList = new HashSet<>();
+        for (Event event : events) {
+            requireNameNotInUse(event.getName());
+            if (!namesInList.add(nameKey(event.getName()))) {
+                throw new DuplicateEventNameException(event.getName());
+            }
+        }
+        int nextId = nextEventId();
+        for (Event event : events) {
+            event.assignId(nextId++);
+            addEvent(event);
+        }
+    }
+
+    private void requireNameNotInUse(String name) {
+        for (Event event : eventsById.values()) {
+            if (nameKey(event.getName()).equals(nameKey(name))) {
+                throw new DuplicateEventNameException(name);
+            }
+        }
+    }
+
+    private static String nameKey(String name) {
+        return name.toLowerCase(Locale.ROOT);
     }
 
     /**

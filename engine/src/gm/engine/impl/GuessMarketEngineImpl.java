@@ -1,5 +1,7 @@
 package gm.engine.impl;
 
+import gm.dto.AccountEntryDTO;
+import gm.dto.AccountEntryType;
 import gm.dto.CommissionType;
 import gm.dto.EventFilterDTO;
 import gm.dto.EventInfoDTO;
@@ -14,6 +16,7 @@ import gm.dto.OrderRequestDTO;
 import gm.dto.OrderResultDTO;
 import gm.dto.PriceHistoryDTO;
 import gm.dto.PurchaseResultDTO;
+import gm.dto.UploadResultDTO;
 import gm.dto.UserDetailsDTO;
 import gm.dto.UserInfoDTO;
 import gm.engine.api.GuessMarketEngine;
@@ -25,13 +28,15 @@ import gm.engine.core.Trade;
 import gm.engine.core.User;
 import gm.engine.core.method.LmsrTradingMethod;
 import gm.engine.core.orderbook.OrderOutcome;
+import gm.engine.exception.InvalidDepositException;
 import gm.engine.exception.InvalidEventDetailsException;
 import gm.engine.exception.InvalidOrderException;
-import gm.engine.exception.NoSystemLoadedException;
+import gm.engine.exception.InvalidUserNameException;
 import gm.engine.state.SystemStateSerializer;
 import gm.engine.util.InputText;
 import gm.engine.xml.EventsFileLoader;
 
+import java.io.InputStream;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -45,7 +50,9 @@ public class GuessMarketEngineImpl implements GuessMarketEngine {
     private final SystemStateSerializer stateSerializer = new SystemStateSerializer();
     private final DtoFactory dtoFactory = new DtoFactory();
 
-    private GuessMarket market;
+    private static final double NEW_USER_BALANCE = 0;
+
+    private GuessMarket market = new GuessMarket();
 
     @Override
     public LoadResultDTO loadEventsFile(String xmlFilePath) {
@@ -57,7 +64,7 @@ public class GuessMarketEngineImpl implements GuessMarketEngine {
 
     @Override
     public List<EventInfoDTO> getAllEvents() {
-        return dtoFactory.toEventInfoList(requireLoadedMarket().getAllEvents());
+        return dtoFactory.toEventInfoList(market.getAllEvents());
     }
 
     @Override
@@ -68,7 +75,7 @@ public class GuessMarketEngineImpl implements GuessMarketEngine {
 
     @Override
     public List<EventInfoDTO> getEvents(EventFilterDTO filter) {
-        GuessMarket loadedMarket = requireLoadedMarket();
+        GuessMarket loadedMarket = market;
         if (filter == null) {
             return dtoFactory.toEventInfoList(loadedMarket.getAllEvents());
         }
@@ -78,12 +85,12 @@ public class GuessMarketEngineImpl implements GuessMarketEngine {
 
     @Override
     public List<UserInfoDTO> getAllUsers() {
-        return dtoFactory.toUserInfoList(requireLoadedMarket().getAllUsers());
+        return dtoFactory.toUserInfoList(market.getAllUsers(), market.getAllEvents());
     }
 
     @Override
     public UserDetailsDTO getUserDetails(String userName) {
-        return dtoFactory.toUserDetails(requireUser(userName), requireLoadedMarket().getAllEvents());
+        return dtoFactory.toUserDetails(requireUser(userName), market.getAllEvents());
     }
 
     @Override
@@ -107,6 +114,42 @@ public class GuessMarketEngineImpl implements GuessMarketEngine {
     }
 
     @Override
+    public UserInfoDTO registerUser(String userName) {
+        String name = InputText.normalize(userName);
+        if (name.isEmpty()) {
+            throw new InvalidUserNameException();
+        }
+        User user = new User(name, NEW_USER_BALANCE);
+        market.addUser(user);
+        return dtoFactory.toUserInfo(user, market.getAllEvents());
+    }
+
+    @Override
+    public UserInfoDTO deposit(String userName, double amount) {
+        User user = requireUser(userName);
+        if (!(amount > 0) || Double.isInfinite(amount)) {
+            throw new InvalidDepositException(amount);
+        }
+        user.getAccount().deposit(amount, AccountEntryType.DEPOSIT);
+        return dtoFactory.toUserInfo(user, market.getAllEvents());
+    }
+
+    @Override
+    public UploadResultDTO uploadEvents(String userName, String fileName, InputStream content) {
+        User uploader = requireUser(userName);
+        List<Event> events = fileLoader.loadEvents(content, fileName);
+        events.forEach(event -> event.setMarketMaker(uploader));
+        market.addEvents(events);
+        return new UploadResultDTO(InputText.cleanPath(fileName),
+                events.stream().map(Event::getName).toList());
+    }
+
+    @Override
+    public List<AccountEntryDTO> getAccountEntries(String userName) {
+        return dtoFactory.toAccountEntries(requireUser(userName));
+    }
+
+    @Override
     public EventInfoDTO createEvent(NewEventRequestDTO request) {
         if (request == null) {
             throw InvalidEventDetailsException.missingName();
@@ -114,7 +157,7 @@ public class GuessMarketEngineImpl implements GuessMarketEngine {
         User marketMaker = requireUser(request.userName());
         marketMaker.requireNotBlocked("create events");
 
-        GuessMarket loadedMarket = requireLoadedMarket();
+        GuessMarket loadedMarket = market;
         int id = loadedMarket.nextEventId();
         String name = InputText.normalize(request.name());
         EventValidator.requireName(name);
@@ -191,7 +234,7 @@ public class GuessMarketEngineImpl implements GuessMarketEngine {
 
     @Override
     public String saveSystemState(String pathWithoutExtension) {
-        return stateSerializer.save(requireLoadedMarket(), pathWithoutExtension);
+        return stateSerializer.save(market, pathWithoutExtension);
     }
 
     @Override
@@ -201,18 +244,11 @@ public class GuessMarketEngineImpl implements GuessMarketEngine {
         return stateSerializer.resolveStateFilePath(pathWithoutExtension);
     }
 
-    private GuessMarket requireLoadedMarket() {
-        if (market == null) {
-            throw new NoSystemLoadedException();
-        }
-        return market;
-    }
-
     private Event requireEvent(int eventId) {
-        return requireLoadedMarket().getEvent(eventId);
+        return market.getEvent(eventId);
     }
 
     private User requireUser(String userName) {
-        return requireLoadedMarket().getUser(userName);
+        return market.getUser(userName);
     }
 }

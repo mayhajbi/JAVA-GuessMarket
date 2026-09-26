@@ -16,6 +16,7 @@ import gm.engine.exception.MarketMakerEventNotFoundException;
 import gm.engine.exception.MissingMarketMakerException;
 import gm.engine.exception.MissingXmlDataException;
 import gm.engine.exception.MultipleMarketMakersException;
+import gm.engine.exception.UnsupportedFileFormatException;
 import gm.engine.util.InputText;
 import gm.engine.xml.generated.XmlCommission;
 import gm.engine.xml.generated.XmlEvent;
@@ -44,6 +45,7 @@ import java.util.List;
  */
 public class EventsMapper {
 
+    private static final int NO_ID = 0;
     private static final String ALLOW_MINT_TRUE = "true";
     private static final String ALLOW_MINT_FALSE = "false";
 
@@ -53,12 +55,46 @@ public class EventsMapper {
      */
     public GuessMarket toGuessMarket(XmlGuessMarket xmlSystem) {
         GuessMarket market = new GuessMarket();
-        mapEvents(xmlSystem.getEvents(), market);
+        List<XmlEvent> xmlEventList = requireEventList(xmlSystem.getEvents());
+        for (int position = 0; position < xmlEventList.size(); position++) {
+            XmlEvent xmlEvent = xmlEventList.get(position);
+            Integer id = xmlEvent.getId();
+            if (id == null) {
+                throw new MissingXmlDataException("id", "event number " + (position + 1) + " in the file");
+            }
+            market.addEvent(toEvent(xmlEvent, id));
+        }
         mapUsers(xmlSystem.getUsers(), market);
         return market;
     }
 
-    private void mapEvents(XmlEvents xmlEvents, GuessMarket market) {
+    /**
+     * Converts the events of a file that only describes events: it has no users and no event ids, so
+     * the events have no id yet (0). Nothing is added to any system here.
+     *
+     * @return the events, in the order of the file, without a market maker and without an id
+     * @throws UnsupportedFileFormatException when the file has users or event ids
+     */
+    public List<Event> toEvents(XmlGuessMarket xmlSystem) {
+        if (xmlSystem.getUsers() != null) {
+            throw new UnsupportedFileFormatException("the file has a <GM-users> part. Users "
+                    + "register by logging in, so the file may describe events only.");
+        }
+        List<XmlEvent> xmlEventList = requireEventList(xmlSystem.getEvents());
+        List<Event> events = new ArrayList<>();
+        for (int position = 0; position < xmlEventList.size(); position++) {
+            XmlEvent xmlEvent = xmlEventList.get(position);
+            if (xmlEvent.getId() != null) {
+                throw new UnsupportedFileFormatException("the event [" + xmlEvent.getName() + "] has an "
+                        + "<id> element. Events are identified by their names, so the file may not "
+                        + "give them ids.");
+            }
+            events.add(toEvent(xmlEvent, NO_ID));
+        }
+        return events;
+    }
+
+    private List<XmlEvent> requireEventList(XmlEvents xmlEvents) {
         if (xmlEvents == null) {
             throw new MissingXmlDataException("GM-events", "the root element <Guess-Market>");
         }
@@ -67,9 +103,7 @@ public class EventsMapper {
             throw new MissingXmlDataException("GM-event",
                     "the element <GM-events> (the file does not describe any event)");
         }
-        for (int position = 0; position < xmlEventList.size(); position++) {
-            market.addEvent(toEvent(xmlEventList.get(position), position + 1));
-        }
+        return xmlEventList;
     }
 
     private void mapUsers(XmlUsers xmlUsers, GuessMarket market) {
@@ -89,18 +123,13 @@ public class EventsMapper {
         verifyEveryEventHasMarketMaker(market);
     }
 
-    private Event toEvent(XmlEvent xmlEvent, int positionInFile) {
-        String location = "event number " + positionInFile + " in the file";
-
-        Integer id = xmlEvent.getId();
-        if (id == null) {
-            throw new MissingXmlDataException("id", location);
-        }
+    private Event toEvent(XmlEvent xmlEvent, int id) {
         String name = InputText.normalize(xmlEvent.getName());
         if (name.isEmpty()) {
-            throw new MissingXmlDataException("name attribute", "the event with id " + id);
+            throw new MissingXmlDataException("name attribute",
+                    id == NO_ID ? "an event of the file" : "the event with id " + id);
         }
-        location = "the event " + GuessMarketException.describeEvent(name, id);
+        String location = "the event " + GuessMarketException.describeEvent(name, id);
 
         String description = InputText.normalize(xmlEvent.getDescription());
         if (description.isEmpty()) {

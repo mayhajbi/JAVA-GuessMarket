@@ -1,5 +1,6 @@
 package gm.engine.core;
 
+import gm.dto.AccountEntryType;
 import gm.dto.CommissionType;
 import gm.dto.EventStatus;
 import gm.dto.EventType;
@@ -44,7 +45,7 @@ public class Event implements Serializable {
 
     private static final double PERCENT = 100.0;
 
-    private final int id;
+    private int id;
     private final String name;
     private final String description;
     private final int commissionPercent;
@@ -128,6 +129,14 @@ public class Event implements Serializable {
 
     public int getId() {
         return id;
+    }
+
+    /**
+     * Gives the event its id, for an event that came from a file that has no ids: the system, and not
+     * the file, decides the id. Until then the id is 0, and the messages about the event do not show it.
+     */
+    public void assignId(int id) {
+        this.id = id;
     }
 
     public String getName() {
@@ -262,7 +271,7 @@ public class Event implements Serializable {
                     + (isLmsr ? "the initial subsidy" : "the initial investment") + ")", required, balance);
         }
 
-        user.getAccount().withdraw(required);
+        user.getAccount().withdraw(required, AccountEntryType.EVENT);
         account.deposit(required);
         if (!isLmsr) {
             orderBook.allocateInitialPairs(user);
@@ -297,7 +306,7 @@ public class Event implements Serializable {
         double commission = commissionOn(sharesCost, CommissionType.ON_PURCHASE);
 
         options.get(optionIndex).addShares(quantity);
-        buyer.getAccount().withdraw(sharesCost + commission);
+        buyer.getAccount().withdraw(sharesCost + commission, AccountEntryType.EVENT);
         account.deposit(sharesCost);
         payCommission(commission);
 
@@ -365,7 +374,7 @@ public class Event implements Serializable {
             double payout = holding.getValue() * payoutPerShare;
             double commission = commissionOn(payout, CommissionType.ON_CLOSE);
             account.withdraw(payout);
-            holder.getAccount().deposit(payout - commission);
+            holder.getAccount().deposit(payout - commission, AccountEntryType.PAYOUT);
             payCommission(commission);
             if (!isLmsr) {
                 orderBook.recordPayout(holder, payout, commission);
@@ -381,7 +390,7 @@ public class Event implements Serializable {
         double leftover = account.getBalance();
         if (leftover > 0) {
             account.withdraw(leftover);
-            marketMaker.getAccount().deposit(leftover);
+            marketMaker.getAccount().deposit(leftover, AccountEntryType.PAYOUT);
         }
 
         this.winningOptionIndex = winningOptionIndex;
@@ -406,7 +415,7 @@ public class Event implements Serializable {
      */
     public void payCommission(double commission) {
         if (commission > 0) {
-            marketMaker.getAccount().deposit(commission);
+            marketMaker.getAccount().deposit(commission, AccountEntryType.COMMISSION);
             account.addCollectedCommission(commission);
         }
     }

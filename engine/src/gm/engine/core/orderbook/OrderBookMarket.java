@@ -1,5 +1,6 @@
 package gm.engine.core.orderbook;
 
+import gm.dto.AccountEntryType;
 import gm.dto.CommissionType;
 import gm.dto.OrderSide;
 import gm.engine.core.Event;
@@ -301,7 +302,7 @@ public class OrderBookMarket implements Serializable {
         long priceCents = waiting.getPriceCents();
 
         double commission = chargeBuyer(event, buyer, optionIndex, quantity, priceCents,
-                seller.getAccount()::deposit);
+                amount -> seller.getAccount().deposit(amount, AccountEntryType.EVENT));
         positionOf(seller).recordSale(optionIndex, quantity, toMoney(priceCents, quantity));
 
         lastPriceCents[optionIndex] = priceCents;
@@ -349,7 +350,7 @@ public class OrderBookMarket implements Serializable {
                                DoubleConsumer receiver) {
         double amount = toMoney(priceCents, quantity);
         double commission = event.commissionOn(amount, CommissionType.ON_PURCHASE);
-        buyer.getAccount().withdraw(amount + commission);
+        buyer.getAccount().withdraw(amount + commission, AccountEntryType.EVENT);
         receiver.accept(amount);
         event.payCommission(commission);
         positionOf(buyer).recordPurchase(optionIndex, quantity, amount, commission);

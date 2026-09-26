@@ -1,5 +1,6 @@
 package gm.engine.impl;
 
+import gm.dto.AccountEntryDTO;
 import gm.dto.EventInfoDTO;
 import gm.dto.HistoryPointDTO;
 import gm.dto.MarketStateDTO;
@@ -51,9 +52,13 @@ class DtoFactory {
         return mapAll(events, this::toEventInfo);
     }
 
-    UserInfoDTO toUserInfo(User user) {
+    UserInfoDTO toUserInfo(User user, Iterable<Event> events) {
+        boolean marketMaker = false;
+        for (Event event : events) {
+            marketMaker |= event.getMarketMaker() == user;
+        }
         return new UserInfoDTO(user.getName(), user.getAccount().getBalance(),
-                user.getAccount().isBlocked());
+                user.getAccount().isBlocked(), marketMaker);
     }
 
     UserDetailsDTO toUserDetails(User user, Iterable<Event> events) {
@@ -69,8 +74,16 @@ class DtoFactory {
                 user.getAccount().isBlocked(), userEvents);
     }
 
-    List<UserInfoDTO> toUserInfoList(Iterable<User> users) {
-        return mapAll(users, this::toUserInfo);
+    List<UserInfoDTO> toUserInfoList(Iterable<User> users, Iterable<Event> events) {
+        return mapAll(users, user -> toUserInfo(user, events));
+    }
+
+    /**
+     * The movements of money in the account of the user, from the latest to the first one.
+     */
+    List<AccountEntryDTO> toAccountEntries(User user) {
+        return mapAll(latestFirst(user.getAccount().getEntries()), entry -> new AccountEntryDTO(
+                entry.getType(), entry.getAmount(), entry.getBalanceAfter()));
     }
 
     /**
