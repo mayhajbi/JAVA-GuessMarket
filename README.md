@@ -23,6 +23,7 @@ application on top of a passive engine; exercise 1 was a console application.
 ```
 build.bat        compiles into out\ and creates jars\ (gm-dto.jar, gm-engine.jar, gm-ui-fx.jar + lib\)
 run.bat          runs the JavaFX application; works from the project folder or from inside jars\
+tests\run-all.bat   runs the regression checks against a running server (see tests\README.md)
 ```
 
 ## Project structure
