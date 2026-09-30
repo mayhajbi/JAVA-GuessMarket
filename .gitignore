@@ -30,6 +30,9 @@ target/
 .idea/dataSources.local.xml
 *.iws
 
+# --- manual curl testing (cookie jar) ---
+cookies.txt
+
 # --- JVM crash and profiling dumps ---
 hs_err_pid*.log
 replay_pid*.log

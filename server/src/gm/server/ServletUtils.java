@@ -1,0 +1,39 @@
+package gm.server;
+
+import gm.engine.api.GuessMarketEngine;
+import gm.engine.impl.GuessMarketEngineImpl;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+
+/**
+ * Shared helpers of the servlets: the single engine of the server and the user name of the
+ * current session.
+ */
+public class ServletUtils {
+
+    public static final String USERNAME = "username";
+
+    private static final String ENGINE_ATTRIBUTE_NAME = "engine";
+
+    // ponytail: one global lock, because the engine is not thread safe; a lock per event if throughput ever matters
+    public static final Object LOCK = new Object();
+
+    public static GuessMarketEngine getEngine(ServletContext servletContext) {
+        synchronized (LOCK) {
+            if (servletContext.getAttribute(ENGINE_ATTRIBUTE_NAME) == null) {
+                servletContext.setAttribute(ENGINE_ATTRIBUTE_NAME, new GuessMarketEngineImpl());
+            }
+            return (GuessMarketEngine) servletContext.getAttribute(ENGINE_ATTRIBUTE_NAME);
+        }
+    }
+
+    /**
+     * The user name saved in the session by the login, or null when the request has no session.
+     */
+    public static String getUsername(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        Object attribute = session != null ? session.getAttribute(USERNAME) : null;
+        return attribute != null ? attribute.toString() : null;
+    }
+}
