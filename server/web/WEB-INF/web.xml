@@ -11,4 +11,39 @@
         <servlet-name>LoginServlet</servlet-name>
         <url-pattern>/login</url-pattern>
     </servlet-mapping>
+    <servlet>
+        <servlet-name>EventsServlet</servlet-name>
+        <servlet-class>gm.server.EventsServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>EventsServlet</servlet-name>
+        <url-pattern>/events</url-pattern>
+    </servlet-mapping>
+    <servlet>
+        <servlet-name>EventStateServlet</servlet-name>
+        <servlet-class>gm.server.EventStateServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>EventStateServlet</servlet-name>
+        <url-pattern>/event/market</url-pattern>
+        <url-pattern>/event/orderbook</url-pattern>
+        <url-pattern>/event/prices</url-pattern>
+    </servlet-mapping>
+    <servlet>
+        <servlet-name>UsersServlet</servlet-name>
+        <servlet-class>gm.server.UsersServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>UsersServlet</servlet-name>
+        <url-pattern>/users</url-pattern>
+    </servlet-mapping>
+    <servlet>
+        <servlet-name>AccountServlet</servlet-name>
+        <servlet-class>gm.server.AccountServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AccountServlet</servlet-name>
+        <url-pattern>/account</url-pattern>
+        <url-pattern>/account/log</url-pattern>
+    </servlet-mapping>
 </web-app>

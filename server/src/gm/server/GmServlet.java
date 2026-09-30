@@ -24,6 +24,18 @@ public abstract class GmServlet extends HttpServlet {
         }
     }
 
+    /**
+     * Thrown when a parameter of the request is missing or is not what the request needs.
+     */
+    protected static class BadRequestException extends RuntimeException {
+
+        private static final long serialVersionUID = 1L;
+
+        BadRequestException(String message) {
+            super(message);
+        }
+    }
+
     @Override
     protected void service(HttpServletRequest request, HttpServletResponse response) throws IOException {
         response.setContentType("text/plain;charset=UTF-8");
@@ -33,7 +45,7 @@ public abstract class GmServlet extends HttpServlet {
             }
         } catch (NotLoggedInException e) {
             fail(response, HttpServletResponse.SC_UNAUTHORIZED, e.getMessage());
-        } catch (GuessMarketException e) {
+        } catch (BadRequestException | GuessMarketException e) {
             fail(response, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
         } catch (RuntimeException e) {
             fail(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "The server failed to handle the request.");
@@ -48,6 +60,18 @@ public abstract class GmServlet extends HttpServlet {
             throw new NotLoggedInException();
         }
         return username;
+    }
+
+    protected static int requireInt(HttpServletRequest request, String name) {
+        String value = request.getParameter(name);
+        if (value == null) {
+            throw new BadRequestException("The parameter '" + name + "' is missing.");
+        }
+        try {
+            return Integer.parseInt(value.trim());
+        } catch (NumberFormatException e) {
+            throw new BadRequestException("The parameter '" + name + "' must be a whole number, but it is [" + value + "].");
+        }
     }
 
     protected static void fail(HttpServletResponse response, int status, String message) throws IOException {

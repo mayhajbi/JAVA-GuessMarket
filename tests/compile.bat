@@ -1,7 +1,7 @@
 @echo off
 rem ---------------------------------------------------------------------------
 rem  Compiles the dto and engine sources together with the engine checks under
-rem  tests\engine into %TEMP%\gm-tests\classes, straight from the sources, so the
+rem  tests\engine (they use the gson jar of the server) into %TEMP%\gm-tests\classes, straight from the sources, so the
 rem  checks always run against the current code without a build.bat run or
 rem  anything done in IntelliJ, and build.bat's out\ and jars\ folders are not
 rem  touched. Needs javac (JDK 25) on the PATH.
@@ -29,7 +29,7 @@ rem The argument file gets one quoted path with forward slashes per line (javac 
     echo "!SOURCE:\=/!"
 )) > "%SOURCES%"
 
-javac -encoding UTF-8 -cp "%ROOT%\lib\*" -d "%CLASSES%" @"%SOURCES%" > "%JAVAC_OUT%" 2>&1
+javac -encoding UTF-8 -cp "%ROOT%\lib\*;%ROOT%\server\lib\*" -d "%CLASSES%" @"%SOURCES%" > "%JAVAC_OUT%" 2>&1
 if errorlevel 1 (
     echo [FAIL] compile: the dto, engine and engine checks sources did not compile
     type "%JAVAC_OUT%"
