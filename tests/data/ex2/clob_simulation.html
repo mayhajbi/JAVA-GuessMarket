@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Order Book Simulation — Will it rain tomorrow?</title>
+<style>
+  :root{
+    --bg:#12151b; --surface:#1a1e26; --surface2:#20242e; --surface3:#262b36;
+    --border:#2b303c; --border-soft:#232833;
+    --text:#e7e9ee; --text-dim:#8b93a3; --text-faint:#5c6373;
+    --yes:#3ecf8e; --yes-bg:rgba(62,207,142,0.13); --yes-line:rgba(62,207,142,0.35);
+    --no:#f0665c; --no-bg:rgba(240,102,92,0.13); --no-line:rgba(240,102,92,0.35);
+    --pend:#f0b93e; --pend-bg:rgba(240,185,62,0.13);
+    --fee:#f2d94e; --fee-bg:rgba(242,217,78,0.13);
+    --pool:#8c9bff; --pool-bg:rgba(140,155,255,0.12);
+    --mono:ui-monospace,'SF Mono','Cascadia Code',Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);
+    -webkit-font-smoothing:antialiased;padding:32px 16px 64px}
+  .wrap{max-width:760px;margin:0 auto}
+
+  .eyebrow{font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-faint);
+    font-weight:600;margin-bottom:8px}
+  h1{font-size:26px;font-weight:650;margin:0 0 6px;letter-spacing:-0.01em}
+  .sub{font-size:14px;color:var(--text-dim);line-height:1.5;margin:0 0 4px;max-width:60ch}
+  .hint{font-size:12px;color:var(--text-faint);margin:10px 0 22px}
+  .hint kbd{font-family:var(--mono);background:var(--surface2);border:1px solid var(--border);
+    border-radius:4px;padding:1px 5px;font-size:11px}
+
+  .modebar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--surface);
+    border:1px solid var(--border-soft);border-radius:10px;padding:10px 14px;margin-bottom:18px}
+  .modelabel{font-size:12.5px;color:var(--text-dim);font-weight:600}
+  .modelabel .rate{color:var(--fee);font-family:var(--mono)}
+  .segctrl{display:flex;background:var(--surface2);border-radius:8px;padding:3px;gap:3px}
+  .seg{font-family:var(--sans);font-size:12.5px;font-weight:600;padding:6px 12px;border-radius:6px;
+    border:none;background:transparent;color:var(--text-faint);cursor:pointer}
+  .seg.active{background:var(--fee);color:#241f04}
+  .seg:hover:not(.active){color:var(--text-dim)}
+  .modehelp{font-size:11.5px;color:var(--text-faint);width:100%;margin-top:2px}
+
+  .ticker{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:8px}
+  .tcard{background:var(--surface);border:1px solid var(--border-soft);border-radius:10px;padding:10px 12px}
+  .tcard.pool{background:var(--pool-bg);border-color:rgba(140,155,255,0.3)}
+  .thead{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;gap:6px}
+  .tname{font-size:12.5px;font-weight:650}
+  .ttag{font-size:9px;color:var(--pool);background:rgba(140,155,255,0.15);border-radius:4px;
+    padding:1px 4px;margin-left:5px;font-weight:700;letter-spacing:0.03em;vertical-align:1px}
+  .tdelta{font-family:var(--mono);font-size:11px;font-weight:600;white-space:nowrap}
+  .tdelta.up{color:var(--yes)} .tdelta.down{color:var(--no)} .tdelta.flat{color:var(--text-faint)}
+  .stat{display:flex;justify-content:space-between;font-size:11.5px;padding:1.5px 0}
+  .stat .label{color:var(--text-faint)}
+  .stat .val{font-family:var(--mono);font-weight:600}
+  .stat .val.yes{color:var(--yes)} .stat .val.no{color:var(--no)} .stat .val.fee{color:var(--fee)}
+  .pool .stat .val{font-family:var(--mono);font-size:15px;color:var(--pool);font-weight:700}
+  .pool .stat .label{font-size:11px}
+  .footnote{font-size:11px;color:var(--text-faint);margin:2px 0 26px;line-height:1.4}
+
+  .stepnav{background:var(--surface);border:1px solid var(--border-soft);border-radius:12px;
+    padding:18px 20px;margin-bottom:14px}
+  .stepcount{font-family:var(--mono);font-size:11.5px;color:var(--text-faint);margin-bottom:6px}
+  .steptitle{font-size:18px;font-weight:650;margin-bottom:8px}
+  .stepcaption{font-size:14px;color:var(--text-dim);line-height:1.55;margin:0}
+
+  .callouts{margin-top:12px;display:flex;flex-direction:column;gap:8px}
+  .callout{border-radius:8px;padding:10px 12px;display:flex;gap:10px;align-items:flex-start;font-size:13px;line-height:1.45}
+  .callout-tag{flex:none;font-size:9.5px;font-weight:750;letter-spacing:0.05em;text-transform:uppercase;
+    padding:2px 6px;border-radius:5px;margin-top:1px}
+  .callout-insight{background:var(--pool-bg);color:#c7cdff}
+  .callout-insight .callout-tag{background:rgba(140,155,255,0.25);color:var(--pool)}
+  .callout-rule{background:var(--pend-bg);color:#f3d99b}
+  .callout-rule .callout-tag{background:rgba(240,185,62,0.28);color:var(--pend)}
+  .callout-fee{background:var(--fee-bg);color:#f2e6a8}
+  .callout-fee .callout-tag{background:rgba(242,217,78,0.28);color:var(--fee)}
+  .callout-reject{background:var(--no-bg);color:#f5b3ad}
+  .callout-reject .callout-tag{background:rgba(240,102,92,0.28);color:var(--no)}
+  .callout-body .struck{display:block;text-decoration:line-through;color:var(--text-dim);
+    font-family:var(--mono);font-size:12.5px;margin-bottom:3px}
+  .callout-reason{color:#f5b3ad}
+
+  .books{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+  .book{background:var(--surface);border:1px solid var(--border-soft);border-radius:12px;padding:14px 14px 10px}
+  .book-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+  .book-name{font-size:13.5px;font-weight:700}
+  .book-name.yes{color:var(--yes)} .book-name.no{color:var(--no)}
+  .book-quote{font-family:var(--mono);font-size:10.5px;color:var(--text-faint);margin-bottom:4px;line-height:1.7}
+  .book-quote b{color:var(--text-dim);font-weight:600}
+  .book-quote .spread{display:block;color:var(--text-faint)}
+  .book-quote .spread b{color:var(--fee)}
+  .sec-label{font-size:10px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-faint);
+    margin:9px 0 4px;font-weight:650}
+  .rows{min-height:6px}
+  .row{position:relative;display:flex;align-items:center;justify-content:space-between;
+    padding:4px 7px;margin-bottom:3px;border-radius:6px;font-size:12.5px;overflow:hidden}
+  .row .bar{position:absolute;left:0;top:0;bottom:0;z-index:0;border-radius:6px}
+  .row>span{position:relative;z-index:1}
+  .row .who{font-weight:600;flex:1}
+  .row .dirtag{font-size:9px;font-weight:700;letter-spacing:0.03em;color:var(--text-faint);
+    background:var(--surface3);border-radius:4px;padding:1px 4px;margin-right:5px}
+  .row .qty{color:var(--text-dim);font-family:var(--mono);margin-right:8px}
+  .row .px{font-family:var(--mono);font-weight:700}
+  .row-bid{background:var(--yes-bg)} .row-bid .bar{background:rgba(62,207,142,0.22)} .row-bid .px{color:var(--yes)}
+  .row-ask{background:var(--no-bg)} .row-ask .bar{background:rgba(240,102,92,0.22)} .row-ask .px{color:var(--no)}
+  .row-pending{background:var(--pend-bg);border:1px dashed rgba(240,185,62,0.4)}
+  .row-pending .px{color:var(--pend)}
+  .dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--pend);margin-right:6px}
+  @media (prefers-reduced-motion:no-preference){.dot{animation:pulse 1.1s ease-in-out infinite}}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+  .empty{font-size:11.5px;color:var(--text-faint);padding:3px 7px}
+
+  .closed{margin-top:14px;background:linear-gradient(180deg,var(--yes-bg),transparent);
+    border:1px solid var(--yes-line);border-radius:12px;padding:22px;text-align:center}
+  .closed-title{font-size:17px;font-weight:700;color:var(--yes);margin-bottom:6px}
+  .closed-sub{font-size:13.5px;color:var(--text-dim);max-width:48ch;margin:0 auto;line-height:1.5}
+
+  .controls{margin-top:20px}
+  .rail{display:flex;gap:3px;margin-bottom:14px}
+  .tick{flex:1;height:5px;border-radius:3px;background:var(--surface3);border:none;cursor:pointer;padding:0}
+  .tick.active{background:var(--pool)}
+  .tick.done{background:var(--border)}
+  .navbtns{display:flex;justify-content:space-between;gap:10px}
+  .btn{font-family:var(--sans);font-size:13.5px;font-weight:600;padding:9px 18px;border-radius:8px;
+    border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer}
+  .btn:hover:not(:disabled){background:var(--surface3)}
+  .btn:disabled{opacity:0.35;cursor:default}
+  .btn.primary{background:var(--pool);border-color:var(--pool);color:#12151b}
+  .btn.primary:hover:not(:disabled){background:#a2aeff}
+  .btn.ghost{background:transparent;border-color:transparent;color:var(--text-faint);font-weight:500}
+  .btn.ghost:hover{color:var(--text-dim)}
+
+  @media (max-width:620px){
+    .books{grid-template-columns:1fr}
+    .ticker{grid-template-columns:repeat(2,1fr)}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">Order Book (CLOB) Simulation</div>
+  <h1>Will it rain tomorrow?</h1>
+  <p class="sub">A binary YES / NO prediction market, walked through step by step: minting, quoting, order-book depth and spread, matching, partial fills on both sides, a sell order walking through multiple resting bids, a peer-to-peer mint, a rejected order, illiquidity, commission, and final resolution.</p>
+  <p class="hint">Use <kbd>Back</kbd> / <kbd>Next</kbd>, the arrow keys, or click a tick on the rail to jump to any step. The commission toggle below is live — flip it any time and every number updates instantly.</p>
+
+  <div class="modebar">
+    <span class="modelabel">Commission <span class="rate">1% (fixed)</span>, charged to:</span>
+    <div class="segctrl">
+      <button class="seg" data-mode="purchase">On purchase</button>
+      <button class="seg" data-mode="close">On close</button>
+    </div>
+    <div class="modehelp" id="modehelp"></div>
+  </div>
+
+  <div class="ticker" id="ticker"></div>
+  <p class="footnote">Net cash = current cash − starting balance. It only equals true profit/loss once shares are redeemed at resolution — before that, held shares still carry unrealized value.</p>
+
+  <div class="stepnav">
+    <div class="stepcount" id="stepcount"></div>
+    <div class="steptitle" id="steptitle"></div>
+    <p class="stepcaption" id="stepcaption"></p>
+    <div class="callouts" id="callouts"></div>
+  </div>
+
+  <div class="books" id="books"></div>
+  <div class="closed" id="closed" style="display:none">
+    <div class="closed-title" id="closedTitle"></div>
+    <p class="closed-sub" id="closedSub"></p>
+  </div>
+
+  <div class="controls">
+    <div class="rail" id="rail"></div>
+    <div class="navbtns">
+      <button class="btn" id="prevBtn">← Back</button>
+      <button class="btn ghost" id="restartBtn">Restart</button>
+      <button class="btn primary" id="nextBtn">Next →</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const START = {Zoe:500, Alice:200, Bob:200, Carol:200};
+const NAMES = ['Zoe','Alice','Bob','Carol'];
+const FEE = 0.01;
+
+/* ---------- trade events (drive the cash/share ledger; independent of book display) ---------- */
+const EVENTS = [
+  {atStep:1,  type:'mint',     who:'Zoe',   qty:100},
+  {atStep:7,  type:'resale',   buyer:'Alice', seller:'Zoe', side:'YES', qty:25, price:0.58},
+  {atStep:10, type:'resale',   buyer:'Bob',   seller:'Zoe', side:'NO',  qty:25, price:0.45},
+  {atStep:12, type:'resale',   buyer:'Bob',   seller:'Zoe', side:'YES', qty:20, price:0.50},
+  {atStep:12, type:'resale',   buyer:'Carol', seller:'Zoe', side:'YES', qty:10, price:0.48},
+  {atStep:15, type:'peermint', buyerYes:'Alice', priceYes:0.58, buyerNo:'Carol', priceNo:0.42, qty:35},
+  {atStep:18, type:'resolution', outcome:'YES'}
+];
+
+function computeState(uptoStep, mode){
+  const cash = Object.assign({}, START);
+  const yes = {Zoe:0,Alice:0,Bob:0,Carol:0};
+  const no  = {Zoe:0,Alice:0,Bob:0,Carol:0};
+  let pool = 0, zoeFees = 0;
+
+  EVENTS.forEach(e=>{
+    if(e.atStep > uptoStep) return;
+    if(e.type==='mint'){
+      cash[e.who]-=e.qty; yes[e.who]+=e.qty; no[e.who]+=e.qty; pool+=e.qty;
+    } else if(e.type==='resale'){
+      const base = e.qty*e.price;
+      cash[e.buyer]-=base; cash[e.seller]+=base;
+      if(e.side==='YES'){ yes[e.buyer]+=e.qty; yes[e.seller]-=e.qty; }
+      else { no[e.buyer]+=e.qty; no[e.seller]-=e.qty; }
+      if(mode==='purchase'){
+        const fee = base*FEE;
+        cash[e.buyer]-=fee; cash['Zoe']+=fee; zoeFees+=fee;
+      }
+    } else if(e.type==='peermint'){
+      const baseY = e.qty*e.priceYes, baseN = e.qty*e.priceNo;
+      cash[e.buyerYes]-=baseY; cash[e.buyerNo]-=baseN;
+      yes[e.buyerYes]+=e.qty; no[e.buyerNo]+=e.qty;
+      pool += e.qty;
+      if(mode==='purchase'){
+        const feeY=baseY*FEE, feeN=baseN*FEE;
+        cash[e.buyerYes]-=feeY; cash['Zoe']+=feeY; zoeFees+=feeY;
+        cash[e.buyerNo]-=feeN; cash['Zoe']+=feeN; zoeFees+=feeN;
+      }
+    } else if(e.type==='resolution'){
+      NAMES.forEach(t=>{
+        const payout = yes[t]*1.0;
+        if(payout>0){
+          if(mode==='close'){
+            const fee = payout*FEE;
+            cash[t]+=(payout-fee); cash['Zoe']+=fee; zoeFees+=fee;
+          } else {
+            cash[t]+=payout;
+          }
+        }
+        pool -= payout;
+        yes[t]=0; no[t]=0;
+      });
+    }
+  });
+
+  const traders = {};
+  NAMES.forEach(n=>traders[n]={cash:cash[n], yes:yes[n], no:no[n]});
+  return {traders, pool, zoeFees};
+}
+
+function feeCalloutFor(stepIndex, mode){
+  const evs = EVENTS.filter(e=>e.atStep===stepIndex);
+  if(!evs.length) return null;
+
+  const resEvent = evs.find(e=>e.type==='resolution');
+  if(resEvent){
+    if(mode==='close'){
+      const before = computeState(stepIndex-1, mode);
+      let totalPayout = 0; NAMES.forEach(n=>totalPayout+=before.traders[n].yes*1.0);
+      const fee = totalPayout*FEE;
+      return {type:'fee', text:'Every winning YES share pays out at $0.99 instead of $1.00 — 1% of the '+money(totalPayout)+' total winning payout, '+money(fee)+', goes to Zoe.'};
+    }
+    const st = computeState(stepIndex, 'purchase');
+    return {type:'fee', text:"Commission is set to 'On purchase' — nothing extra is taken here. All "+money(st.zoeFees)+" of commission was already collected earlier, trade by trade."};
+  }
+
+  if(mode!=='purchase'){
+    return {type:'fee', text:"Commission is set to 'On close' — no fee on this trade. Fees are only taken from winners when the market resolves."};
+  }
+
+  const parts = [];
+  let total = 0;
+  evs.forEach(ev=>{
+    if(ev.type==='resale'){
+      const fee = ev.qty*ev.price*FEE;
+      parts.push(ev.buyer+' pays '+money(fee));
+      total += fee;
+    } else if(ev.type==='peermint'){
+      const feeY = ev.qty*ev.priceYes*FEE, feeN = ev.qty*ev.priceNo*FEE;
+      parts.push(ev.buyerYes+' pays '+money(feeY));
+      parts.push(ev.buyerNo+' pays '+money(feeN));
+      total += feeY+feeN;
+    }
+  });
+  if(parts.length===1){
+    return {type:'fee', text:'On-purchase commission: '+parts[0]+' to Zoe.'};
+  }
+  return {type:'fee', text:'On-purchase commission: '+parts.join(', ')+' — '+money(total)+' total to Zoe.'};
+}
+
+/* ---------- book display data (unaffected by commission — matching price/qty never changes) ---------- */
+const steps = [
+
+{title:"Market opens", caption:"No shares exist yet. Every trader starts with their opening cash balance, and the contract's collateral pool is empty.",
+ yesPending:[],yesBids:[],yesAsks:[],noPending:[],noBids:[],noAsks:[],lastYes:null,lastNo:null},
+
+{title:"Zoe mints the first pairs", caption:"Zoe deposits $100 of her own money into the contract. That single deposit creates 100 brand-new YES shares and 100 brand-new NO shares at once — the only way any share can ever come into existence.",
+ note:{type:'rule',text:"Minting doesn't need a counterparty — any account can do it unilaterally, any time, for $1 per pair. No commission applies here; it isn't a trade between two parties."},
+ yesPending:[],yesBids:[],yesAsks:[],noPending:[],noBids:[],noAsks:[],lastYes:null,lastNo:null},
+
+{title:"Bob bids on YES", caption:"Bob offers to buy 20 YES at $0.50. The book was empty, so his bid just rests — the first level of demand.",
+ yesPending:[],yesBids:[{n:'Bob',q:20,p:0.50}],yesAsks:[],noPending:[],noBids:[],noAsks:[],lastYes:null,lastNo:null},
+
+{title:"Carol bids on YES too", caption:"Carol offers 15 YES at $0.48 — a second, slightly lower bid level stacks up beneath Bob's.",
+ yesPending:[],yesBids:[{n:'Bob',q:20,p:0.50},{n:'Carol',q:15,p:0.48}],yesAsks:[],noPending:[],noBids:[],noAsks:[],lastYes:null,lastNo:null},
+
+{title:"Zoe quotes a YES ask", caption:"Zoe lists 25 YES for sale at $0.58 — the first ask level. Now both sides of the book have real orders resting in them.",
+ note:{type:'insight',text:'Best bid $0.50, best ask $0.58 → spread = $0.58 − $0.50 = $0.08. Mid-price = ($0.50 + $0.58) ÷ 2 = $0.54 — a reasonable estimate of "fair value" even though nothing has traded yet.'},
+ yesPending:[],yesBids:[{n:'Bob',q:20,p:0.50},{n:'Carol',q:15,p:0.48}],yesAsks:[{n:'Zoe',q:25,p:0.58}],noPending:[],noBids:[],noAsks:[],lastYes:null,lastNo:null},
+
+{title:"Zoe adds a deeper ask", caption:"Zoe lists 15 more YES at $0.65 — a second, pricier ask level stacked behind her first. Real order books usually look like this: several price levels stacked on each side, not just one.",
+ yesPending:[],yesBids:[{n:'Bob',q:20,p:0.50},{n:'Carol',q:15,p:0.48}],yesAsks:[{n:'Zoe',q:25,p:0.58},{n:'Zoe',q:15,p:0.65}],noPending:[],noBids:[],noAsks:[],lastYes:null,lastNo:null},
+
+{title:"Alice's order arrives", caption:"Alice sends an order to buy 25 YES at $0.58 — exactly Zoe's best ask. It lands in the matching queue first; nothing has executed yet.",
+ yesPending:[{n:'Alice',q:25,p:0.58}],yesBids:[{n:'Bob',q:20,p:0.50},{n:'Carol',q:15,p:0.48}],yesAsks:[{n:'Zoe',q:25,p:0.58},{n:'Zoe',q:15,p:0.65}],noPending:[],noBids:[],noAsks:[],lastYes:null,lastNo:null},
+
+{title:"Matched: a resale", caption:"25 YES change hands at $0.58. Zoe already owned these, so this is a plain resale — the $14.50 goes straight into her account, not the pool. Her cheap $0.58 level is now fully gone.",
+ note:{type:'insight',text:'Spread just widened: best ask jumps from $0.58 to $0.65 now that the cheap level is used up. New spread = $0.65 − $0.50 = $0.15, almost double what it was.'},
+ yesPending:[],yesBids:[{n:'Bob',q:20,p:0.50},{n:'Carol',q:15,p:0.48}],yesAsks:[{n:'Zoe',q:15,p:0.65}],noPending:[],noBids:[],noAsks:[],lastYes:0.58,lastNo:null,yesJust:true,noJust:false},
+
+{title:"Zoe quotes a NO ask", caption:"Zoe lists 50 NO for sale at $0.45 — her first quote on the other book.",
+ yesPending:[],yesBids:[{n:'Bob',q:20,p:0.50},{n:'Carol',q:15,p:0.48}],yesAsks:[{n:'Zoe',q:15,p:0.65}],noPending:[],noBids:[],noAsks:[{n:'Zoe',q:50,p:0.45}],lastYes:0.58,lastNo:null},
+
+{title:"Bob's order arrives", caption:"Bob sends an order to buy 25 NO at $0.45. Same as before: it queues first and won't be checked against the book until the next step.",
+ yesPending:[],yesBids:[{n:'Bob',q:20,p:0.50},{n:'Carol',q:15,p:0.48}],yesAsks:[{n:'Zoe',q:15,p:0.65}],noPending:[{n:'Bob',q:25,p:0.45}],noBids:[],noAsks:[{n:'Zoe',q:50,p:0.45}],lastYes:0.58,lastNo:null},
+
+{title:"Matched: another resale", caption:"25 NO change hands at $0.45. Again this is Zoe selling shares she already holds — the $11.25 lands in her account directly, and the pool doesn't move.",
+ note:{type:'insight',text:"Zoe's NO ask had 50 listed; 25 sold, 25 still resting — a partial fill."},
+ yesPending:[],yesBids:[{n:'Bob',q:20,p:0.50},{n:'Carol',q:15,p:0.48}],yesAsks:[{n:'Zoe',q:15,p:0.65}],noPending:[],noBids:[],noAsks:[{n:'Zoe',q:25,p:0.45}],lastYes:0.58,lastNo:0.45,yesJust:false,noJust:true},
+
+{title:"Zoe's order arrives", caption:"Zoe sends an order to sell 30 YES at $0.45 or better — she's willing to take at least that, hoping for more. It queues first, same as every other order.",
+ yesPending:[{n:'Zoe',q:30,p:0.45,dir:'sell'}],yesBids:[{n:'Bob',q:20,p:0.50},{n:'Carol',q:15,p:0.48}],yesAsks:[{n:'Zoe',q:15,p:0.65}],noPending:[],noBids:[],noAsks:[{n:'Zoe',q:25,p:0.45}],lastYes:0.58,lastNo:0.45},
+
+{title:"Matched: Zoe sells into the bids", caption:"The engine walks Zoe's sell order through the resting bids, best price first: 20 YES clear at Bob's $0.50 (his order fully used up), then the remaining 10 clear at Carol's $0.48 (leaving her 5 shares still resting). Zoe collects $10.00 + $4.80 = $14.80 for 30 shares — better than the $0.45 floor she was willing to accept.",
+ note:{type:'insight',text:"This is the mirror image of a big buy order eating through several asks, from all the way back at the start: a big sell order eats through several bids instead, best (highest) price first."},
+ yesPending:[],yesBids:[{n:'Carol',q:5,p:0.48}],yesAsks:[{n:'Zoe',q:15,p:0.65}],noPending:[],noBids:[],noAsks:[{n:'Zoe',q:25,p:0.45}],lastYes:0.48,lastNo:0.45,yesJust:true,noJust:false},
+
+{title:"Carol bids on NO", caption:"Carol offers to buy 35 NO at $0.42. The NO book still has Zoe's leftover ask at $0.45, but Carol's bid is lower and doesn't cross it, so it simply rests.",
+ yesPending:[],yesBids:[{n:'Carol',q:5,p:0.48}],yesAsks:[{n:'Zoe',q:15,p:0.65}],noPending:[],noBids:[{n:'Carol',q:35,p:0.42}],noAsks:[{n:'Zoe',q:25,p:0.45}],lastYes:0.48,lastNo:0.45,yesJust:false,noJust:false},
+
+{title:"Alice's order arrives", caption:"Alice sends a second order: buy 40 YES at $0.62. Combined with Carol's resting $0.42 NO bid, that's $1.04 — enough to mint. But Carol only has 35 NO to offer, so at most 35 pairs can be minted. It queues first; nothing has executed yet.",
+ yesPending:[{n:'Alice',q:40,p:0.62}],yesBids:[{n:'Carol',q:5,p:0.48}],yesAsks:[{n:'Zoe',q:15,p:0.65}],noPending:[],noBids:[{n:'Carol',q:35,p:0.42}],noAsks:[{n:'Zoe',q:25,p:0.45}],lastYes:0.48,lastNo:0.45,yesJust:false,noJust:false},
+
+{title:"Matched: a peer-to-peer mint", caption:"The engine mints the smaller of the two quantities: min(40, 35) = 35 pairs. Carol's order fully fills — she was resting first, so her $0.42 price is honored exactly. That leaves $0.58 to complete the dollar — $0.04/share better than Alice's $0.62 limit. Alice's other 5 shares don't have a match, so they stay resting as a new bid at her original price.",
+ note:{type:'rule',text:"Same mint mechanic as Zoe's very first one — except two ordinary traders did it themselves, and this time the order sizes didn't match, so part of it simply rests, exactly like a partial fill on any other order."},
+ yesPending:[],yesBids:[{n:'Alice',q:5,p:0.62},{n:'Carol',q:5,p:0.48}],yesAsks:[{n:'Zoe',q:15,p:0.65}],noPending:[],noBids:[],noAsks:[{n:'Zoe',q:25,p:0.45}],lastYes:0.58,lastNo:0.42,yesJust:true,noJust:true},
+
+{title:"An order gets rejected", caption:"Bob tries to place an order to buy 10 YES at $1.05. The exchange rejects it immediately — it never even reaches the queue.",
+ rejected:{n:'Bob',q:10,p:1.05,reason:"Price must be between $0.01 and $0.99 — a YES share can never be worth more than the $1 it pays out."},
+ yesPending:[],yesBids:[{n:'Alice',q:5,p:0.62},{n:'Carol',q:5,p:0.48}],yesAsks:[{n:'Zoe',q:15,p:0.65}],noPending:[],noBids:[],noAsks:[{n:'Zoe',q:25,p:0.45}],lastYes:0.58,lastNo:0.42,yesJust:false,noJust:false},
+
+{title:"Bob's ask finds no buyer", caption:"Bob tries to trim his NO position, asking $0.15 for all 25 shares — actually the cheapest NO on offer now. Nobody's bidding on NO at all right now, so it just sits there, unmatched.",
+ yesPending:[],yesBids:[{n:'Alice',q:5,p:0.62},{n:'Carol',q:5,p:0.48}],yesAsks:[{n:'Zoe',q:15,p:0.65}],noPending:[],noBids:[],noAsks:[{n:'Bob',q:25,p:0.15},{n:'Zoe',q:25,p:0.45}],lastYes:0.58,lastNo:0.42,yesJust:false,noJust:false},
+
+{title:"Resolution: YES wins", caption:"It rains. Every YES share pays $1 minus any on-close commission; every NO share pays $0. All remaining unmatched orders — Zoe's two stale asks, Alice's and Carol's leftover YES bids, and Bob's NO ask — are simply cancelled.",
+ note:{type:'insight',text:"Zoe sold 30 YES for under $0.50 apiece right before YES went on to win — real market-making risk, not a guaranteed profit. Whatever commission mode is selected, total money in the system is still conserved; commission just moves some of it to Zoe faster or slower. Try flipping the toggle above and watch every trader's final number change."},
+ resolution:true}
+
+];
+
+let cur = 0;
+let mode = 'purchase';
+
+function money(v){ const a=Math.abs(v).toFixed(2); return (v<0?'-$':'$')+a; }
+function deltaStr(v){ if(Math.abs(v)<0.005) return '±$0.00'; return (v>0?'+$':'-$')+Math.abs(v).toFixed(2); }
+function bestBid(arr){ if(!arr||!arr.length) return null; return Math.max(...arr.map(o=>o.p)); }
+function bestAsk(arr){ if(!arr||!arr.length) return null; return Math.min(...arr.map(o=>o.p)); }
+function px(v){ return v===null||v===undefined ? '—' : '$'+v.toFixed(2); }
+
+function maxQtyInStep(s){
+  const all = [].concat(s.yesPending||[],s.yesBids||[],s.yesAsks||[],s.noPending||[],s.noBids||[],s.noAsks||[]);
+  return Math.max(1, ...all.map(o=>o.q));
+}
+
+function orderRow(o, kind, maxQ){
+  const w = Math.max(6, (o.q/maxQ)*100);
+  if(kind==='pending'){
+    const dir = o.dir==='sell' ? 'SELL' : 'BUY';
+    return '<div class="row row-pending"><span class="dot"></span><span class="dirtag">'+dir+'</span><span class="who">'+o.n+'</span>'+
+      '<span class="qty">'+o.q+'</span><span class="px">$'+o.p.toFixed(2)+'</span></div>';
+  }
+  const cls = kind==='bid' ? 'row-bid' : 'row-ask';
+  return '<div class="row '+cls+'"><div class="bar" style="width:'+w+'%"></div>'+
+    '<span class="who">'+o.n+(o.n==='Zoe'?' <span style="opacity:.55;font-weight:500">MM</span>':'')+'</span>'+
+    '<span class="qty">'+o.q+'</span><span class="px">$'+o.p.toFixed(2)+'</span></div>';
+}
+
+function renderList(list, kind, maxQ){
+  if(!list || !list.length) return '<div class="empty">—</div>';
+  return list.map(o=>orderRow(o,kind,maxQ)).join('');
+}
+
+function renderBook(label, cssClass, pending, bids, asks, last, just, maxQ){
+  const bb = bestBid(bids), ba = bestAsk(asks);
+  const spreadTxt = (bb!==null && ba!==null) ? '$'+(ba-bb).toFixed(2) : '—';
+  let html = '<div class="book">';
+  html += '<div class="book-head"><span class="book-name '+cssClass+'">'+label+'</span></div>';
+  html += '<div class="book-quote"><b>Best bid</b> '+px(bb)+' &nbsp; <b>Best ask</b> '+px(ba)+
+          ' &nbsp; <b>Last trade</b> '+(last===null||last===undefined?'—':'$'+last.toFixed(2))+(just?' •':'')+
+          '<span class="spread"><b>Spread</b> '+spreadTxt+'</span></div>';
+  if(pending && pending.length){
+    html += '<div class="sec-label">Incoming (not yet matched)</div><div class="rows">'+renderList(pending,'pending',maxQ)+'</div>';
+  }
+  html += '<div class="sec-label">Bids (buy)</div><div class="rows">'+renderList(bids,'bid',maxQ)+'</div>';
+  html += '<div class="sec-label">Asks (sell)</div><div class="rows">'+renderList(asks,'ask',maxQ)+'</div>';
+  html += '</div>';
+  return html;
+}
+
+function renderCallouts(s){
+  let html = '';
+  if(s.rejected){
+    const r = s.rejected;
+    html += '<div class="callout callout-reject"><div class="callout-tag">Rejected</div>'+
+      '<div class="callout-body"><span class="struck">'+r.n+' tries to buy '+r.q+' YES @ $'+r.p.toFixed(2)+'</span>'+
+      '<div class="callout-reason">'+r.reason+'</div></div></div>';
+  }
+  if(s.note){
+    const label = s.note.type==='rule' ? 'Rule' : 'Insight';
+    html += '<div class="callout callout-'+s.note.type+'"><div class="callout-tag">'+label+'</div>'+
+      '<div class="callout-body">'+s.note.text+'</div></div>';
+  }
+  const fc = feeCalloutFor(cur, mode);
+  if(fc){
+    html += '<div class="callout callout-fee"><div class="callout-tag">Fee</div>'+
+      '<div class="callout-body">'+fc.text+'</div></div>';
+  }
+  return html;
+}
+
+function render(){
+  const s = steps[cur];
+  const state = computeState(cur, mode);
+
+  document.getElementById('stepcount').textContent = 'STEP '+(cur+1)+' OF '+steps.length;
+  document.getElementById('steptitle').textContent = s.title;
+  document.getElementById('stepcaption').textContent = s.caption;
+  document.getElementById('callouts').innerHTML = renderCallouts(s);
+
+  document.querySelectorAll('.seg').forEach(b=>b.classList.toggle('active', b.dataset.mode===mode));
+  document.getElementById('modehelp').textContent = mode==='purchase'
+    ? "Every time someone buys shares (resale or mint), they pay 1% of the trade value to Zoe on top of the price."
+    : "No fee on individual trades. At resolution, every winning share pays out 1% less, and that 1% goes to Zoe.";
+
+  let tHtml = '<div class="tcard pool"><div class="thead"><span class="tname">Contract pool</span></div>'+
+    '<div class="stat"><span class="label">Locked collateral</span><span class="val">'+money(state.pool)+'</span></div></div>';
+  NAMES.forEach(n=>{
+    const t = state.traders[n];
+    const net = t.cash - START[n];
+    const dcls = net>0.005?'up':(net<-0.005?'down':'flat');
+    tHtml += '<div class="tcard"><div class="thead"><span class="tname">'+n+(n==='Zoe'?'<span class="ttag">MM</span>':'')+'</span>'+
+      '<span class="tdelta '+dcls+'">'+deltaStr(net)+'</span></div>'+
+      '<div class="stat"><span class="label">Cash</span><span class="val">'+money(t.cash)+'</span></div>'+
+      '<div class="stat"><span class="label">YES</span><span class="val yes">'+t.yes+'</span></div>'+
+      '<div class="stat"><span class="label">NO</span><span class="val no">'+t.no+'</span></div>'+
+      (n==='Zoe' ? '<div class="stat"><span class="label">Fees earned</span><span class="val fee">'+money(state.zoeFees)+'</span></div>' : '')+
+      '</div>';
+  });
+  document.getElementById('ticker').innerHTML = tHtml;
+
+  if(s.resolution){
+    document.getElementById('books').style.display = 'none';
+    document.getElementById('closed').style.display = 'block';
+    document.getElementById('closedTitle').textContent = 'Market resolved: YES';
+    document.getElementById('closedSub').textContent = 'The pool is now empty — fully distributed to the winning holders' + (mode==='close' ? ', minus the 1% on-close commission.' : '.');
+  } else {
+    document.getElementById('closed').style.display = 'none';
+    document.getElementById('books').style.display = 'grid';
+    const maxQ = maxQtyInStep(s);
+    document.getElementById('books').innerHTML =
+      renderBook('YES','yes',s.yesPending,s.yesBids,s.yesAsks,s.lastYes,s.yesJust,maxQ) +
+      renderBook('NO','no',s.noPending,s.noBids,s.noAsks,s.lastNo,s.noJust,maxQ);
+  }
+
+  document.getElementById('rail').innerHTML = steps.map((_,i)=>
+    '<button class="tick '+(i===cur?'active':(i<cur?'done':''))+'" onclick="jump('+i+')" aria-label="Step '+(i+1)+'"></button>').join('');
+
+  document.getElementById('prevBtn').disabled = cur===0;
+  document.getElementById('nextBtn').disabled = cur===steps.length-1;
+  document.getElementById('nextBtn').textContent = cur===steps.length-1 ? 'End' : 'Next →';
+}
+
+function go(d){ cur = Math.max(0, Math.min(steps.length-1, cur+d)); render(); }
+function jump(i){ cur = i; render(); }
+
+document.getElementById('prevBtn').addEventListener('click',()=>go(-1));
+document.getElementById('nextBtn').addEventListener('click',()=>go(1));
+document.getElementById('restartBtn').addEventListener('click',()=>jump(0));
+document.querySelectorAll('.seg').forEach(b=>b.addEventListener('click',()=>{ mode=b.dataset.mode; render(); }));
+document.addEventListener('keydown',(e)=>{
+  if(e.key==='ArrowRight') go(1);
+  if(e.key==='ArrowLeft') go(-1);
+});
+
+render();
+</script>
+</body>
+</html>

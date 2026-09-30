@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Guess-Market>
+	<GM-events>
+		<GM-event name="Will it rain tomorrow?">
+			<id>1</id>
+			<description>The CLOB simulation of the exercise</description>
+			<commission type="on-purchase">1</commission>
+			<GM-options>
+				<GM-option>YES</GM-option>
+				<GM-option>NO</GM-option>
+			</GM-options>
+			<GM-method>
+				<GM-order-book allow-mint="true" initial="100" d="1"/>
+			</GM-method>
+		</GM-event>
+		<GM-event name="No Mint Market">
+			<id>2</id>
+			<description>An order book without minting</description>
+			<commission type="on-purchase">1</commission>
+			<GM-options>
+				<GM-option>YES</GM-option>
+				<GM-option>NO</GM-option>
+			</GM-options>
+			<GM-method>
+				<GM-order-book allow-mint="false" initial="100" d="1"/>
+			</GM-method>
+		</GM-event>
+		<GM-event name="LMSR Market">
+			<id>3</id>
+			<description>An LMSR event</description>
+			<commission type="on-purchase">1</commission>
+			<GM-options>
+				<GM-option>YES</GM-option>
+				<GM-option>NO</GM-option>
+			</GM-options>
+			<GM-method>
+				<GM-LMSR>
+					<b>100</b>
+				</GM-LMSR>
+			</GM-method>
+		</GM-event>
+		<GM-event name="Expensive Market">
+			<id>4</id>
+			<description>An order book whose market maker cannot afford it</description>
+			<commission type="on-close">1</commission>
+			<GM-options>
+				<GM-option>YES</GM-option>
+				<GM-option>NO</GM-option>
+			</GM-options>
+			<GM-method>
+				<GM-order-book allow-mint="true" initial="1000" d="1"/>
+			</GM-method>
+		</GM-event>
+	</GM-events>
+	<GM-users>
+		<GM-user name="Zoe">
+			<initial-cash>500</initial-cash>
+			<GM-market-maker>
+				<event id="1"/>
+				<event id="2"/>
+				<event id="3"/>
+			</GM-market-maker>
+		</GM-user>
+		<GM-user name="Alice">
+			<initial-cash>200</initial-cash>
+		</GM-user>
+		<GM-user name="Bob">
+			<initial-cash>200</initial-cash>
+		</GM-user>
+		<GM-user name="Carol">
+			<initial-cash>200</initial-cash>
+		</GM-user>
+		<GM-user name="Dan">
+			<initial-cash>20</initial-cash>
+			<GM-market-maker>
+				<event id="4"/>
+			</GM-market-maker>
+		</GM-user>
+		<GM-user name="Eve">
+			<initial-cash>10</initial-cash>
+		</GM-user>
+	</GM-users>
+</Guess-Market>

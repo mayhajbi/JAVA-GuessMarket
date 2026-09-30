@@ -6,9 +6,9 @@ rem  failed), and the full detail of every failure in tests\output.txt.
 rem  Checks that a server-dependent script needs are only run when the server
 rem  is actually reachable, so a downed server is never mistaken for a real
 rem  check failure.
-rem  To add a new check script: add one more "call :run <path> <name>" line
-rem  below, next to the ones that already exist - inside the "if %SERVER_UP%"
-rem  block if it talks to the server, outside it if it does not.
+rem  The scripts are found by their names, so a new check needs no edit here:
+rem    engine\<Name>Test.java  - an engine check class (see engine\Check.java)
+rem    server\test-<name>.bat   - a check that talks to the running server
 rem ---------------------------------------------------------------------------
 setlocal enabledelayedexpansion
 cd /d "%~dp0"
@@ -24,11 +24,26 @@ if exist "%OUTPUT_FILE%" del /q "%OUTPUT_FILE%"
 for /f %%s in ('curl.exe -s -o nul -w "%%{http_code}" --max-time 3 "%BASE_URL%/login" 2^>nul') do set PING_STATUS=%%s
 if "%PING_STATUS%"=="000" (set SERVER_UP=0) else (set SERVER_UP=1)
 
-if %SERVER_UP%==1 (
-    call :run server\login.bat "server-login"
+rem The engine checks compile straight from the sources, so they need javac. When it is not on the PATH,
+rem the JDK 25 folder of this machine is tried.
+where javac >nul 2>nul
+if errorlevel 1 if exist "C:\Program Files\Java\jdk-25.0.4\bin\javac.exe" set "PATH=C:\Program Files\Java\jdk-25.0.4\bin;%PATH%"
+
+call :run .\compile.bat "compile"
+set ENGINE_READY=0
+if "%RUN_RESULT%"=="0" set ENGINE_READY=1
+if %ENGINE_READY%==1 (
+    for %%f in (engine\*Test.java) do call :run "engine\run-check.bat %%~nf" "engine-%%~nf"
 ) else (
-    echo Server not reachable at %BASE_URL% - start Tomcat first ^(see README.md^). Skipping: server-login
-    set SKIPPED_CHECKS= server-login
+    echo Skipping the engine checks - the sources did not compile.
+    set SKIPPED_CHECKS=!SKIPPED_CHECKS! engine-checks
+)
+
+if %SERVER_UP%==1 (
+    for %%f in (server\test-*.bat) do call :run "%%f" "server-%%~nf"
+) else (
+    echo Server not reachable at %BASE_URL% - start Tomcat first ^(see README.md^). Skipping the server checks
+    set SKIPPED_CHECKS=!SKIPPED_CHECKS! server-checks
 )
 
 set /a TOTAL_CHECKS=PASS_COUNT+FAIL_COUNT
@@ -42,7 +57,7 @@ if %FAIL_COUNT% GTR 0 (
 ) else (
     echo All %PASS_COUNT%/%TOTAL_CHECKS% checks passed.
 )
-if not "%SKIPPED_CHECKS%"=="" echo Skipped ^(server not running^):%SKIPPED_CHECKS%
+if not "%SKIPPED_CHECKS%"=="" echo Skipped:%SKIPPED_CHECKS%
 endlocal
 goto :eof
 
