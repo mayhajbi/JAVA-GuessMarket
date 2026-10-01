@@ -45,6 +45,7 @@ system do: they register, load money and upload files of events.
 | `MessageWordingTest` | the wording of the refusals: no brackets, money with two digits, the name of the XML element or attribute in a message about an uploaded file |
 | `EventRulesTest` | text cleanup of a created event, the active events, a blocked user creating an event, options of the same name in a file |
 | `client\ViewRefreshTest` | what an automatic update may change on the screen: equal rows and equal points leave a table and a graph untouched, the selected row stays selected, and the quantity typed for an event survives every refresh |
+| `client\LayoutTest` | the screens in a window of 1200x760, 800x600 and 640x480: a screen scrolls instead of shrinking below its minimal size, fills the width of the window, nothing sticks out of it and no label or button is too narrow for its text |
 | `server\test-live-pull.bat` | the automatic updates with the classes of the client (`LivePullCheck.java`): not logged in (401), a logged in client gets its data, what another user does arrives within 2 seconds, nothing is pulled while the updates are off |
 | `server\test-login.bat` | `/login`: a valid login (200 + session cookie), the same name from another session (401), a missing name (409) |
 | `server\test-read-api.bat` | the read endpoints: refused without a session, wrong parameters (400), a user sees only the own account |

@@ -2,6 +2,9 @@
 
 ## Screens
 
+* **Login** - the user types a name and logs in. A name that is already taken, an empty name or a
+  name that is not in English is refused with a message, and the user can try again. After the
+  login the events screen is shown, and the title of the window carries the name of the user.
 * **Events** - every event with its status, type, commission, market maker and account balance,
   filtered by type, status and commission method (each with *All*).
 * **Account** - the screen of the user who is logged in:
@@ -11,7 +14,7 @@
     market maker; a refused file shows the reason the server gave.
   * *Users* - the other users, with the name, the balance and whether the user is a market maker.
   * *Account details* - every movement of money in the account (type, amount and the balance after
-    it), in the order the server recorded them.
+    it), the latest one first.
   * *Load funds* adds an amount to the balance. A user who is blocked can load funds as well: it
     is the way out of the block.
   * *Balance over time* - the balance of the user after every change.
@@ -46,8 +49,8 @@ Every window can be resized freely; when it is small, the screens scroll instead
   actually changes.
 * **Creating an event** - *New event* on the events screen opens a form where a user creates an
   event of their own and becomes its market maker. The form asks for the details every event has,
-  and then only the fields of the trading method that was chosen: the liquidity (b) of an LMSR
-  event, or the base value (d), the initial investment and whether minting is allowed of an order
+  and then only the fields of the trading method that was chosen: the liquidity of an LMSR
+  event, or the base value, the initial investment and whether minting is allowed of an order
   book event. The event is created inactive with an id no other event uses, and the same user opens,
   trades in and closes it like any other event of theirs. Every rule a data file has to obey is
   checked here as well - the engine shares one validator between the two ways in. The form stays
@@ -57,7 +60,7 @@ Every window can be resized freely; when it is small, the screens scroll instead
   the buttons, and the font and its size of every label - including the message dialogs and the form
   of a new event. The application starts in the regular look.
 * **Animations** - *Animations* in the header turns on three animations: the window fades in once a
-  data file was loaded successfully (0.9s), the status of an event pulses after it was opened or
+  file was uploaded successfully (0.9s), the status of an event pulses after it was opened or
   closed, as soon as the confirmation message is closed (0.7s), and the details of an event slide in
-  from the side when a different event is chosen (0.45s). A file that failed to load plays none of
+  from the side when a different event is chosen (0.45s). A file that was refused plays none of
   them. The application starts with the animations turned off.

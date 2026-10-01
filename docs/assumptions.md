@@ -25,10 +25,16 @@ The choices made wherever the exercise did not decide.
   book). Whatever is left in the event account afterwards (the unused part of an LMSR subsidy)
   returns to the market maker, and the waiting orders of an order book are cancelled.
 * **Negative balance** - a purchase or a trade is carried out even if it brings the balance of the
-  buyer below zero; from then on that user is blocked from opening and creating events, buying shares
-  and placing orders. The waiting buy orders of a blocked user are cancelled, since they can no longer be paid
-  for. A blocked user still receives money (a sale, a payout, a commission, a returned subsidy), and
-  a blocked market maker may still close the own event, so that the winners can always be paid.
+  buyer below zero, as the exercise says; while the balance is below zero that user is blocked from
+  opening and creating events, buying shares and placing orders. The waiting buy orders of a blocked
+  user are cancelled, since they can no longer be paid for. A blocked user still receives money (a
+  sale, a payout, a commission, a returned subsidy), may still upload files, and a blocked market
+  maker may still close the own event, so that the winners can always be paid.
+* **Loading funds** - any positive amount may be loaded, by a blocked user as well. The block is
+  decided by the balance of the moment: funds that bring the balance back to zero or more remove it.
+* **English only** - the name of a user and the name, the description and the options of an event
+  (in a file or in the form of a new event) may hold only English letters, digits and common
+  punctuation marks; anything else is refused with a message.
 * **Order book file values** - `d` must be a positive integer, `initial` must not be negative and
   must divide by `d` (the market maker receives whole pairs of shares), and `allow-mint` must be
   `true` or `false`.
@@ -52,6 +58,16 @@ The choices made wherever the exercise did not decide.
   in, in any status and not only the active ones: the details the exercise asks for include those of
   a closed event (the shares of every option and the winner, or the profit / loss), so a closed
   event stays in the list.
+* **The sketch** - the box *Account Details* at the bottom left of the account screen is read as the
+  lines of the account: every movement of money, of the user or caused by another user (a commission,
+  a payout), in a line of its own, with its type (Deposit, Event, Payout, Commission), its amount and
+  the balance after it. Of another user only the name, the balance and whether the user is a market
+  maker are shown. The login screen is not in the sketch; it is a small window of its own.
+* **Messages** - a refused action, a refused file and a completed action are reported in a message
+  window that names the action and the reason.
+* **Environment** - the server runs on Tomcat 10.1 (`jakarta.servlet`), and the client expects it at
+  `http://localhost:8080/guessmarket`. A request waits for the server up to 10 seconds. Nothing is
+  kept beyond the running server: when it stops, the users, the events and the history are gone.
 * **Text** - every textual value is compared without case, and whitespace at the edges (or line
   breaks and tabs inside a value, including a value typed into the form of a new event) is ignored.
 * **Server write requests** - every request that changes data (`/upload`, `/account/deposit`,

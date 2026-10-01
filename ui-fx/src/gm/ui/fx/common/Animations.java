@@ -9,7 +9,7 @@ import javafx.scene.Node;
 import javafx.util.Duration;
 
 /**
- * The three animations of the application (bonus): the window fades in when a file was loaded, the
+ * The three animations of the application (bonus): the window fades in when a file was uploaded, the
  * status of an event is pulsed once it was opened or closed, and the details of an event slide in
  * when a different event is chosen.
  * <p>
@@ -37,7 +37,7 @@ public final class Animations {
     }
 
     /**
-     * Brings the node up from fully transparent. Used on the whole window after a file was loaded.
+     * Brings the node up from fully transparent. Used on the whole window after a file was uploaded.
      */
     public static void fadeIn(Node node) {
         play(fadeFromTransparent(FADE_IN, node), () -> node.setOpacity(1));

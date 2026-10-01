@@ -7,6 +7,7 @@ import gm.dto.UploadResultDTO;
 import gm.dto.UserDetailsDTO;
 import gm.dto.UserEventDTO;
 import gm.dto.UserInfoDTO;
+import gm.ui.fx.common.Animations;
 import gm.ui.fx.common.Dialogs;
 import gm.ui.fx.common.Formats;
 import gm.ui.fx.common.HistoryChart;
@@ -159,6 +160,7 @@ public class AccountController extends EventDetailScreen {
 
     private void uploadSucceeded(UploadResultDTO result) {
         onDataChanged.run();
+        Animations.fadeIn(loadFileButton.getScene().getRoot());
         Dialogs.showInformation("The file was uploaded",
                 result.eventNames().size() + " events added from " + result.fileName() + ".");
     }
