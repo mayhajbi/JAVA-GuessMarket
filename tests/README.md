@@ -41,6 +41,7 @@ Each check runs on its own (a failure in one does not stop the others). Test dat
 | `server\test-read-api.bat` | the read endpoints: refused without a session, wrong parameters (400), a user sees only the own account |
 | `server\test-upload.bat` | `/upload`: a valid file, the same file again, a broken file, no file, a file over 1MB, and that the upload leaves no new file in the folders of Tomcat |
 | `server\test-deposit.bat` | `/account/deposit`: wrong amounts (400 with the reason), the new balance, the movement in the account log |
+| `server\test-history.bat` | `/account/history`: refused without a session, a point with the new balance after every deposit, the user comes from the session |
 | `server\test-write-api.bat` | create, open, buy, order and close end to end with three users: every wrong request (400 with the reason) and every balance, compared with a number computed from the LMSR formula and the order book rules |
 
 ## Adding a check

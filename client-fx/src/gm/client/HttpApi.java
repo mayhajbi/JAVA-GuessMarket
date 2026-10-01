@@ -4,6 +4,7 @@ import okhttp3.Cookie;
 import okhttp3.CookieJar;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
+import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -25,6 +26,7 @@ import java.util.logging.Logger;
 public class HttpApi {
 
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
+    private static final MediaType XML = MediaType.get("application/xml");
     private static final String NO_BODY = "";
     private static final String CONNECTION_MESSAGE = "The server could not be reached at " + Constants.BASE_URL
             + ". Start Tomcat and check that it listens on localhost:8080.";
@@ -60,6 +62,20 @@ public class HttpApi {
     public String post(String path, Map<String, String> params, String json) {
         RequestBody body = RequestBody.create(json == null ? NO_BODY : json, JSON);
         return execute(new Request.Builder().url(url(path, params)).post(body).build());
+    }
+
+    /**
+     * Uploads one file as a multipart request, the way the course example does.
+     *
+     * @param fileName the name of the file, as the user knows it
+     * @param content  the whole content of the file
+     */
+    public String upload(String path, String fileName, byte[] content) {
+        RequestBody body = new MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+                .addFormDataPart("file", fileName, RequestBody.create(content, XML))
+                .build();
+        return execute(new Request.Builder().url(url(path, Map.of())).post(body).build());
     }
 
     private static HttpUrl url(String path, Map<String, String> params) {

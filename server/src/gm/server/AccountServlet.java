@@ -7,7 +7,8 @@ import java.io.IOException;
 
 /**
  * The account of the user of the session, and only of that user - a name sent by the client is never read:
- * the details ({@code /account}), the movements of the money ({@code /account/log}) and adding money
+ * the details ({@code /account}), the movements of the money ({@code /account/log}), the balance over time
+ * ({@code /account/history}) and adding money
  * ({@code /account/deposit}, POST).
  */
 public class AccountServlet extends GmServlet {
@@ -19,6 +20,7 @@ public class AccountServlet extends GmServlet {
         Object account;
         switch (request.getServletPath()) {
             case "/account/log" -> account = engine.getAccountEntries(username);
+            case "/account/history" -> account = engine.getUserBalanceHistory(username);
             case "/account/deposit" -> {
                 requirePost(request);
                 account = engine.deposit(username, requireDouble(request, "amount"));

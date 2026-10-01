@@ -45,6 +45,7 @@
         <servlet-name>AccountServlet</servlet-name>
         <url-pattern>/account</url-pattern>
         <url-pattern>/account/log</url-pattern>
+        <url-pattern>/account/history</url-pattern>
         <url-pattern>/account/deposit</url-pattern>
     </servlet-mapping>
     <servlet>

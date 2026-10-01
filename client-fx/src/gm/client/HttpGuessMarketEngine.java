@@ -21,6 +21,7 @@ import gm.dto.UserInfoDTO;
 import gm.dto.UserSummaryDTO;
 import gm.engine.api.GuessMarketEngine;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -39,6 +40,7 @@ public class HttpGuessMarketEngine implements GuessMarketEngine {
     private static final Type USERS = new TypeToken<List<UserSummaryDTO>>() { }.getType();
     private static final Type PRICE_HISTORIES = new TypeToken<List<PriceHistoryDTO>>() { }.getType();
     private static final Type ACCOUNT_ENTRIES = new TypeToken<List<AccountEntryDTO>>() { }.getType();
+    private static final Type BALANCE_HISTORY = new TypeToken<List<HistoryPointDTO>>() { }.getType();
     private static final Map<String, String> NO_PARAMS = Map.of();
 
     private record BuyBody(int eventId, int optionIndex, long quantity) {
@@ -103,7 +105,7 @@ public class HttpGuessMarketEngine implements GuessMarketEngine {
 
     @Override
     public List<HistoryPointDTO> getUserBalanceHistory(String userName) {
-        throw new UnsupportedOperationException("The balance history is added with the account screen.");
+        return gson.fromJson(api.get("/account/history", NO_PARAMS), BALANCE_HISTORY);
     }
 
     /**
@@ -123,7 +125,11 @@ public class HttpGuessMarketEngine implements GuessMarketEngine {
 
     @Override
     public UploadResultDTO uploadEvents(String userName, String fileName, InputStream content) {
-        throw new UnsupportedOperationException("Uploading a file is added with the account screen.");
+        try {
+            return gson.fromJson(api.upload("/upload", fileName, content.readAllBytes()), UploadResultDTO.class);
+        } catch (IOException e) {
+            throw new ServerException("The file could not be read: " + e.getMessage(), e);
+        }
     }
 
     @Override

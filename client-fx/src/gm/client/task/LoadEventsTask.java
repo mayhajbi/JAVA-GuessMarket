@@ -1,41 +1,39 @@
 package gm.client.task;
 
-import gm.dto.LoadResultDTO;
+import gm.dto.UploadResultDTO;
 import gm.engine.api.GuessMarketEngine;
 import javafx.concurrent.Task;
 
-/**
- * Loads a data file on a background thread, so the window stays responsive and can show the progress.
- * <p>
- * The task belongs to the user interface: the engine only offers a plain loading method and knows
- * nothing about JavaFX.
- */
-public class LoadEventsTask extends Task<LoadResultDTO> {
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
-    // The real loading takes a few milliseconds. The exercise asks for a short artificial delay, so
-    // the progress of the load is actually visible.
-    private static final int DELAY_STEPS = 15;
-    private static final long DELAY_STEP_MILLIS = 100;
+/**
+ * Uploads a file of events to the server on a background thread, so the window stays responsive while the
+ * request is on its way. The upload takes the time the server needs, so there is no artificial delay and
+ * the progress is not known: the screen shows an indeterminate progress bar while the task runs.
+ * <p>
+ * The task belongs to the user interface: the engine only offers a plain upload method and knows nothing
+ * about JavaFX.
+ */
+public class LoadEventsTask extends Task<UploadResultDTO> {
 
     private final GuessMarketEngine engine;
-    private final String filePath;
+    private final String userName;
+    private final Path file;
 
-    public LoadEventsTask(GuessMarketEngine engine, String filePath) {
+    public LoadEventsTask(GuessMarketEngine engine, String userName, Path file) {
         this.engine = engine;
-        this.filePath = filePath;
+        this.userName = userName;
+        this.file = file;
     }
 
     @Override
-    protected LoadResultDTO call() throws InterruptedException {
-        updateMessage("Reading the file...");
-        for (int step = 1; step <= DELAY_STEPS; step++) {
-            Thread.sleep(DELAY_STEP_MILLIS);
-            updateProgress(step, DELAY_STEPS + 1);
+    protected UploadResultDTO call() throws IOException {
+        updateMessage("Uploading the file...");
+        try (InputStream content = Files.newInputStream(file)) {
+            return engine.uploadEvents(userName, file.getFileName().toString(), content);
         }
-
-        updateMessage("Validating the content...");
-        LoadResultDTO result = engine.loadEventsFile(filePath);
-        updateProgress(1, 1);
-        return result;
     }
 }
