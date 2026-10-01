@@ -40,6 +40,7 @@ Each check runs on its own (a failure in one does not stop the others). Test dat
 | `EventFilterTest` | filtering events by type, status and commission |
 | `HistoryTest` | the price history of an event and the balance history of a user |
 | `CreateEventTest` | a user creating an event and becoming its market maker, and the rules a created event obeys |
+| `MessageWordingTest` | the wording of the refusals: no brackets, money with two digits, the name of the XML element or attribute in a message about an uploaded file |
 | `EventRulesTest` | text cleanup of a created event, the active events, a blocked user creating an event, options of the same name in a file |
 | `client\ViewRefreshTest` | what an automatic update may change on the screen: equal rows and equal points leave a table and a graph untouched, the selected row stays selected, and the quantity typed for an event survives every refresh |
 | `server\test-live-pull.bat` | the automatic updates with the classes of the client (`LivePullCheck.java`): not logged in (401), a logged in client gets its data, what another user does arrives within 2 seconds, nothing is pulled while the updates are off |

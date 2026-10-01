@@ -34,7 +34,7 @@ public class InvalidEventDetailsException extends GuessMarketException {
 
     public static InvalidEventDetailsException sameOptionNames(String eventName, String optionName) {
         return new InvalidEventDetailsException("Both options of the event " + describeEvent(eventName)
-                + " are named '" + optionName + "'. The two possible outcomes of an event must be "
-                + "different (the names are compared without case).");
+                + " are named '" + optionName + "'. The two options of an event must have different names, "
+                + "and names that differ only in upper and lower case letters count as the same name.");
     }
 }

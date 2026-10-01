@@ -112,7 +112,7 @@
         </VBox>
 
         <VBox fx:id="lmsrHistoryBox" spacing="10">
-            <Label text="Trading history (latest first)" styleClass="section-title"/>
+            <Label text="Trading history, latest first" styleClass="section-title"/>
             <TableView fx:id="historyTable" prefHeight="200" minHeight="120">
                 <columnResizePolicy>
                     <TableView fx:constant="CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS"/>
@@ -133,7 +133,7 @@
         </VBox>
 
         <VBox fx:id="orderBookHistoryBox" spacing="10">
-            <Label text="Trades (latest first)" styleClass="section-title"/>
+            <Label text="Trades, latest first" styleClass="section-title"/>
             <TableView fx:id="orderBookTradesTable" prefHeight="160" minHeight="100">
                 <columnResizePolicy>
                     <TableView fx:constant="CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS"/>

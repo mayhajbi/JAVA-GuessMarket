@@ -69,12 +69,12 @@ public class EventsFileLoader {
 
     private void requireXmlName(String path) {
         if (path.isEmpty()) {
-            throw new InvalidFilePathException("No file path was given. Please enter the full path "
-                    + "of the XML file you would like to load.");
+            throw new InvalidFilePathException("No file was given. Please choose the XML file you would "
+                    + "like to upload.");
         }
         if (!InputText.hasExtension(path, XML_EXTENSION)) {
-            throw new InvalidFilePathException("The path '" + path + "' does not point to an XML "
-                    + "file. The file name must end with the .xml extension.");
+            throw new InvalidFilePathException("The file '" + path + "' is not an XML file. The file name "
+                    + "must end with the .xml extension.");
         }
     }
 
@@ -111,7 +111,7 @@ public class EventsFileLoader {
             Object content = unmarshaller.unmarshal(stream);
             if (!(content instanceof XmlGuessMarket)) {
                 throw new XmlParsingException(path,
-                        "the root element of the file is not <Guess-Market>", null);
+                        "the root element of the file is not 'Guess-Market'.", null);
             }
             return (XmlGuessMarket) content;
         } catch (JAXBException exception) {

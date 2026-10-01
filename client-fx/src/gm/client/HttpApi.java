@@ -110,7 +110,7 @@ public class HttpApi {
             String body = response.body() == null ? NO_BODY : response.body().string();
             if (!response.isSuccessful()) {
                 throw new ServerException(body.isBlank()
-                        ? "The server refused the request (status " + response.code() + ")."
+                        ? "The server refused the request with the status " + response.code() + "."
                         : body);
             }
             return body;

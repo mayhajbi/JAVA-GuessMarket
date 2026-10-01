@@ -453,7 +453,7 @@ public class EventDetailController {
         List<String> tradeLines = new ArrayList<>();
         for (OrderBookTradeDTO trade : result.trades()) {
             String commission = trade.commissionPaid() > 0
-                    ? " (commission " + Formats.decimal(trade.commissionPaid()) + ")"
+                    ? ", commission " + Formats.decimal(trade.commissionPaid())
                     : "";
             if (side == OrderSide.BUY && trade.buyerName().equals(userName)) {
                 tradeLines.add(trade.minted()
@@ -525,8 +525,8 @@ public class EventDetailController {
             return CHOOSE_USER;
         }
         if (isBlocked) {
-            return user.name() + " is blocked (the balance dropped below zero) and cannot open or create "
-                    + "events, buy shares or place orders." + (isMarketMaker && status == EventStatus.ACTIVE
+            return user.name() + " is blocked, because the balance is below zero, and cannot open or create "
+                    + "events, buy shares or place orders until funds are loaded." + (isMarketMaker && status == EventStatus.ACTIVE
                     ? " As the market maker, " + user.name() + " may still close this event."
                     : "");
         }
@@ -537,10 +537,10 @@ public class EventDetailController {
     }
 
     private void showOrderBook(OrderBookStateDTO state) {
-        orderBookInfoLabel.setText("Base value (d): " + state.baseValue() + " - every winning share pays "
-                + state.baseValue() + ". Order prices from 0.01 to " + Formats.decimal(state.baseValue() - 0.01)
-                + ". Minting: " + (state.mintAllowed() ? "allowed" : "not allowed")
-                + ". Initial investment of the market maker: " + state.initialInvestment() + ".");
+        orderBookInfoLabel.setText("Every winning share pays " + Formats.decimal(state.baseValue())
+                + ". Order prices from 0.01 to " + Formats.decimal(state.baseValue() - 0.01)
+                + ". Minting is " + (state.mintAllowed() ? "allowed" : "not allowed")
+                + ". Initial investment of the market maker: " + Formats.decimal(state.initialInvestment()) + ".");
 
         while (optionBookViews.size() < state.options().size()) {
             OptionBookView view = new OptionBookView();
@@ -607,7 +607,7 @@ public class EventDetailController {
             addPositionRow(row++, "Initial investment paid", Formats.decimal(position.initialInvestmentPaid()));
         }
         addPositionRow(row++, "Commission paid", Formats.decimal(position.commissionPaid()));
-        addPositionRow(row++, "Received (sales and payout)", Formats.decimal(position.received()));
+        addPositionRow(row++, "Received from sales and payout", Formats.decimal(position.received()));
         addPositionRow(row, "Profit / loss", currentEvent.status() == EventStatus.CLOSED
                 ? Formats.decimal(position.profitOrLoss())
                 : "known when the event is closed");

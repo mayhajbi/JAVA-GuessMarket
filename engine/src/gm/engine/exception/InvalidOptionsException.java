@@ -8,7 +8,7 @@ public class InvalidOptionsException extends GuessMarketException {
     private static final long serialVersionUID = 1L;
 
     public InvalidOptionsException(String eventName, int optionsFound) {
-        super("The event " + describeEvent(eventName) + " has " + optionsFound
-                + " option(s). Every event in the system must have exactly 2 possible options.");
+        super("The number of options of the event " + describeEvent(eventName) + " is " + optionsFound
+                + ". Every event must have exactly 2 options, each in a 'GM-option' element.");
     }
 }

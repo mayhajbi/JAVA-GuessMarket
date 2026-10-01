@@ -264,8 +264,8 @@ public class Event {
         double required = isLmsr ? getInitialSubsidy() : orderBook.getInitialInvestment();
         double balance = user.getAccount().getBalance();
         if (balance < required) {
-            throw new InsufficientFundsException(user.getName(), "open the event '" + name + "' ("
-                    + (isLmsr ? "the initial subsidy" : "the initial investment") + ")", required, balance);
+            throw new InsufficientFundsException(user.getName(), name,
+                    isLmsr ? "initial subsidy" : "initial investment", required, balance);
         }
 
         user.getAccount().withdraw(required, AccountEntryType.EVENT);
@@ -437,7 +437,7 @@ public class Event {
      */
     public void validateOptionIndex(int optionIndex) {
         if (optionIndex < 0 || optionIndex >= options.size()) {
-            throw new InvalidOptionSelectionException(id, options.size(), optionIndex + 1);
+            throw new InvalidOptionSelectionException(name, options.size(), optionIndex + 1);
         }
     }
 

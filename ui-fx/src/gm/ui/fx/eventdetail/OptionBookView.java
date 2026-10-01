@@ -40,8 +40,8 @@ class OptionBookView extends VBox {
             statistics.add(statisticValues[index], index, 1);
         }
 
-        getChildren().addAll(titleLabel, statistics, ViewUtils.fieldName("Bids (buy)"), bidsTable,
-                ViewUtils.fieldName("Asks (sell)"), asksTable);
+        getChildren().addAll(titleLabel, statistics, ViewUtils.fieldName("Bids: buy orders"), bidsTable,
+                ViewUtils.fieldName("Asks: sell orders"), asksTable);
     }
 
     void show(OrderBookOptionDTO option) {

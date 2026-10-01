@@ -8,7 +8,7 @@ public class InvalidLiquidityException extends GuessMarketException {
     private static final long serialVersionUID = 1L;
 
     public InvalidLiquidityException(String eventName, int b) {
-        super("The liquidity value (b) of the LMSR event " + describeEvent(eventName) + " is "
-                + b + ". The liquidity value must be a positive integer (greater than 0).");
+        super("The liquidity value of the LMSR event " + describeEvent(eventName) + " is " + b
+                + ". It must be a positive whole number. In a file it is the element 'b'.");
     }
 }

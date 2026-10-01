@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * The list of events that match a filter: {@code /events?types=&statuses=&commissions=}. Every parameter
@@ -41,7 +42,9 @@ public class EventsServlet extends GmServlet {
             try {
                 selected.add(Enum.valueOf(type, part.trim().toUpperCase()));
             } catch (IllegalArgumentException e) {
-                throw new BadRequestException("The parameter '" + name + "' has the value '" + part.trim() + "', which is not one of " + Arrays.toString(type.getEnumConstants()) + ".");
+                throw new BadRequestException("The parameter '" + name + "' has the value '" + part.trim() + "', which is not one of "
+                        + Arrays.stream(type.getEnumConstants()).map(Enum::name).collect(Collectors.joining(", "))
+                        + ".");
             }
         }
         return selected;

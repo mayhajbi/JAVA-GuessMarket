@@ -52,7 +52,7 @@
             <VBox fx:id="lmsrFields" spacing="6" styleClass="actions">
                 <Label text="LMSR" styleClass="section-title"/>
                 <HBox spacing="8" alignment="CENTER_LEFT">
-                    <Label text="Liquidity (b)" styleClass="field-name" minWidth="110"/>
+                    <Label text="Liquidity" styleClass="field-name" minWidth="110"/>
                     <TextField fx:id="liquidityField" prefWidth="90" promptText="100"/>
                     <Label text="A positive whole number. The larger it is, the slower the prices move."
                            styleClass="placeholder" wrapText="true" HBox.hgrow="ALWAYS"/>
@@ -62,7 +62,7 @@
             <VBox fx:id="orderBookFields" spacing="6" styleClass="actions">
                 <Label text="Order Book" styleClass="section-title"/>
                 <HBox spacing="8" alignment="CENTER_LEFT">
-                    <Label text="Base value (d)" styleClass="field-name" minWidth="110"/>
+                    <Label text="Base value" styleClass="field-name" minWidth="110"/>
                     <TextField fx:id="baseValueField" prefWidth="90" promptText="1"/>
                     <Label text="What one winning share pays, and the highest price allowed."
                            styleClass="placeholder" wrapText="true" HBox.hgrow="ALWAYS"/>
@@ -70,7 +70,7 @@
                 <HBox spacing="8" alignment="CENTER_LEFT">
                     <Label text="Initial investment" styleClass="field-name" minWidth="110"/>
                     <TextField fx:id="initialInvestmentField" prefWidth="90" promptText="100"/>
-                    <Label text="Paid on opening, for one pair of shares per base value. Must divide by d."
+                    <Label text="Paid on opening, for one pair of shares per base value. Must divide by the base value."
                            styleClass="placeholder" wrapText="true" HBox.hgrow="ALWAYS"/>
                 </HBox>
                 <CheckBox fx:id="allowMintCheckBox" text="Allow minting new pairs of shares"/>

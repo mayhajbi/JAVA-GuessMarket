@@ -48,6 +48,8 @@ public class EventsMapper {
     private static final int NO_ID = 0;
     private static final String ALLOW_MINT_TRUE = "true";
     private static final String ALLOW_MINT_FALSE = "false";
+    private static final String ROOT_ELEMENT = "the root element 'Guess-Market'";
+    private static final String ORDER_BOOK_ELEMENT = "GM-order-book";
 
     /**
      * @param xmlSystem the content of the data file
@@ -60,7 +62,7 @@ public class EventsMapper {
             XmlEvent xmlEvent = xmlEventList.get(position);
             Integer id = xmlEvent.getId();
             if (id == null) {
-                throw new MissingXmlDataException("id", "event number " + (position + 1) + " in the file");
+                throw MissingXmlDataException.element("id", "event number " + (position + 1) + " in the file");
             }
             market.addEvent(toEvent(xmlEvent, id));
         }
@@ -77,17 +79,16 @@ public class EventsMapper {
      */
     public List<Event> toEvents(XmlGuessMarket xmlSystem) {
         if (xmlSystem.getUsers() != null) {
-            throw new UnsupportedFileFormatException("the file has a <GM-users> part. Users "
-                    + "register by logging in, so the file may describe events only.");
+            throw new UnsupportedFileFormatException("the file has the element 'GM-users'",
+                    "Users register by logging in, so a file may describe events only.");
         }
         List<XmlEvent> xmlEventList = requireEventList(xmlSystem.getEvents());
         List<Event> events = new ArrayList<>();
         for (int position = 0; position < xmlEventList.size(); position++) {
             XmlEvent xmlEvent = xmlEventList.get(position);
             if (xmlEvent.getId() != null) {
-                throw new UnsupportedFileFormatException("the event '" + xmlEvent.getName() + "' has an "
-                        + "<id> element. Events are identified by their names, so the file may not "
-                        + "give them ids.");
+                throw new UnsupportedFileFormatException("the event '" + xmlEvent.getName()
+                        + "' has the element 'id'", "Events are identified by their names.");
             }
             events.add(toEvent(xmlEvent, NO_ID));
         }
@@ -96,24 +97,22 @@ public class EventsMapper {
 
     private List<XmlEvent> requireEventList(XmlEvents xmlEvents) {
         if (xmlEvents == null) {
-            throw new MissingXmlDataException("GM-events", "the root element <Guess-Market>");
+            throw MissingXmlDataException.element("GM-events", ROOT_ELEMENT);
         }
         List<XmlEvent> xmlEventList = xmlEvents.getEventList();
         if (xmlEventList.isEmpty()) {
-            throw new MissingXmlDataException("GM-event",
-                    "the element <GM-events> (the file does not describe any event)");
+            throw MissingXmlDataException.element("GM-event", "the element 'GM-events'");
         }
         return xmlEventList;
     }
 
     private void mapUsers(XmlUsers xmlUsers, GuessMarket market) {
         if (xmlUsers == null) {
-            throw new MissingXmlDataException("GM-users", "the root element <Guess-Market>");
+            throw MissingXmlDataException.element("GM-users", ROOT_ELEMENT);
         }
         List<XmlUser> xmlUserList = xmlUsers.getUserList();
         if (xmlUserList.isEmpty()) {
-            throw new MissingXmlDataException("GM-user",
-                    "the element <GM-users> (the file does not describe any user)");
+            throw MissingXmlDataException.element("GM-user", "the element 'GM-users'");
         }
         for (int position = 0; position < xmlUserList.size(); position++) {
             market.addUser(toUser(xmlUserList.get(position), position + 1));
@@ -126,15 +125,15 @@ public class EventsMapper {
     private Event toEvent(XmlEvent xmlEvent, int id) {
         String name = InputText.normalize(xmlEvent.getName());
         if (name.isEmpty()) {
-            throw new MissingXmlDataException("name attribute",
-                    id == NO_ID ? "an event of the file" : "the event with id " + id);
+            throw MissingXmlDataException.attribute("name", "GM-event",
+                    id == NO_ID ? "one of the events of the file" : "the event with id " + id);
         }
         EventValidator.requireEnglish(name);
         String location = "the event " + GuessMarketException.describeEvent(name);
 
         String description = InputText.normalize(xmlEvent.getDescription());
         if (description.isEmpty()) {
-            throw new MissingXmlDataException("description", location);
+            throw MissingXmlDataException.element("description", location);
         }
         EventValidator.requireEnglish(description);
 
@@ -150,7 +149,7 @@ public class EventsMapper {
         XmlCommission commission = requireCommission(xmlEvent, location);
         Integer value = commission.getValue();
         if (value == null) {
-            throw new MissingXmlDataException("commission", location);
+            throw MissingXmlDataException.element("commission", location);
         }
         EventValidator.requireCommissionInRange(name, value);
         return value;
@@ -161,7 +160,7 @@ public class EventsMapper {
         XmlCommission commission = requireCommission(xmlEvent, location);
         String type = InputText.normalize(commission.getType());
         if (type.isEmpty()) {
-            throw new MissingXmlDataException("type attribute of <commission>", location);
+            throw MissingXmlDataException.attribute("type", "commission", location);
         }
         for (CommissionType commissionType : CommissionType.values()) {
             if (commissionType.getDisplayName().equalsIgnoreCase(type)) {
@@ -174,7 +173,7 @@ public class EventsMapper {
     private XmlCommission requireCommission(XmlEvent xmlEvent, String location) {
         XmlCommission commission = xmlEvent.getCommission();
         if (commission == null) {
-            throw new MissingXmlDataException("commission", location);
+            throw MissingXmlDataException.element("commission", location);
         }
         return commission;
     }
@@ -182,7 +181,7 @@ public class EventsMapper {
     private List<EventOption> readOptions(XmlEvent xmlEvent, String name, String location) {
         XmlOptions xmlOptions = xmlEvent.getOptions();
         if (xmlOptions == null) {
-            throw new MissingXmlDataException("GM-options", location);
+            throw MissingXmlDataException.element("GM-options", location);
         }
         List<String> optionNames = xmlOptions.getOptionList();
         EventValidator.requireTwoOptions(name, optionNames.size());
@@ -191,7 +190,7 @@ public class EventsMapper {
         for (String optionName : optionNames) {
             String trimmedName = InputText.normalize(optionName);
             if (trimmedName.isEmpty()) {
-                throw new MissingXmlDataException("GM-option", location);
+                throw MissingXmlDataException.element("GM-option", location);
             }
             options.add(new EventOption(trimmedName));
         }
@@ -204,7 +203,7 @@ public class EventsMapper {
                              List<EventOption> options, String location) {
         XmlMethod method = xmlEvent.getMethod();
         if (method == null) {
-            throw new MissingXmlDataException("GM-method", location);
+            throw MissingXmlDataException.element("GM-method", location);
         }
 
         XmlLmsr lmsr = method.getLmsr();
@@ -222,13 +221,13 @@ public class EventsMapper {
             return Event.orderBook(id, name, description, commissionPercent, commissionType, options,
                     baseValue, allowMint, initialInvestment);
         }
-        throw new MissingXmlDataException("GM-LMSR or GM-order-book", location);
+        throw MissingXmlDataException.eitherElement("GM-LMSR", ORDER_BOOK_ELEMENT, location);
     }
 
     private TradingMethod readLmsr(XmlLmsr lmsr, String name, String location) {
         Integer liquidity = lmsr.getB();
         if (liquidity == null) {
-            throw new MissingXmlDataException("b", location);
+            throw MissingXmlDataException.element("b", location);
         }
         EventValidator.requireLiquidityPositive(name, liquidity);
         return new LmsrTradingMethod(liquidity);
@@ -237,7 +236,7 @@ public class EventsMapper {
     private int readOrderBookBaseValue(XmlOrderBook orderBook, String name, String location) {
         Integer d = orderBook.getD();
         if (d == null) {
-            throw new MissingXmlDataException("d attribute of <GM-order-book>", location);
+            throw MissingXmlDataException.attribute("d", ORDER_BOOK_ELEMENT, location);
         }
         EventValidator.requireBaseValuePositive(name, d);
         return d;
@@ -246,7 +245,7 @@ public class EventsMapper {
     private int readOrderBookInitialInvestment(XmlOrderBook orderBook, String location) {
         Integer initial = orderBook.getInitial();
         if (initial == null) {
-            throw new MissingXmlDataException("initial attribute of <GM-order-book>", location);
+            throw MissingXmlDataException.attribute("initial", ORDER_BOOK_ELEMENT, location);
         }
         return initial;
     }
@@ -255,7 +254,7 @@ public class EventsMapper {
                                            String location) {
         String value = InputText.normalize(orderBook.getAllowMint());
         if (value.isEmpty()) {
-            throw new MissingXmlDataException("allow-mint attribute of <GM-order-book>", location);
+            throw MissingXmlDataException.attribute("allow-mint", ORDER_BOOK_ELEMENT, location);
         }
         if (value.equalsIgnoreCase(ALLOW_MINT_TRUE)) {
             return true;
@@ -271,13 +270,13 @@ public class EventsMapper {
 
         String name = InputText.normalize(xmlUser.getName());
         if (name.isEmpty()) {
-            throw new MissingXmlDataException("name attribute", location);
+            throw MissingXmlDataException.attribute("name", "GM-user", location);
         }
         location = "the user '" + name + "'";
 
         Integer initialCash = xmlUser.getInitialCash();
         if (initialCash == null) {
-            throw new MissingXmlDataException("initial-cash", location);
+            throw MissingXmlDataException.element("initial-cash", location);
         }
         if (initialCash <= 0) {
             throw new InvalidInitialCashException(name, initialCash);
@@ -295,7 +294,7 @@ public class EventsMapper {
             for (XmlMarketMakerEvent reference : marketMaker.getEventList()) {
                 Integer eventId = reference.getId();
                 if (eventId == null) {
-                    throw new MissingXmlDataException("id attribute of <event>",
+                    throw MissingXmlDataException.attribute("id", "event",
                             "the market-maker block of the user '" + user.getName() + "'");
                 }
                 Event event = market.findEvent(eventId);

@@ -87,13 +87,13 @@ public class NewEventController {
         int baseValue = 0;
         int initialInvestment = 0;
         if (isLmsr) {
-            Integer value = readNumber(liquidityField, "the liquidity value (b)");
+            Integer value = readNumber(liquidityField, "the liquidity value");
             if (value == null) {
                 return null;
             }
             liquidity = value;
         } else {
-            Integer value = readNumber(baseValueField, "the base value (d)");
+            Integer value = readNumber(baseValueField, "the base value");
             if (value == null) {
                 return null;
             }
