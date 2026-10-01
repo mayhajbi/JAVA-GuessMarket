@@ -7,7 +7,8 @@ import java.io.IOException;
 
 /**
  * The account of the user of the session, and only of that user - a name sent by the client is never read:
- * the details ({@code /account}) and the movements of the money ({@code /account/log}).
+ * the details ({@code /account}), the movements of the money ({@code /account/log}) and adding money
+ * ({@code /account/deposit}, POST).
  */
 public class AccountServlet extends GmServlet {
 
@@ -15,9 +16,15 @@ public class AccountServlet extends GmServlet {
     protected void handle(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String username = requireUsername(request);
         GuessMarketEngine engine = ServletUtils.getEngine(getServletContext());
-        Object account = "/account/log".equals(request.getServletPath())
-                ? engine.getAccountEntries(username)
-                : engine.getUserDetails(username);
+        Object account;
+        switch (request.getServletPath()) {
+            case "/account/log" -> account = engine.getAccountEntries(username);
+            case "/account/deposit" -> {
+                requirePost(request);
+                account = engine.deposit(username, requireDouble(request, "amount"));
+            }
+            default -> account = engine.getUserDetails(username);
+        }
         ServletUtils.writeJson(response, account);
     }
 }
