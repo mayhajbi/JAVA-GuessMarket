@@ -11,13 +11,13 @@ public class InvalidCommissionException extends GuessMarketException {
         super(message);
     }
 
-    public static InvalidCommissionException outOfRange(int id, String eventName, int value) {
+    public static InvalidCommissionException outOfRange(String eventName, int value) {
         return new InvalidCommissionException("The commission of the event " + describeEvent(eventName)
                 + " is " + value + ", which is not a legal percentage. "
                 + "The commission must be an integer between 0 and 90 (inclusive).");
     }
 
-    public static InvalidCommissionException unknownType(int id, String eventName, String type) {
+    public static InvalidCommissionException unknownType(String eventName, String type) {
         return new InvalidCommissionException("The commission type of the event "
                 + describeEvent(eventName) + " is '" + type + "', which is not supported. "
                 + "The supported types are [on-purchase] and [on-close].");

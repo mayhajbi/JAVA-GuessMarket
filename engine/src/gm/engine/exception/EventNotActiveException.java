@@ -10,7 +10,7 @@ public class EventNotActiveException extends GuessMarketException {
 
     private static final long serialVersionUID = 1L;
 
-    public EventNotActiveException(int eventId, String eventName, EventStatus status,
+    public EventNotActiveException(String eventName, EventStatus status,
                                    String marketMakerName) {
         super(status == EventStatus.INACTIVE
                 ? "The event " + describeEvent(eventName) + " is not open yet, so it cannot be "

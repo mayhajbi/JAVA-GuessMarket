@@ -169,10 +169,10 @@ public class OrderBookMarket {
         long maxPriceCents = (long) baseValue * CENTS_PER_UNIT - 1;
         long priceCents = Math.round(price * CENTS_PER_UNIT);
         if (Double.isNaN(price) || priceCents < 1 || priceCents > maxPriceCents) {
-            throw InvalidOrderException.priceOutOfRange(event.getId(), event.getName(), price, baseValue);
+            throw InvalidOrderException.priceOutOfRange(event.getName(), price, baseValue);
         }
         if (Math.abs(price * CENTS_PER_UNIT - priceCents) > WHOLE_CENTS_TOLERANCE) {
-            throw InvalidOrderException.priceNotWholeCents(event.getId(), event.getName(), price);
+            throw InvalidOrderException.priceNotWholeCents(event.getName(), price);
         }
         return priceCents;
     }

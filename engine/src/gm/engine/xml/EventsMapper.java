@@ -138,25 +138,25 @@ public class EventsMapper {
         }
         EventValidator.requireEnglish(description);
 
-        int commissionPercent = readCommissionValue(xmlEvent, id, name, location);
-        CommissionType commissionType = readCommissionType(xmlEvent, id, name, location);
-        List<EventOption> options = readOptions(xmlEvent, id, name, location);
+        int commissionPercent = readCommissionValue(xmlEvent, name, location);
+        CommissionType commissionType = readCommissionType(xmlEvent, name, location);
+        List<EventOption> options = readOptions(xmlEvent, name, location);
 
         return buildEvent(xmlEvent, id, name, description, commissionPercent, commissionType,
                 options, location);
     }
 
-    private int readCommissionValue(XmlEvent xmlEvent, int id, String name, String location) {
+    private int readCommissionValue(XmlEvent xmlEvent, String name, String location) {
         XmlCommission commission = requireCommission(xmlEvent, location);
         Integer value = commission.getValue();
         if (value == null) {
             throw new MissingXmlDataException("commission", location);
         }
-        EventValidator.requireCommissionInRange(id, name, value);
+        EventValidator.requireCommissionInRange(name, value);
         return value;
     }
 
-    private CommissionType readCommissionType(XmlEvent xmlEvent, int id, String name,
+    private CommissionType readCommissionType(XmlEvent xmlEvent, String name,
                                               String location) {
         XmlCommission commission = requireCommission(xmlEvent, location);
         String type = InputText.normalize(commission.getType());
@@ -168,7 +168,7 @@ public class EventsMapper {
                 return commissionType;
             }
         }
-        throw InvalidCommissionException.unknownType(id, name, type);
+        throw InvalidCommissionException.unknownType(name, type);
     }
 
     private XmlCommission requireCommission(XmlEvent xmlEvent, String location) {
@@ -179,13 +179,13 @@ public class EventsMapper {
         return commission;
     }
 
-    private List<EventOption> readOptions(XmlEvent xmlEvent, int id, String name, String location) {
+    private List<EventOption> readOptions(XmlEvent xmlEvent, String name, String location) {
         XmlOptions xmlOptions = xmlEvent.getOptions();
         if (xmlOptions == null) {
             throw new MissingXmlDataException("GM-options", location);
         }
         List<String> optionNames = xmlOptions.getOptionList();
-        EventValidator.requireTwoOptions(id, name, optionNames.size());
+        EventValidator.requireTwoOptions(name, optionNames.size());
 
         List<EventOption> options = new ArrayList<>();
         for (String optionName : optionNames) {
@@ -195,7 +195,7 @@ public class EventsMapper {
             }
             options.add(new EventOption(trimmedName));
         }
-        EventValidator.requireOptionNames(id, name, options.get(0).getName(), options.get(1).getName());
+        EventValidator.requireOptionNames(name, options.get(0).getName(), options.get(1).getName());
         return options;
     }
 
@@ -210,36 +210,36 @@ public class EventsMapper {
         XmlLmsr lmsr = method.getLmsr();
         XmlOrderBook orderBook = method.getOrderBook();
         if (lmsr != null) {
-            TradingMethod tradingMethod = readLmsr(lmsr, id, name, location);
+            TradingMethod tradingMethod = readLmsr(lmsr, name, location);
             return Event.lmsr(id, name, description, commissionPercent, commissionType, options,
                     tradingMethod);
         }
         if (orderBook != null) {
-            int baseValue = readOrderBookBaseValue(orderBook, id, name, location);
+            int baseValue = readOrderBookBaseValue(orderBook, name, location);
             int initialInvestment = readOrderBookInitialInvestment(orderBook, location);
-            EventValidator.requireInitialInvestment(id, name, initialInvestment, baseValue);
-            boolean allowMint = readOrderBookAllowMint(orderBook, id, name, location);
+            EventValidator.requireInitialInvestment(name, initialInvestment, baseValue);
+            boolean allowMint = readOrderBookAllowMint(orderBook, name, location);
             return Event.orderBook(id, name, description, commissionPercent, commissionType, options,
                     baseValue, allowMint, initialInvestment);
         }
         throw new MissingXmlDataException("GM-LMSR or GM-order-book", location);
     }
 
-    private TradingMethod readLmsr(XmlLmsr lmsr, int id, String name, String location) {
+    private TradingMethod readLmsr(XmlLmsr lmsr, String name, String location) {
         Integer liquidity = lmsr.getB();
         if (liquidity == null) {
             throw new MissingXmlDataException("b", location);
         }
-        EventValidator.requireLiquidityPositive(id, name, liquidity);
+        EventValidator.requireLiquidityPositive(name, liquidity);
         return new LmsrTradingMethod(liquidity);
     }
 
-    private int readOrderBookBaseValue(XmlOrderBook orderBook, int id, String name, String location) {
+    private int readOrderBookBaseValue(XmlOrderBook orderBook, String name, String location) {
         Integer d = orderBook.getD();
         if (d == null) {
             throw new MissingXmlDataException("d attribute of <GM-order-book>", location);
         }
-        EventValidator.requireBaseValuePositive(id, name, d);
+        EventValidator.requireBaseValuePositive(name, d);
         return d;
     }
 
@@ -251,7 +251,7 @@ public class EventsMapper {
         return initial;
     }
 
-    private boolean readOrderBookAllowMint(XmlOrderBook orderBook, int id, String name,
+    private boolean readOrderBookAllowMint(XmlOrderBook orderBook, String name,
                                            String location) {
         String value = InputText.normalize(orderBook.getAllowMint());
         if (value.isEmpty()) {
@@ -263,7 +263,7 @@ public class EventsMapper {
         if (value.equalsIgnoreCase(ALLOW_MINT_FALSE)) {
             return false;
         }
-        throw InvalidOrderBookException.allowMintNotBoolean(id, name, value);
+        throw InvalidOrderBookException.allowMintNotBoolean(name, value);
     }
 
     private User toUser(XmlUser xmlUser, int positionInFile) {

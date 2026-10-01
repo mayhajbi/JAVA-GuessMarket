@@ -256,7 +256,7 @@ public class Event {
     public void open(User user) {
         requireMarketMaker(user, "open");
         if (status != EventStatus.INACTIVE) {
-            throw new EventAlreadyOpenedException(id, name, status);
+            throw new EventAlreadyOpenedException(name, status);
         }
         user.requireNotBlocked("open the event '" + name + "'");
 
@@ -330,7 +330,7 @@ public class Event {
         user.requireNotBlocked("place orders");
         validateOptionIndex(optionIndex);
         if (side == null) {
-            throw InvalidOrderException.missingSide(id, name);
+            throw InvalidOrderException.missingSide(name);
         }
         if (quantity <= 0) {
             throw new InvalidQuantityException(quantity);
@@ -498,20 +498,20 @@ public class Event {
 
     private void requireActive() {
         if (!isActive()) {
-            throw new EventNotActiveException(id, name, status, marketMaker.getName());
+            throw new EventNotActiveException(name, status, marketMaker.getName());
         }
     }
 
     private void requireMarketMaker(User user, String action) {
         if (user != marketMaker) {
-            throw new NotEventMarketMakerException(id, name, marketMaker.getName(), user.getName(),
+            throw new NotEventMarketMakerException(name, marketMaker.getName(), user.getName(),
                     action);
         }
     }
 
     private void requireType(EventType requiredType, String action) {
         if (type != requiredType) {
-            throw new WrongTradingMethodException(id, name, type, action);
+            throw new WrongTradingMethodException(name, type, action);
         }
     }
 

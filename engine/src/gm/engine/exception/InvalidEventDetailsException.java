@@ -32,7 +32,7 @@ public class InvalidEventDetailsException extends GuessMarketException {
         return new InvalidEventDetailsException("The new event '" + eventName + "' is missing one of its options. Please name both possible outcomes.");
     }
 
-    public static InvalidEventDetailsException sameOptionNames(int id, String eventName, String optionName) {
+    public static InvalidEventDetailsException sameOptionNames(String eventName, String optionName) {
         return new InvalidEventDetailsException("Both options of the event " + describeEvent(eventName)
                 + " are named '" + optionName + "'. The two possible outcomes of an event must be "
                 + "different (the names are compared without case).");

@@ -12,19 +12,19 @@ public class InvalidOrderBookException extends GuessMarketException {
         super(message);
     }
 
-    public static InvalidOrderBookException baseValueNotPositive(int id, String eventName, int d) {
+    public static InvalidOrderBookException baseValueNotPositive(String eventName, int d) {
         return new InvalidOrderBookException("The base value (d) of the order book event "
                 + describeEvent(eventName) + " is " + d
                 + ". It must be a positive integer (greater than 0).");
     }
 
-    public static InvalidOrderBookException initialInvestmentNegative(int id, String eventName,
+    public static InvalidOrderBookException initialInvestmentNegative(String eventName,
                                                                      int initial) {
         return new InvalidOrderBookException("The initial investment of the order book event "
                 + describeEvent(eventName) + " is " + initial + ". It cannot be negative.");
     }
 
-    public static InvalidOrderBookException initialNotDivisible(int id, String eventName, int initial,
+    public static InvalidOrderBookException initialNotDivisible(String eventName, int initial,
                                                                int d) {
         return new InvalidOrderBookException("The initial investment of the order book event "
                 + describeEvent(eventName) + " is " + initial + ", which is not a multiple of its base "
@@ -32,7 +32,7 @@ public class InvalidOrderBookException extends GuessMarketException {
                 + ", so the initial investment must divide by " + d + " without a remainder.");
     }
 
-    public static InvalidOrderBookException allowMintNotBoolean(int id, String eventName,
+    public static InvalidOrderBookException allowMintNotBoolean(String eventName,
                                                                String value) {
         return new InvalidOrderBookException("The allow-mint value of the order book event "
                 + describeEvent(eventName) + " is '" + value + "'. It must be either 'true' or 'false'.");

@@ -11,7 +11,7 @@ public class EventAlreadyOpenedException extends GuessMarketException {
 
     private static final long serialVersionUID = 1L;
 
-    public EventAlreadyOpenedException(int eventId, String eventName, EventStatus status) {
+    public EventAlreadyOpenedException(String eventName, EventStatus status) {
         super("The event " + describeEvent(eventName) + " cannot be opened: it is already "
                 + status.getDisplayName().toLowerCase(Locale.ROOT) + ". An event can be opened only once.");
     }

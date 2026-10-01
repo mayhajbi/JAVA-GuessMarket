@@ -154,8 +154,8 @@ public class GuessMarketEngineImpl implements GuessMarketEngine {
         String name = InputText.normalize(request.name());
         EventValidator.requireName(name);
         EventValidator.requireDescription(name, request.description());
-        EventValidator.requireOptionNames(id, name, request.firstOption(), request.secondOption());
-        EventValidator.requireCommissionInRange(id, name, request.commissionPercent());
+        EventValidator.requireOptionNames(name, request.firstOption(), request.secondOption());
+        EventValidator.requireCommissionInRange(name, request.commissionPercent());
         Event event = buildEvent(request, id, name);
         event.setMarketMaker(marketMaker);
         loadedMarket.addEvent(event);
@@ -173,12 +173,12 @@ public class GuessMarketEngineImpl implements GuessMarketEngine {
                 new EventOption(InputText.normalize(request.secondOption())));
 
         if (request.type() == EventType.LMSR) {
-            EventValidator.requireLiquidityPositive(id, name, request.liquidity());
+            EventValidator.requireLiquidityPositive(name, request.liquidity());
             return Event.lmsr(id, name, description, request.commissionPercent(),
                     request.commissionType(), options, new LmsrTradingMethod(request.liquidity()));
         }
-        EventValidator.requireBaseValuePositive(id, name, request.baseValue());
-        EventValidator.requireInitialInvestment(id, name, request.initialInvestment(),
+        EventValidator.requireBaseValuePositive(name, request.baseValue());
+        EventValidator.requireInitialInvestment(name, request.initialInvestment(),
                 request.baseValue());
         return Event.orderBook(id, name, description, request.commissionPercent(),
                 request.commissionType(), options, request.baseValue(), request.allowMint(),
