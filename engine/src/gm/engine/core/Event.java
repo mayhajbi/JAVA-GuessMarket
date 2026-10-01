@@ -347,8 +347,8 @@ public class Event {
      * Every holder of the winning option is paid out of the event account - 1 per share in an LMSR
      * event, the base value (d) per share in an order book event. When the commission of the event is
      * collected on close, it is taken out of that payment and goes to the market maker. Whatever is
-     * left in the event account afterwards (the unused part of an LMSR subsidy) is returned to the
-     * market maker as well. The waiting orders of an order book event are cancelled.
+     * left in the event account afterward (the unused part of an LMSR subsidy) is returned to the
+     * market maker as well. The waiting orders of an order book event are canceled.
      * <p>
      * A blocked market maker may still close the event: deciding the result is not a trading action,
      * and without it the winners could never be paid.
@@ -381,7 +381,7 @@ public class Event {
             orderBook.cancelAllOrders();
         }
 
-        // LMSR keeps the account at C(q) and an order book keeps d per pair of shares, so the account
+        // LMSR keeps the account at C(q) and an order book keeps d per a pair of shares, so the account
         // never falls below the payout and this is the unused part of the money. A negative balance
         // (not reachable with these methods) is left as is.
         double leftover = account.getBalance();
