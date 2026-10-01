@@ -81,17 +81,29 @@ public final class ViewUtils {
 
     /**
      * Replaces the rows of the table. The row that was selected stays selected when a row that
-     * describes the same thing is still there.
+     * describes the same thing is still there. A table that already shows exactly these rows is not
+     * touched, so a refresh that brought nothing new keeps the selection and the scrolling.
      *
      * @param isSameRow tells whether a new row (first) describes the same thing as the selected one
      */
     public static <S> void replaceItems(TableView<S> table, List<S> items, BiPredicate<S, S> isSameRow) {
+        if (table.getItems().equals(items)) {
+            return;
+        }
         S selected = table.getSelectionModel().getSelectedItem();
         table.getSelectionModel().clearSelection();
         table.getItems().setAll(items);
         if (selected != null) {
             selectFirst(table, row -> isSameRow.test(row, selected));
         }
+    }
+
+    /**
+     * Like {@link #replaceItems(TableView, List, BiPredicate)}, for rows that have no identity of their
+     * own: the selected row stays selected only when an equal row is still there.
+     */
+    public static <S> void replaceItems(TableView<S> table, List<S> items) {
+        replaceItems(table, items, Object::equals);
     }
 
     /**

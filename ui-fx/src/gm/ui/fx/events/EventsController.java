@@ -6,6 +6,7 @@ import gm.dto.EventInfoDTO;
 import gm.dto.EventStatus;
 import gm.dto.EventType;
 import gm.dto.NewEventRequestDTO;
+import gm.dto.UserDetailsDTO;
 import gm.ui.fx.common.Dialogs;
 import gm.ui.fx.common.Formats;
 import gm.ui.fx.common.Skin;
@@ -28,6 +29,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 
 /**
  * The events screen: the events of the system, filtered by type, status and commission method, and
@@ -56,6 +58,8 @@ public class EventsController extends EventDetailScreen {
     @FXML private Button newEventButton;
 
     private int totalEventCount;
+    /** Volatile: the automatic updates read it on their own thread, to ask for the same events. */
+    private volatile EventFilterDTO filter;
     private FilterGroup<EventType> typeFilter;
     private FilterGroup<EventStatus> statusFilter;
     private FilterGroup<CommissionType> commissionFilter;
@@ -78,19 +82,51 @@ public class EventsController extends EventDetailScreen {
         ViewUtils.bindText(marketMakerColumn, EventInfoDTO::marketMakerName);
         ViewUtils.bindText(balanceColumn, event -> Formats.decimal(event.accountBalance()));
 
-        eventsTable.getSelectionModel().selectedItemProperty().addListener(
-                (observable, previous, selected) -> eventDetailComponentController.showEvent(selected));
+        showSelectedEvent(eventsTable, Function.identity());
         applyFilters();
     }
 
     /**
-     * Pulls the events (and the user who acts on them) from the engine again. The selected event
-     * stays selected when it still exists.
+     * Pulls the events (and the user who acts on them) from the engine again, right now. The selected
+     * event stays selected when it still exists.
      */
     public void refresh() {
-        eventDetailComponentController.setActingUser(engine.getUserDetails(userName));
-        totalEventCount = engine.getAllEvents().size();
+        showActingUser(engine.getUserDetails(userName));
+        showAllEvents(engine.getAllEvents());
         applyFilters();
+        eventDetailComponentController.refresh();
+    }
+
+    /**
+     * @return the filter the user chose, to ask the server for the events of the table
+     */
+    public EventFilterDTO filter() {
+        return filter;
+    }
+
+    public void showActingUser(UserDetailsDTO user) {
+        eventDetailComponentController.setActingUser(user);
+    }
+
+    /**
+     * @param allEvents every event of the system, whatever the filter is; only counted here
+     */
+    public void showAllEvents(List<EventInfoDTO> allEvents) {
+        totalEventCount = allEvents.size();
+        showEventsCount();
+    }
+
+    /**
+     * @param visibleEvents the events that pass the filter, which are the rows of the table
+     */
+    public void showEvents(List<EventInfoDTO> visibleEvents) {
+        replaceEventRows(eventsTable, visibleEvents, Function.identity());
+        showEventsCount();
+    }
+
+    private void showEventsCount() {
+        eventsCountLabel.setText("Showing " + eventsTable.getItems().size() + " of " + totalEventCount
+                + " events");
     }
 
     /**
@@ -154,12 +190,8 @@ public class EventsController extends EventDetailScreen {
     }
 
     private void applyFilters() {
-        List<EventInfoDTO> visibleEvents = engine != null
-                ? engine.getEvents(new EventFilterDTO(typeFilter.selectedValues(),
-                        statusFilter.selectedValues(), commissionFilter.selectedValues()))
-                : List.of();
-        ViewUtils.replaceItems(eventsTable, visibleEvents, (event, selected) -> event.id() == selected.id());
-        eventsCountLabel.setText("Showing " + visibleEvents.size() + " of " + totalEventCount
-                + " events");
+        filter = new EventFilterDTO(typeFilter.selectedValues(), statusFilter.selectedValues(),
+                commissionFilter.selectedValues());
+        showEvents(engine != null ? engine.getEvents(filter) : List.of());
     }
 }

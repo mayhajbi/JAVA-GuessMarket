@@ -22,15 +22,22 @@ public final class HistoryChart {
     }
 
     /**
-     * Draws the given series in the chart, replacing whatever it held before.
+     * Draws the given series in the chart, replacing whatever it held before. A chart that already
+     * shows exactly these series is not drawn again, so a refresh that brought nothing new does not
+     * make it blink.
      *
      * @param seriesByName the name of every line and its points, in the order they should be drawn
      * @return whether there was anything at all to draw
      */
     public static boolean fill(LineChart<Number, Number> chart,
                                Map<String, List<HistoryPointDTO>> seriesByName) {
-        chart.getData().clear();
         Long firstTimeMillis = firstTimeOf(seriesByName);
+        // The chart remembers what it shows as its user data.
+        if (seriesByName.equals(chart.getUserData())) {
+            return firstTimeMillis != null;
+        }
+        chart.setUserData(seriesByName);
+        chart.getData().clear();
         if (firstTimeMillis == null) {
             return false;
         }

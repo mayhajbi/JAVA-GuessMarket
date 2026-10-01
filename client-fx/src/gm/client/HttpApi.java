@@ -1,5 +1,6 @@
 package gm.client;
 
+import okhttp3.Callback;
 import okhttp3.Cookie;
 import okhttp3.CookieJar;
 import okhttp3.HttpUrl;
@@ -76,6 +77,23 @@ public class HttpApi {
                 .addFormDataPart("file", fileName, RequestBody.create(content, XML))
                 .build();
         return execute(new Request.Builder().url(url(path, Map.of())).post(body).build());
+    }
+
+    /**
+     * Sends a GET request without waiting for its answer, the way the course example does: the callback is
+     * called on a thread of the HTTP client once the server answered or could not be reached. The callback
+     * must close the response it receives.
+     */
+    public void getAsync(String path, Map<String, String> params, Callback callback) {
+        client.newCall(new Request.Builder().url(url(path, params)).get().build()).enqueue(callback);
+    }
+
+    /**
+     * Releases the threads and the connections of the HTTP client, when the application exits.
+     */
+    public void shutdown() {
+        client.dispatcher().executorService().shutdown();
+        client.connectionPool().evictAll();
     }
 
     private static HttpUrl url(String path, Map<String, String> params) {

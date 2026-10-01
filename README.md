@@ -23,7 +23,7 @@ application on top of a passive engine; exercise 1 was a console application.
 ```
 build.bat        compiles into out\ and creates jars\client\ (gm-dto.jar, gm-api.jar, gm-ui-fx.jar, gm-client-fx.jar + lib\)
 run-client.bat   runs the JavaFX client (the server has to be running); works from the project folder or from inside jars\client\
-tests\run-all.bat   runs the regression checks: the engine checks compile from the sources and need nothing running, the server checks need a running server (see tests\README.md)
+tests\run-all.bat   runs the regression checks: the engine and client checks compile from the sources and need nothing running, the server checks need a running server (see tests\README.md)
 ```
 
 ## Project structure

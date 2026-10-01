@@ -1,7 +1,6 @@
 package gm.client;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import gm.dto.AccountEntryDTO;
 import gm.dto.EventFilterDTO;
 import gm.dto.EventInfoDTO;
@@ -18,16 +17,13 @@ import gm.dto.UploadResultDTO;
 import gm.dto.UserDetailsDTO;
 import gm.dto.UserEventDTO;
 import gm.dto.UserInfoDTO;
-import gm.dto.UserSummaryDTO;
 import gm.engine.api.GuessMarketEngine;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * The engine of the client: every method is a request to the server and the answer is turned back into the
@@ -36,18 +32,20 @@ import java.util.stream.Collectors;
  */
 public class HttpGuessMarketEngine implements GuessMarketEngine {
 
-    private static final Type EVENTS = new TypeToken<List<EventInfoDTO>>() { }.getType();
-    private static final Type USERS = new TypeToken<List<UserSummaryDTO>>() { }.getType();
-    private static final Type PRICE_HISTORIES = new TypeToken<List<PriceHistoryDTO>>() { }.getType();
-    private static final Type ACCOUNT_ENTRIES = new TypeToken<List<AccountEntryDTO>>() { }.getType();
-    private static final Type BALANCE_HISTORY = new TypeToken<List<HistoryPointDTO>>() { }.getType();
     private static final Map<String, String> NO_PARAMS = Map.of();
 
     private record BuyBody(int eventId, int optionIndex, long quantity) {
     }
 
-    private final HttpApi api = new HttpApi();
+    private final HttpApi api;
     private final Gson gson = new Gson();
+
+    /**
+     * @param api the connection to the server, shared with the parts of the client that refresh themselves
+     */
+    public HttpGuessMarketEngine(HttpApi api) {
+        this.api = api;
+    }
 
     @Override
     public LoadResultDTO loadEventsFile(String xmlFilePath) {
@@ -56,16 +54,12 @@ public class HttpGuessMarketEngine implements GuessMarketEngine {
 
     @Override
     public List<EventInfoDTO> getAllEvents() {
-        return gson.fromJson(api.get("/events", NO_PARAMS), EVENTS);
+        return pull(Query.allEvents());
     }
 
     @Override
     public List<EventInfoDTO> getEvents(EventFilterDTO filter) {
-        Map<String, String> params = Map.of(
-                "types", names(filter.types()),
-                "statuses", names(filter.statuses()),
-                "commissions", names(filter.commissionTypes()));
-        return gson.fromJson(api.get("/events", params), EVENTS);
+        return pull(Query.events(filter));
     }
 
     /**
@@ -76,36 +70,33 @@ public class HttpGuessMarketEngine implements GuessMarketEngine {
     public List<UserInfoDTO> getAllUsers() {
         List<UserInfoDTO> users = new ArrayList<>();
         users.add(toUserInfo(getUserDetails(null)));
-        List<UserSummaryDTO> others = gson.fromJson(api.get("/users", NO_PARAMS), USERS);
-        for (UserSummaryDTO other : others) {
-            users.add(new UserInfoDTO(other.name(), other.balance(), false, other.marketMaker()));
-        }
+        users.addAll(pull(Query.otherUsers()));
         return users;
     }
 
     @Override
     public UserDetailsDTO getUserDetails(String userName) {
-        return gson.fromJson(api.get("/account", NO_PARAMS), UserDetailsDTO.class);
+        return pull(Query.account());
     }
 
     @Override
     public MarketStateDTO getMarketState(int eventId) {
-        return gson.fromJson(api.get("/event/market", eventParam(eventId)), MarketStateDTO.class);
+        return pull(Query.market(eventId));
     }
 
     @Override
     public OrderBookStateDTO getOrderBookState(int eventId) {
-        return gson.fromJson(api.get("/event/orderbook", eventParam(eventId)), OrderBookStateDTO.class);
+        return pull(Query.orderBook(eventId));
     }
 
     @Override
     public List<PriceHistoryDTO> getEventPriceHistory(int eventId) {
-        return gson.fromJson(api.get("/event/prices", eventParam(eventId)), PRICE_HISTORIES);
+        return pull(Query.prices(eventId));
     }
 
     @Override
     public List<HistoryPointDTO> getUserBalanceHistory(String userName) {
-        return gson.fromJson(api.get("/account/history", NO_PARAMS), BALANCE_HISTORY);
+        return pull(Query.balanceHistory());
     }
 
     /**
@@ -134,7 +125,7 @@ public class HttpGuessMarketEngine implements GuessMarketEngine {
 
     @Override
     public List<AccountEntryDTO> getAccountEntries(String userName) {
-        return gson.fromJson(api.get("/account/log", NO_PARAMS), ACCOUNT_ENTRIES);
+        return pull(Query.accountEntries());
     }
 
     @Override
@@ -144,7 +135,7 @@ public class HttpGuessMarketEngine implements GuessMarketEngine {
 
     @Override
     public EventInfoDTO openEvent(int eventId, String userName) {
-        return gson.fromJson(api.post("/event/open", eventParam(eventId), null), EventInfoDTO.class);
+        return gson.fromJson(api.post("/event/open", Query.eventParam(eventId), null), EventInfoDTO.class);
     }
 
     @Override
@@ -165,17 +156,11 @@ public class HttpGuessMarketEngine implements GuessMarketEngine {
         return gson.fromJson(api.post("/event/close", params, null), EventInfoDTO.class);
     }
 
-    private static Map<String, String> eventParam(int eventId) {
-        return Map.of("id", String.valueOf(eventId));
-    }
-
     /**
-     * The names of the chosen values, comma separated, as the server expects a filter.
+     * Sends a read request and waits for its answer.
      */
-    private static String names(Iterable<? extends Enum<?>> values) {
-        List<String> names = new ArrayList<>();
-        values.forEach(value -> names.add(value.name()));
-        return names.stream().collect(Collectors.joining(","));
+    private <T> T pull(Query<T> query) {
+        return query.reader().apply(api.get(query.path(), query.params()));
     }
 
     private static UserInfoDTO toUserInfo(UserDetailsDTO details) {

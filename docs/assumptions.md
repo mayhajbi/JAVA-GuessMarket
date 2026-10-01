@@ -62,6 +62,18 @@ The choices made wherever the exercise did not decide.
   event is created, `liquidity` is needed only for an LMSR event, and `baseValue`, `allowMint` and
   `initialInvestment` only for an order book event; the fields of the other method are ignored.
   The option of a buy, an order or a close is sent as 0 or 1 (the first or the second option).
+* **Automatic updates** - the client pulls its data from the server again every half a second (the
+  exercise allows up to 2 seconds). Every pull brings the whole data of what it refreshes: the events,
+  the account, the other users, and the event that is shown. Only the screen that is shown is refreshed,
+  and the details of an event only while an event is selected. An action of the user who is logged in
+  is seen at once, without waiting for the next pull.
+* **Refresh keeps the screen** - a pull that brought nothing new changes nothing on the screen. What
+  the user typed into a field, and the selected row of a table, survive every pull; a table whose rows
+  did change is filled again, and its selected row stays selected when the same row is still there.
+* **Server not reachable** - after 3 pulls in a row without an answer (about a second and a half) the
+  client shows a status line and locks its screens; it keeps trying, and continues by itself once the
+  server answers. A server that was restarted has no users, so a client that finds out it is no longer
+  known goes back to the login screen with an explanation.
 * **Upload** - the file travels as a multipart field and is read straight from memory, never written
   to the disk of the server; it may not be bigger than 1MB, and a bigger one is refused with a
   message. The events of a valid file are added to the existing ones, and the uploader becomes their

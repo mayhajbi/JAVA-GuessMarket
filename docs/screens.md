@@ -29,6 +29,13 @@
 * **Actions** - performed by the user who is logged in: *Open event* and *Close event* for the market maker, *Buy* shares of an LMSR event,
   *Place order* (buy or sell, quantity, option, price) in an order book event.
 
+* **Automatic updates** - what the other users do (a file uploaded, an event opened or closed, a
+  purchase, an order, funds loaded) appears on the shown screen by itself within about half a second,
+  without losing what was typed or selected.
+* **Status line** - *Server not reachable* at the bottom of the window while the server does not
+  answer; the screens are locked until it does. After a restart of the server the client returns to the
+  login screen.
+
 Every window can be resized freely; when it is small, the screens scroll instead of cutting content.
 
 ## Additional features

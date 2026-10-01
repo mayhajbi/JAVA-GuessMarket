@@ -12,6 +12,12 @@ public final class Constants {
     /** How long a request may wait for the server before it is reported as a failure. */
     public static final int TIMEOUT_SECONDS = 10;
 
+    /** How often, in milliseconds, every refreshed part of the screen pulls its data from the server. */
+    public static final int REFRESH_RATE = 500;
+
+    /** After this many refresh requests in a row got no answer, the server is reported as not reachable. */
+    public static final int MAX_FAILURES = 3;
+
     private Constants() {
     }
 }

@@ -8,6 +8,7 @@ rem  is actually reachable, so a downed server is never mistaken for a real
 rem  check failure.
 rem  The scripts are found by their names, so a new check needs no edit here:
 rem    engine\<Name>Test.java  - an engine check class (see engine\Check.java)
+rem    client\<Name>Test.java  - a check of the client that needs no server
 rem    server\test-<name>.bat   - a check that talks to the running server
 rem ---------------------------------------------------------------------------
 setlocal enabledelayedexpansion
@@ -38,6 +39,8 @@ if %ENGINE_READY%==1 (
     echo Skipping the engine checks - the sources did not compile.
     set SKIPPED_CHECKS=!SKIPPED_CHECKS! engine-checks
 )
+
+for %%f in (client\*Test.java) do call :run "client\run-check.bat %%f" "client-%%~nf"
 
 if %SERVER_UP%==1 (
     for %%f in (server\test-*.bat) do call :run "%%f" "server-%%~nf"

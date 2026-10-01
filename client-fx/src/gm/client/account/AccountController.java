@@ -2,6 +2,7 @@ package gm.client.account;
 
 import gm.client.task.LoadEventsTask;
 import gm.dto.AccountEntryDTO;
+import gm.dto.HistoryPointDTO;
 import gm.dto.UploadResultDTO;
 import gm.dto.UserDetailsDTO;
 import gm.dto.UserEventDTO;
@@ -24,6 +25,7 @@ import javafx.scene.control.TextInputDialog;
 import javafx.stage.FileChooser;
 
 import java.io.File;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -80,9 +82,7 @@ public class AccountController extends EventDetailScreen {
         ViewUtils.bindText(userEventTypeColumn, row -> row.event().type().getDisplayName());
         ViewUtils.bindText(userEventRoleColumn, AccountController::describeRole);
 
-        userEventsTable.getSelectionModel().selectedItemProperty().addListener(
-                (observable, previous, selected) ->
-                        eventDetailComponentController.showEvent(selected == null ? null : selected.event()));
+        showSelectedEvent(userEventsTable, UserEventDTO::event);
     }
 
     @Override
@@ -92,22 +92,40 @@ public class AccountController extends EventDetailScreen {
     }
 
     /**
-     * Pulls the data of the screen from the engine again. The selected event stays selected when the
-     * user is still connected to it.
+     * Pulls the data of the screen from the engine again, right now. The selected event stays selected
+     * when the user is still connected to it.
      */
     public void refresh() {
-        UserDetailsDTO details = engine.getUserDetails(userName);
+        showAccount(engine.getUserDetails(userName));
+        // The engine of the client lists the user who is logged in first, then the others.
+        showOtherUsers(engine.getAllUsers().stream().skip(1).toList());
+        showAccountEntries(engine.getAccountEntries(userName));
+        showBalanceHistory(engine.getUserBalanceHistory(userName));
+        eventDetailComponentController.refresh();
+    }
+
+    /**
+     * Shows the user who is logged in: the balance, whether the user is blocked and the events the user
+     * is connected to.
+     */
+    public void showAccount(UserDetailsDTO details) {
         userNameLabel.setText(details.name());
         balanceLabel.setText(Formats.decimal(details.balance()));
         ViewUtils.show(blockedLabel, details.blocked());
         eventDetailComponentController.setActingUser(details);
-        ViewUtils.replaceItems(userEventsTable, details.events(),
-                (row, selected) -> row.event().id() == selected.event().id());
+        replaceEventRows(userEventsTable, details.events(), UserEventDTO::event);
+    }
 
-        // The engine of the client lists the user who is logged in first, then the others.
-        usersTable.getItems().setAll(engine.getAllUsers().stream().skip(1).toList());
-        accountEntriesTable.getItems().setAll(engine.getAccountEntries(userName));
-        HistoryChart.fill(balanceChart, Map.of(BALANCE_SERIES, engine.getUserBalanceHistory(userName)));
+    public void showOtherUsers(List<UserInfoDTO> otherUsers) {
+        ViewUtils.replaceItems(usersTable, otherUsers);
+    }
+
+    public void showAccountEntries(List<AccountEntryDTO> entries) {
+        ViewUtils.replaceItems(accountEntriesTable, entries);
+    }
+
+    public void showBalanceHistory(List<HistoryPointDTO> points) {
+        HistoryChart.fill(balanceChart, Map.of(BALANCE_SERIES, points));
     }
 
     /**

@@ -12,12 +12,16 @@ full detail (expected vs. actual) of every failed check in `output.txt`, which i
 of each run. Needs JDK 25 (`javac`, `java`) on the PATH; `run-all.bat` also tries the JDK 25 folder of
 the development machine.
 
-There are two kinds of checks:
+There are three kinds of checks:
 
 - **Engine checks** (`engine\*Test.java`) need nothing running. `compile.bat` first compiles the `dto`
   and `engine` sources together with the checks straight from the sources (into `%TEMP%\gm-tests`), so
   they always check the current code: no `build.bat` and nothing in IntelliJ is needed. If that
   compilation fails, the engine checks are skipped.
+- **Client checks** (`client\*Test.java`) need nothing running either. `client\run-check.bat` compiles
+  one check together with the client classes it uses straight from the sources (`dto`, `api`, `ui-fx`
+  and `client-fx`, into `%TEMP%\gm-tests\client-classes`) and runs it with the JavaFX of `lib\`. The
+  screens work there against a canned engine, and no window is opened.
 - **Server checks** (`server\test-*.bat`) talk to a running server with `curl.exe`: start Tomcat with
   the `guessmarket` WAR deployed (from IntelliJ) first. After a change in the server or the engine,
   rebuild the artifact in IntelliJ and restart Tomcat. If the server does not respond at all, these
@@ -37,6 +41,8 @@ Each check runs on its own (a failure in one does not stop the others). Test dat
 | `HistoryTest` | the price history of an event and the balance history of a user |
 | `CreateEventTest` | a user creating an event and becoming its market maker, and the rules a created event obeys |
 | `EventRulesTest` | text cleanup of a created event, the active events, a blocked user creating an event, options of the same name in a file |
+| `client\ViewRefreshTest` | what an automatic update may change on the screen: equal rows and equal points leave a table and a graph untouched, the selected row stays selected, and the quantity typed for an event survives every refresh |
+| `server\test-live-pull.bat` | the automatic updates with the classes of the client (`LivePullCheck.java`): not logged in (401), a logged in client gets its data, what another user does arrives within 2 seconds, nothing is pulled while the updates are off |
 | `server\test-login.bat` | `/login`: a valid login (200 + session cookie), the same name from another session (401), a missing name (409) |
 | `server\test-read-api.bat` | the read endpoints: refused without a session, wrong parameters (400), a user sees only the own account |
 | `server\test-upload.bat` | `/upload`: a valid file, the same file again, a broken file, no file, a file over 1MB, and that the upload leaves no new file in the folders of Tomcat |
@@ -50,8 +56,11 @@ Name decides, `run-all.bat` needs no edit:
 
 - an engine check: a class `engine\<Name>Test.java` that extends `Check` and gives its assertions to
   `run(...)` (see any existing one);
+- a client check: a class `client\<Name>Test.java` that extends `Check` as well;
 - a server check: a script `server\test-<name>.bat` with the same [PASS]/[FAIL] output, which exits
-  with the failure count. A check that has to read JSON or compute decimal numbers (not possible in a
+  with the failure count. A check that has to use the classes of the client keeps its logic in
+  `server\<Name>Check.java`, and `test-<name>.bat` runs it through `client\run-check.bat` (see
+  `test-live-pull.bat`). A check that has to read JSON or compute decimal numbers (not possible in a
   plain batch file) keeps its logic in `server\<name>-check.ps1`, which sends every request with
   `curl.exe`; `test-<name>.bat` then only runs it and exits with its exit code (see
   `test-write-api.bat`).

@@ -51,8 +51,8 @@ class OptionBookView extends VBox {
         for (int index = 0; index < values.length; index++) {
             statisticValues[index].setText(Formats.optionalDecimal(values[index]));
         }
-        bidsTable.getItems().setAll(option.bids());
-        asksTable.getItems().setAll(option.asks());
+        ViewUtils.replaceItems(bidsTable, option.bids());
+        ViewUtils.replaceItems(asksTable, option.asks());
     }
 
     private static TableView<OrderDTO> createOrdersTable(String emptyText) {

@@ -127,12 +127,15 @@ public class EventDetailController {
     private Runnable onDataChanged = () -> { };
     /** The user who is logged in and performs every action; {@code null} until the first refresh. */
     private UserDetailsDTO actingUser;
-    private EventInfoDTO currentEvent;
+    /** Volatile: the automatic updates read it on their own thread, to know which event to ask about. */
+    private volatile EventInfoDTO currentEvent;
+    /** The state that is shown now; {@code null} until the first state of the shown event arrives. */
+    private EventStateDTO shownState;
     /** The state of the shown order book event; {@code null} while an LMSR event is shown. */
     private OrderBookStateDTO currentOrderBook;
     /**
-     * The event whose details slid in last. Kept apart from {@link #currentEvent}, which the refresh
-     * after every action clears for a moment - so only a genuinely different event slides in.
+     * The event whose details slid in last. Kept apart from {@link #currentEvent}, which is cleared
+     * whenever no event is selected - so only a genuinely different event slides in.
      */
     private Integer lastSlidEventId;
 
@@ -177,13 +180,18 @@ public class EventDetailController {
      * so that the balance and the blocked state are always the current ones.
      */
     public void setActingUser(UserDetailsDTO user) {
+        if (user.equals(actingUser)) {
+            return;
+        }
         actingUser = user;
         actingUserLabel.setText(user.name());
         updateActions();
     }
 
     /**
-     * Shows the current state of an event, pulled from the engine.
+     * Chooses the event whose details are shown, and pulls them from the engine. An event that is
+     * already shown stays as it is: it is kept current by {@link #refresh()} and by the automatic
+     * updates.
      *
      * @param event the event to show, or {@code null} to clear the details when no event is selected
      */
@@ -192,28 +200,59 @@ public class EventDetailController {
             clear();
             return;
         }
+        if (currentEvent != null && currentEvent.id() == event.id()) {
+            return;
+        }
+        quantityField.clear();
+        orderQuantityField.clear();
+        orderPriceField.clear();
+        currentEvent = event;
+        shownState = null;
+        refresh();
+    }
+
+    /**
+     * @return the event whose details are shown, or {@code null} when none is
+     */
+    public EventInfoDTO shownEvent() {
+        return currentEvent;
+    }
+
+    /**
+     * Pulls the details of the shown event from the engine again, right now.
+     */
+    public void refresh() {
+        EventInfoDTO event = currentEvent;
+        if (event == null) {
+            return;
+        }
+        showState(event.type() == EventType.LMSR
+                ? engine.getMarketState(event.id())
+                : engine.getOrderBookState(event.id()));
+        showPrices(engine.getEventPriceHistory(event.id()));
+    }
+
+    /**
+     * Shows the state of the shown event. A state that is exactly the one already shown changes
+     * nothing on the screen.
+     */
+    public void showState(EventStateDTO state) {
+        if (currentEvent == null || state.equals(shownState)) {
+            return;
+        }
+        shownState = state;
         ViewUtils.show(placeholderLabel, false);
         ViewUtils.show(detailsBox, true);
-        boolean isAnotherEvent = currentEvent == null || currentEvent.id() != event.id();
-        if (isAnotherEvent) {
-            quantityField.clear();
-            orderQuantityField.clear();
-            orderPriceField.clear();
-        }
 
-        boolean isLmsr = event.type() == EventType.LMSR;
-        EventStateDTO state;
-        if (isLmsr) {
-            MarketStateDTO marketState = engine.getMarketState(event.id());
-            optionsTable.getItems().setAll(marketState.optionStates());
-            historyTable.getItems().setAll(marketState.tradeHistory());
+        boolean isLmsr = state instanceof MarketStateDTO;
+        if (state instanceof MarketStateDTO marketState) {
+            ViewUtils.replaceItems(optionsTable, marketState.optionStates());
+            ViewUtils.replaceItems(historyTable, marketState.tradeHistory());
             currentOrderBook = null;
-            state = marketState;
         } else {
-            OrderBookStateDTO orderBookState = engine.getOrderBookState(event.id());
+            OrderBookStateDTO orderBookState = (OrderBookStateDTO) state;
             showOrderBook(orderBookState);
             currentOrderBook = orderBookState;
-            state = orderBookState;
         }
         currentEvent = state.eventInfo();
         showSummary(state);
@@ -222,10 +261,9 @@ public class EventDetailController {
         ViewUtils.show(orderBookBox, !isLmsr);
         ViewUtils.show(orderBookHistoryBox, !isLmsr);
         fillOptionChoices(currentEvent.optionNames());
-        showPriceChart();
         updateActions();
-        if (lastSlidEventId == null || lastSlidEventId != event.id()) {
-            lastSlidEventId = event.id();
+        if (lastSlidEventId == null || lastSlidEventId != currentEvent.id()) {
+            lastSlidEventId = currentEvent.id();
             Animations.slideIn(detailsBox);
         }
     }
@@ -234,9 +272,12 @@ public class EventDetailController {
      * Draws the value of every option of the shown event over time, one line per option. An event
      * that was never opened, and an order book option that was never quoted, have nothing to draw.
      */
-    private void showPriceChart() {
+    public void showPrices(List<PriceHistoryDTO> priceHistories) {
+        if (currentEvent == null) {
+            return;
+        }
         Map<String, List<HistoryPointDTO>> pointsByOption = new LinkedHashMap<>();
-        for (PriceHistoryDTO series : engine.getEventPriceHistory(currentEvent.id())) {
+        for (PriceHistoryDTO series : priceHistories) {
             pointsByOption.put(series.optionName(), series.points());
         }
         boolean hasPrices = HistoryChart.fill(priceChart, pointsByOption);
@@ -247,13 +288,14 @@ public class EventDetailController {
     public void clear() {
         currentEvent = null;
         currentOrderBook = null;
+        shownState = null;
         ViewUtils.show(placeholderLabel, true);
         ViewUtils.show(detailsBox, false);
         optionsTable.getItems().clear();
         historyTable.getItems().clear();
         participantsTable.getItems().clear();
         orderBookTradesTable.getItems().clear();
-        priceChart.getData().clear();
+        HistoryChart.fill(priceChart, Map.of());
     }
 
     @FXML
@@ -510,8 +552,8 @@ public class EventDetailController {
         }
 
         rebuildParticipantColumns(state.eventInfo().optionNames());
-        participantsTable.getItems().setAll(state.participants());
-        orderBookTradesTable.getItems().setAll(state.tradeHistory());
+        ViewUtils.replaceItems(participantsTable, state.participants());
+        ViewUtils.replaceItems(orderBookTradesTable, state.tradeHistory());
     }
 
     /**
