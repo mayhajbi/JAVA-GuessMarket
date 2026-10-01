@@ -14,7 +14,7 @@
             <HBox spacing="10" alignment="CENTER_LEFT">
                 <Label text="Events" styleClass="section-title"/>
                 <Region HBox.hgrow="ALWAYS"/>
-                <Button fx:id="newEventButton" text="New event" onAction="#onNewEvent"
+                <Button text="New event" onAction="#onNewEvent"
                         minWidth="-Infinity"/>
             </HBox>
             <GridPane hgap="8" vgap="6">

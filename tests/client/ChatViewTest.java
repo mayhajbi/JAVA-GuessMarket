@@ -2,7 +2,6 @@ import gm.client.chat.ChatController;
 import gm.dto.ChatLineDTO;
 import gm.dto.ChatLinesDTO;
 import gm.engine.api.GuessMarketEngine;
-import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
@@ -12,7 +11,6 @@ import javafx.scene.layout.Pane;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * The chat screen (bonus): the lines that are new are added once, the screen remembers the version it
@@ -29,16 +27,7 @@ public class ChatViewTest extends Check {
     }
 
     static void check() throws Exception {
-        CompletableFuture<Void> done = new CompletableFuture<>();
-        Platform.startup(() -> {
-            try {
-                chatScreen();
-                done.complete(null);
-            } catch (Throwable failure) {
-                done.completeExceptionally(failure);
-            }
-        });
-        done.get();
+        FxThread.run(() -> chatScreen());
     }
 
     static void chatScreen() throws Exception {

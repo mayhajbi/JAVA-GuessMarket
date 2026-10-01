@@ -9,7 +9,7 @@
 <BorderPane xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="gm.client.app.AppController" stylesheets="@/gm/ui/fx/common/app.css">
     <top>
-        <fx:include fx:id="headerComponent" source="../header/header.fxml"/>
+        <fx:include source="../header/header.fxml"/>
     </top>
     <center>
         <TabPane fx:id="screens" tabClosingPolicy="UNAVAILABLE">

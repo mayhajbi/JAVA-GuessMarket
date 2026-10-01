@@ -63,9 +63,11 @@ Name decides, `run-all.bat` needs no edit:
 
 - an engine check: a class `engine\<Name>Test.java` that extends `Check` and gives its assertions to
   `run(...)` (see any existing one);
-- a client check: a class `client\<Name>Test.java` that extends `Check` as well;
+- a client check: a class `client\<Name>Test.java` that extends `Check` as well, and builds its
+  screens inside `FxThread.run(...)`;
 - a server check: a script `server\test-<name>.bat` with the same [PASS]/[FAIL] output, which exits
-  with the failure count. A check that has to use the classes of the client keeps its logic in
+  with the failure count. A check of one request and its answer calls the shared `server\expect.bat`
+  (see `test-deposit.bat`). A check that has to use the classes of the client keeps its logic in
   `server\<Name>Check.java`, and `test-<name>.bat` runs it through `client\run-check.bat` (see
   `test-live-pull.bat`). A check that has to read JSON or compute decimal numbers (not possible in a
   plain batch file) keeps its logic in `server\<name>-check.ps1`, which sends every request with

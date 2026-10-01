@@ -18,13 +18,14 @@ import gm.dto.UserDetailsDTO;
 import gm.dto.UserEventDTO;
 import gm.dto.UserInfoDTO;
 import gm.client.account.AccountController;
+import gm.client.app.AppController;
 import gm.client.chat.ChatController;
 import gm.client.header.HeaderController;
 import gm.client.login.LoginController;
 import gm.engine.api.GuessMarketEngine;
 import gm.ui.fx.eventdetail.EventDetailScreen;
 import gm.ui.fx.events.EventsController;
-import javafx.application.Platform;
+import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Bounds;
 import javafx.scene.Node;
@@ -36,11 +37,11 @@ import javafx.scene.control.TableView;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Proxy;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * The screens of the client in a big window and in small ones: a screen is never squeezed below the size
@@ -62,22 +63,17 @@ public class LayoutTest extends Check {
     }
 
     static void check() throws Exception {
-        CompletableFuture<Void> done = new CompletableFuture<>();
-        Platform.startup(() -> {
-            try {
-                // Every screen is found next to its controller, which also compiles the controller for the check.
-                screenWithEvents(EventsController.class.getResource("events.fxml"), "eventsTable", "events screen");
-                screenWithEvents(AccountController.class.getResource("account.fxml"), "userEventsTable",
-                        "account screen");
-                plainScreen(LoginController.class.getResource("login.fxml"), "login screen");
-                plainScreen(HeaderController.class.getResource("header.fxml"), "header");
-                plainScreen(ChatController.class.getResource("chat.fxml"), "chat screen");
-                done.complete(null);
-            } catch (Throwable failure) {
-                done.completeExceptionally(failure);
-            }
+        FxThread.run(() -> {
+            // Every screen is found next to its controller, which also compiles the controller for the check.
+            screenWithEvents(EventsController.class.getResource("events.fxml"), "eventsTable", "events screen");
+            screenWithEvents(AccountController.class.getResource("account.fxml"), "userEventsTable",
+                    "account screen");
+            plainScreen(LoginController.class.getResource("login.fxml"), "login screen");
+            plainScreen(HeaderController.class.getResource("header.fxml"), "header");
+            plainScreen(ChatController.class.getResource("chat.fxml"), "chat screen");
+            // The main window holds all of them: loading it proves every screen is found and connected.
+            plainScreen(AppController.class.getResource("app.fxml"), "main window");
         });
-        done.get();
     }
 
     /** A screen that shows the details of an event: checked with an event of each trading method. */
@@ -86,6 +82,7 @@ public class LayoutTest extends Check {
         ScrollPane root = loader.load();
         new Scene(root).getStylesheets().add("/gm/ui/fx/common/app.css");
         EventDetailScreen screen = loader.getController();
+        expectConnected(screen, name);
         screen.setEngine(cannedEngine());
         screen.setUserName(USER);
         screen.getClass().getMethod("refresh").invoke(screen);
@@ -110,11 +107,29 @@ public class LayoutTest extends Check {
 
     /** A screen without events and without scrolling: it has to fit the smallest window as it is. */
     static void plainScreen(URL fxml, String name) throws Exception {
-        Region root = new FXMLLoader(fxml).load();
+        FXMLLoader loader = new FXMLLoader(fxml);
+        Region root = loader.load();
+        expectConnected(loader.getController(), name);
         new Scene(root).getStylesheets().add("/gm/ui/fx/common/app.css");
         for (double[] size : WINDOW_SIZES) {
             layOut(root, new double[] {size[0], Math.max(size[1], root.minHeight(size[0]))});
             checkParts(root, name + " at " + (int) size[0] + "x" + (int) size[1]);
+        }
+    }
+
+    /**
+     * Every part a controller asks its screen for is really there: a field that stayed empty means its
+     * name does not exist in the FXML file, which would fail only when the part is used.
+     */
+    static void expectConnected(Object controller, String name) throws IllegalAccessException {
+        for (Class<?> type = controller.getClass(); type != Object.class; type = type.getSuperclass()) {
+            for (Field field : type.getDeclaredFields()) {
+                if (field.isAnnotationPresent(FXML.class)) {
+                    field.setAccessible(true);
+                    expectTrue(field.get(controller) != null,
+                            name + ": '" + field.getName() + "' of the controller is connected to the screen");
+                }
+            }
         }
     }
 

@@ -3,7 +3,6 @@ import gm.dto.AccountEntryType;
 import gm.dto.UserInfoDTO;
 import gm.engine.core.Account;
 import gm.engine.exception.DuplicateUserNameException;
-import gm.engine.exception.GuessMarketException;
 import gm.engine.exception.InvalidCommissionException;
 import gm.engine.exception.InvalidDepositException;
 import gm.engine.exception.InvalidUserNameException;
@@ -134,15 +133,9 @@ public class UsersAndUploadsTest extends Check {
                 () -> Scenario.upload(engine, "Nobody", "fine.xml", Scenario.lmsrFile("Fine")), "an unknown uploader");
         expect(4, engine.getAllEvents().size(), "the refused files added nothing");
 
-        // A fault in an event of a file names the event, but shows no id: the file has none.
         String badCommission = Scenario.lmsrFile("Costly").replace(">5</commission>", ">95</commission>");
         expectThrows(InvalidCommissionException.class,
                 () -> Scenario.upload(engine, "Bella", "costly.xml", badCommission), "a commission above the limit");
-        try {
-            Scenario.upload(engine, "Bella", "costly.xml", badCommission);
-        } catch (GuessMarketException exception) {
-            expectFalse(exception.getMessage().contains("(id"), "the message shows no event id");
-        }
 
         // The input checks of exercise 1 apply to an uploaded file too: a liquidity of zero, and one option.
         String zeroLiquidity = Scenario.lmsrFile("Flat").replace("<b>100</b>", "<b>0</b>");

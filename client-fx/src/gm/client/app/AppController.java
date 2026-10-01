@@ -6,7 +6,6 @@ import gm.client.Query;
 import gm.client.Refresher;
 import gm.client.account.AccountController;
 import gm.client.chat.ChatController;
-import gm.client.header.HeaderController;
 import gm.dto.EventInfoDTO;
 import gm.engine.api.GuessMarketEngine;
 import gm.ui.fx.common.ViewUtils;
@@ -37,7 +36,6 @@ public class AppController {
     /** The status code of the server for a request of a user who is not logged in. */
     private static final int UNAUTHORIZED = 401;
 
-    @FXML private HeaderController headerComponentController;
     @FXML private EventsController eventsComponentController;
     @FXML private AccountController accountComponentController;
     @FXML private ChatController chatComponentController;

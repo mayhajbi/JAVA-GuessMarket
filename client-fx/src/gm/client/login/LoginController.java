@@ -3,7 +3,6 @@ package gm.client.login;
 import gm.engine.api.GuessMarketEngine;
 import gm.ui.fx.common.Dialogs;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 
 import java.util.function.Consumer;
@@ -16,7 +15,6 @@ import java.util.function.Consumer;
 public class LoginController {
 
     @FXML private TextField userNameField;
-    @FXML private Button loginButton;
 
     private GuessMarketEngine engine;
     private Consumer<String> onLoggedIn;

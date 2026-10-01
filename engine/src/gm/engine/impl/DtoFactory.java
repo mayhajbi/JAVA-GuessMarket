@@ -21,7 +21,6 @@ import gm.engine.chat.ChatLine;
 import gm.engine.core.Event;
 import gm.engine.core.EventOption;
 import gm.engine.core.HistoryPoint;
-import gm.engine.core.Trade;
 import gm.engine.core.User;
 import gm.engine.core.orderbook.Order;
 import gm.engine.core.orderbook.OrderBookMarket;

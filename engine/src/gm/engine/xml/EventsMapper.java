@@ -38,6 +38,8 @@ public class EventsMapper {
     private static final String ALLOW_MINT_TRUE = "true";
     private static final String ALLOW_MINT_FALSE = "false";
     private static final String ORDER_BOOK_ELEMENT = "GM-order-book";
+    /** How a message points at an event that has no name to call it by. */
+    private static final String UNNAMED_EVENT = "one of the events of the file";
 
     /**
      * Converts the events of a file. A file describes events only: it has no users and no event ids,
@@ -54,8 +56,10 @@ public class EventsMapper {
         List<Event> events = new ArrayList<>();
         for (XmlEvent xmlEvent : requireEventList(xmlSystem.getEvents())) {
             if (xmlEvent.getId() != null) {
-                throw new UnsupportedFileFormatException("the event '" + xmlEvent.getName()
-                        + "' has the element 'id'", "Events are identified by their names.");
+                String name = InputText.normalize(xmlEvent.getName());
+                throw new UnsupportedFileFormatException((name.isEmpty() ? UNNAMED_EVENT
+                        : "the event " + GuessMarketException.describeEvent(name)) + " has the element 'id'",
+                        "Events are identified by their names.");
             }
             events.add(toEvent(xmlEvent));
         }
@@ -76,7 +80,7 @@ public class EventsMapper {
     private Event toEvent(XmlEvent xmlEvent) {
         String name = InputText.normalize(xmlEvent.getName());
         if (name.isEmpty()) {
-            throw MissingXmlDataException.attribute("name", "GM-event", "one of the events of the file");
+            throw MissingXmlDataException.attribute("name", "GM-event", UNNAMED_EVENT);
         }
         EventValidator.requireEnglish(name);
         String location = "the event " + GuessMarketException.describeEvent(name);

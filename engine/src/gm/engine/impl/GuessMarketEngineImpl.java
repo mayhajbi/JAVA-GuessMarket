@@ -191,8 +191,7 @@ public class GuessMarketEngineImpl implements GuessMarketEngine {
         Trade trade = event.buy(buyer, optionIndex, quantity);
         return new PurchaseResultDTO(event.getOptionName(trade.getOptionIndex()), trade.getShares(),
                 trade.getSharesCost(), trade.getCommission(), trade.getTotalPaid(),
-                buyer.getAccount().getBalance(), buyer.getAccount().isBlocked(),
-                dtoFactory.toMarketState(event));
+                buyer.getAccount().getBalance(), buyer.getAccount().isBlocked());
     }
 
     @Override

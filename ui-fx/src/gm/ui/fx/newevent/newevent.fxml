@@ -46,7 +46,7 @@
                     <ToggleGroup fx:id="methodGroup"/>
                 </fx:define>
                 <RadioButton fx:id="lmsrToggle" text="LMSR" toggleGroup="$methodGroup" selected="true"/>
-                <RadioButton fx:id="orderBookToggle" text="Order Book" toggleGroup="$methodGroup"/>
+                <RadioButton text="Order Book" toggleGroup="$methodGroup"/>
             </HBox>
 
             <VBox fx:id="lmsrFields" spacing="6" styleClass="actions">

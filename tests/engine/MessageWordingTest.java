@@ -98,6 +98,11 @@ public class MessageWordingTest extends Check {
                         "<Guess-Market><GM-events/><GM-users/></Guess-Market>"))
                 .startsWith("The format of the file is not supported, because the file has the element 'GM-users'."),
                 "a file with users");
+        expect("The format of the file is not supported, because one of the events of the file has the element "
+                        + "'id'. Events are identified by their names. Please remove the element and upload the "
+                        + "file again.",
+                messageOf(() -> upload(engine, "ids.xml", "<Guess-Market><GM-events><GM-event><id>7</id>"
+                        + "</GM-event></GM-events></Guess-Market>")), "an event with an id and without a name");
         expectTrue(messageOf(() -> upload(engine, "empty.xml", "<Guess-Market><GM-events/></Guess-Market>"))
                 .startsWith("The element 'GM-event' is missing or empty in the element 'GM-events'."),
                 "a file without events");

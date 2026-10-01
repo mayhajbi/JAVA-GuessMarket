@@ -11,7 +11,6 @@ import gm.ui.fx.common.HistoryChart;
 import gm.ui.fx.common.ViewUtils;
 import gm.ui.fx.eventdetail.EventDetailController;
 import gm.ui.fx.events.EventsController;
-import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
@@ -22,7 +21,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Proxy;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * What an automatic update may and may not change on the screen: a refresh that brought nothing new
@@ -40,18 +38,11 @@ public class ViewRefreshTest extends Check {
     }
 
     static void check() throws Exception {
-        CompletableFuture<Void> done = new CompletableFuture<>();
-        Platform.startup(() -> {
-            try {
-                tableRows();
-                chart();
-                eventsScreen();
-                done.complete(null);
-            } catch (Throwable failure) {
-                done.completeExceptionally(failure);
-            }
+        FxThread.run(() -> {
+            tableRows();
+            chart();
+            eventsScreen();
         });
-        done.get();
     }
 
     static void tableRows() {

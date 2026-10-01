@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.function.Function;
 
 /**
  * Base class of the servlets: runs every request under the engine lock and turns errors into
@@ -63,26 +64,29 @@ public abstract class GmServlet extends HttpServlet {
     }
 
     protected static int requireInt(HttpServletRequest request, String name) {
-        String value = request.getParameter(name);
-        if (value == null) {
-            throw new BadRequestException("The parameter '" + name + "' is missing.");
-        }
-        try {
-            return Integer.parseInt(value.trim());
-        } catch (NumberFormatException e) {
-            throw new BadRequestException("The parameter '" + name + "' must be a whole number, but it is '" + value + "'.");
-        }
+        return requireNumber(request, name, Integer::parseInt, "a whole number");
     }
 
     protected static double requireDouble(HttpServletRequest request, String name) {
+        return requireNumber(request, name, Double::parseDouble, "a number");
+    }
+
+    /**
+     * Reads a parameter that has to be a number.
+     *
+     * @param parser converts the text, and throws a {@link NumberFormatException} when it is not such a number
+     * @param kind   what the parameter has to be, for the message
+     */
+    private static <T> T requireNumber(HttpServletRequest request, String name, Function<String, T> parser,
+                                       String kind) {
         String value = request.getParameter(name);
         if (value == null) {
             throw new BadRequestException("The parameter '" + name + "' is missing.");
         }
         try {
-            return Double.parseDouble(value.trim());
+            return parser.apply(value.trim());
         } catch (NumberFormatException e) {
-            throw new BadRequestException("The parameter '" + name + "' must be a number, but it is '" + value + "'.");
+            throw new BadRequestException("The parameter '" + name + "' must be " + kind + ", but it is '" + value + "'.");
         }
     }
 

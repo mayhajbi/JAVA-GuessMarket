@@ -157,8 +157,7 @@ public interface GuessMarketEngine {
      * @param userName    name of the buying user
      * @param optionIndex zero based index of the option to buy
      * @param quantity    amount of shares to buy, must be positive
-     * @return what was paid, the balance of the buyer, and the state of the event right after the
-     *         purchase
+     * @return what was bought, what was paid for it, and the balance of the buyer right after the purchase
      */
     PurchaseResultDTO buyShares(int eventId, String userName, int optionIndex, long quantity);
 
@@ -167,8 +166,8 @@ public interface GuessMarketEngine {
      * matches it right away against the waiting orders.
      *
      * @param request the event, user, side, option, quantity and price of the order
-     * @return the trades the order created, the balance of the user, and the state of the event right
-     *         after the order
+     * @return the trades the order created, how much of it was matched and how much waits, and the
+     *         balance of the user right after the order
      */
     OrderResultDTO submitOrder(OrderRequestDTO request);
 

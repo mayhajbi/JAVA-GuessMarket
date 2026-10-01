@@ -23,7 +23,7 @@ if exist "%CLASSES%" rmdir /s /q "%CLASSES%"
 mkdir "%CLASSES%"
 
 javac -encoding UTF-8 --module-path "%FX%" --add-modules javafx.controls,javafx.fxml -cp "%LIBS%" ^
-      -sourcepath "%ROOT%\dto\src;%ROOT%\api\src;%ROOT%\ui-fx\src;%ROOT%\client-fx\src;engine" ^
+      -sourcepath "%ROOT%\dto\src;%ROOT%\api\src;%ROOT%\ui-fx\src;%ROOT%\client-fx\src;engine;client" ^
       -d "%CLASSES%" "%~1" > "%JAVAC_OUT%" 2>&1
 if errorlevel 1 (
     echo [FAIL] %CHECK%: the check and the client sources it uses did not compile

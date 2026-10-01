@@ -35,7 +35,6 @@ public class NewEventController {
     @FXML private TextField commissionField;
     @FXML private ComboBox<CommissionType> commissionTypeComboBox;
     @FXML private RadioButton lmsrToggle;
-    @FXML private RadioButton orderBookToggle;
     @FXML private VBox lmsrFields;
     @FXML private VBox orderBookFields;
     @FXML private TextField liquidityField;

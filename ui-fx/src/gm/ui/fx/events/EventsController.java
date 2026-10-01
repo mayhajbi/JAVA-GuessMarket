@@ -16,7 +16,6 @@ import gm.ui.fx.newevent.NewEventController;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
@@ -55,7 +54,6 @@ public class EventsController extends EventDetailScreen {
     @FXML private TableColumn<EventInfoDTO, String> marketMakerColumn;
     @FXML private TableColumn<EventInfoDTO, String> balanceColumn;
     @FXML private Label eventsCountLabel;
-    @FXML private Button newEventButton;
 
     private int totalEventCount;
     /** Volatile: the automatic updates read it on their own thread, to ask for the same events. */
