@@ -15,7 +15,6 @@ import gm.engine.exception.InvalidOrderException;
 import gm.engine.exception.InvalidQuantityException;
 import gm.engine.exception.UserBlockedException;
 import gm.engine.exception.WrongTradingMethodException;
-import gm.engine.impl.GuessMarketEngineImpl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,17 +35,15 @@ public class OrderBookTest extends Check {
 
     public static void main(String[] args) {
         run("order-book", () -> {
-            String dir = DATA + "ex2";
-            simulation(dir + "/clob-purchase.xml", true);
-            simulation(dir + "/clob-close.xml", false);
-            edgeCases(dir);
+            simulation(true);
+            simulation(false);
+            edgeCases();
         });
     }
 
-    static void simulation(String file, boolean onPurchase) {
+    static void simulation(boolean onPurchase) {
         String mode = onPurchase ? "[on-purchase] " : "[on-close] ";
-        GuessMarketEngine engine = new GuessMarketEngineImpl();
-        engine.loadEventsFile(file);
+        GuessMarketEngine engine = onPurchase ? Scenario.clobOnPurchase() : Scenario.clobOnClose();
 
         // step 1: Zoe mints the first 100 pairs
         engine.openEvent(1, "Zoe");
@@ -157,10 +154,8 @@ public class OrderBookTest extends Check {
                 mode + "no orders after close");
     }
 
-    static void edgeCases(String dir) {
-        String file = dir + "/clob-purchase.xml";
-
-        GuessMarketEngine a = load(file);
+    static void edgeCases() {
+        GuessMarketEngine a = Scenario.clobOnPurchase();
         expectThrows(EventNotActiveException.class, () -> order(a, 1, "Bob", BUY, YES, 10, 0.5),
                 "order before open");
         a.openEvent(1, "Zoe");
@@ -183,14 +178,14 @@ public class OrderBookTest extends Check {
         expectTrue(a.getUserDetails("Bob").events().stream().anyMatch(e -> e.event().id() == 1 && e.participant()),
                 "an unmatched order makes a participant");
 
-        GuessMarketEngine b = load(file);
+        GuessMarketEngine b = Scenario.clobOnPurchase();
         b.openEvent(2, "Zoe");
         order(b, 2, "Carol", BUY, NO, 35, 0.42);
         OrderResultDTO noMint = order(b, 2, "Alice", BUY, YES, 40, 0.62);
         expect(0, noMint.trades().size(), "no mint when minting is not allowed");
         expect(40L, noMint.restingQuantity(), "the whole order rests");
 
-        GuessMarketEngine c = load(file);
+        GuessMarketEngine c = Scenario.clobOnPurchase();
         c.openEvent(2, "Zoe");
         order(c, 2, "Zoe", SELL, YES, 20, 0.60);
         order(c, 2, "Zoe", SELL, YES, 40, 0.60);
@@ -200,7 +195,7 @@ public class OrderBookTest extends Check {
         expect(30L, walk.trades().get(1).quantity(), "v3 example: 30 from the second");
         asks(c.getOrderBookState(2), YES, "Zoe:10@0.60", "v3 example: 10 left waiting");
 
-        GuessMarketEngine d = load(file);
+        GuessMarketEngine d = Scenario.clobOnPurchase();
         d.openEvent(2, "Zoe");
         order(d, 2, "Dan", BUY, YES, 10, 0.30);
         order(d, 2, "Zoe", SELL, NO, 100, 0.99);
@@ -217,18 +212,12 @@ public class OrderBookTest extends Check {
         expect(0L, eve.restingQuantity(), "the rest of a blocked buyer's order does not wait");
         bids(d.getOrderBookState(2), NO, "", "no NO bid of Eve");
 
-        GuessMarketEngine f = load(file);
+        GuessMarketEngine f = Scenario.clobOnPurchase();
         expectThrows(InsufficientFundsException.class, () -> f.openEvent(4, "Dan"), "OB open without enough money");
 
-        expectThrows(InvalidOrderBookException.class,
-                () -> new GuessMarketEngineImpl().loadEventsFile(dir + "/ob-not-divisible.xml"),
-                "initial not divisible by d");
-    }
-
-    static GuessMarketEngine load(String file) {
-        GuessMarketEngine engine = new GuessMarketEngineImpl();
-        engine.loadEventsFile(file);
-        return engine;
+        expectThrows(InvalidOrderBookException.class, () -> Scenario.upload(Scenario.clobOnClose(), "Zoe",
+                "odd.xml", Scenario.file(Scenario.orderBook("Odd Investment", "on-close", 1, true, 100, 3,
+                        "YES", "NO"))), "initial not divisible by d");
     }
 
     static OrderResultDTO order(GuessMarketEngine engine, int eventId, String user, OrderSide side,

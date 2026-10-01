@@ -8,17 +8,12 @@ import gm.engine.exception.InvalidEventDetailsException;
 import gm.engine.exception.UserBlockedException;
 import gm.engine.impl.GuessMarketEngineImpl;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.EnumSet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Whitespace cleanup of a created event, the list of active events, a blocked user creating an
  * event, and a data file with two options of the same name.
- * multiple.xml: events 1-4, users Avrum 1000, Tikva 10000, Menash 100.
+ * The engine starts as {@link Scenario#multiple()}.
  */
 public class EventRulesTest extends Check {
 
@@ -26,9 +21,8 @@ public class EventRulesTest extends Check {
         run("event-rules", EventRulesTest::check);
     }
 
-    static void check() throws IOException {
-        GuessMarketEngineImpl engine = new GuessMarketEngineImpl();
-        engine.loadEventsFile(DATA + "ex2/multiple.xml");
+    static void check() {
+        GuessMarketEngineImpl engine = Scenario.multiple();
 
         // A description typed on several lines is cleaned like a value out of a file.
         EventInfoDTO created = engine.createEvent(new NewEventRequestDTO("Avrum", "  Multi \t line ",
@@ -52,21 +46,8 @@ public class EventRulesTest extends Check {
                 false, 0)), "a blocked user cannot create an event");
 
         // A data file whose two options have the same name (ignoring case) is rejected.
-        String xml = Files.readString(Path.of(DATA + "ex2/small.xml"));
-        Matcher option = Pattern.compile("<GM-option>(.*?)</GM-option>").matcher(xml);
-        option.find();
-        String first = option.group(1);
-        option.find();
-        String duplicated = xml.substring(0, option.start(1)) + first.toUpperCase()
-                + xml.substring(option.end(1));
-        Path file = Files.createTempFile("dup-options", ".xml");
-        try {
-            Files.writeString(file, duplicated);
-            expectThrows(InvalidEventDetailsException.class,
-                    () -> new GuessMarketEngineImpl().loadEventsFile(file.toString()),
-                    "same option names in a file");
-        } finally {
-            Files.delete(file);
-        }
+        expectThrows(InvalidEventDetailsException.class, () -> Scenario.upload(engine, "Avrum", "twins.xml",
+                Scenario.file(Scenario.lmsr("Twins", "on-close", 5, 100, "Yes", "YES"))),
+                "same option names in a file");
     }
 }

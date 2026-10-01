@@ -18,7 +18,7 @@ import java.util.List;
  * Every DTO the server answers with survives the way to the client: it becomes JSON with gson and
  * comes back as an object equal to the original. The DTOs are taken from an engine with events that
  * are open, traded in and closed, so that they hold real numbers, empty values and lists.
- * multiple.xml: 1 LMSR (Tikva), 2 OB with minting (Avrum), users Tikva 10000, Avrum 1000, Menash 100.
+ * The engine starts as {@link Scenario#multiple()}.
  */
 public class DtoJsonTest extends Check {
 
@@ -29,8 +29,7 @@ public class DtoJsonTest extends Check {
     }
 
     static void check() {
-        GuessMarketEngineImpl engine = new GuessMarketEngineImpl();
-        engine.loadEventsFile(DATA + "ex2/multiple.xml");
+        GuessMarketEngineImpl engine = Scenario.multiple();
 
         // Before anything happened: events that are not open, and lists that are still empty.
         roundTrip(engine.getAllEvents(), new TypeToken<List<EventInfoDTO>>() { }.getType(), "events at load");

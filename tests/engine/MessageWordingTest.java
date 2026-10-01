@@ -84,15 +84,15 @@ public class MessageWordingTest extends Check {
         expectTrue(messageOf(() -> uploadOrderBook(engine, "Mint", "allow-mint=\"maybe\" initial=\"10\" d=\"1\""))
                 .startsWith("The attribute 'allow-mint' of the order book event 'Mint' is 'maybe'."),
                 "an allow-mint value that is not a boolean");
-        expectTrue(messageOf(() -> upload(engine, "flat.xml", lmsr("Flat", "on-close", "5", "0", 2)))
+        expectTrue(messageOf(() -> upload(engine, "flat.xml", lmsr("Flat", "on-close", 5, 0, "Yes", "No")))
                 .endsWith("In a file it is the element 'b'."), "a liquidity of zero names the element");
-        expectTrue(messageOf(() -> upload(engine, "weekly.xml", lmsr("Weekly", "weekly", "5", "100", 2)))
+        expectTrue(messageOf(() -> upload(engine, "weekly.xml", lmsr("Weekly", "weekly", 5, 100, "Yes", "No")))
                 .endsWith("Please use 'on-purchase' or 'on-close'."), "an unknown commission type");
-        expectTrue(messageOf(() -> upload(engine, "costly.xml", lmsr("Costly", "on-close", "95", "100", 2)))
+        expectTrue(messageOf(() -> upload(engine, "costly.xml", lmsr("Costly", "on-close", 95, 100, "Yes", "No")))
                 .endsWith("The commission must be a whole number from 0 to 90."), "a commission above the limit");
         expect("The number of options of the event 'Lonely' is 1. Every event must have exactly 2 options, each "
                         + "in a 'GM-option' element.",
-                messageOf(() -> upload(engine, "lonely.xml", lmsr("Lonely", "on-close", "5", "100", 1))),
+                messageOf(() -> upload(engine, "lonely.xml", lmsr("Lonely", "on-close", 5, 100, "Yes"))),
                 "an event with one option");
         expectTrue(messageOf(() -> upload(engine, "users.xml",
                         "<Guess-Market><GM-events/><GM-users/></Guess-Market>"))
@@ -105,10 +105,10 @@ public class MessageWordingTest extends Check {
                 .startsWith("The element 'GM-events' is missing or empty in the root element 'Guess-Market'."),
                 "a file without the events element");
         expect("The file 'events.txt' is not an XML file. The file name must end with the .xml extension.",
-                messageOf(() -> upload(engine, "events.txt", UsersAndUploadsTest.eventsXml("Fine"))),
+                messageOf(() -> upload(engine, "events.txt", Scenario.lmsrFile("Fine"))),
                 "a file that is not xml");
-        messageOf(() -> upload(engine, "", UsersAndUploadsTest.eventsXml("Fine")));
-        messageOf(() -> upload(engine, "same.xml", UsersAndUploadsTest.eventsXml("Twice", "twice")));
+        messageOf(() -> upload(engine, "", Scenario.lmsrFile("Fine")));
+        messageOf(() -> upload(engine, "same.xml", Scenario.lmsrFile("Twice", "twice")));
 
         for (String message : messages) {
             expectTrue(message.chars().noneMatch(character -> BRACKETS.indexOf(character) >= 0),
@@ -133,28 +133,17 @@ public class MessageWordingTest extends Check {
     }
 
     private static void upload(GuessMarketEngineImpl engine, String fileName, String xml) {
-        UsersAndUploadsTest.uploadText(engine, "Avi", fileName, xml);
+        Scenario.upload(engine, "Avi", fileName, xml);
     }
 
     private static void uploadOrderBook(GuessMarketEngineImpl engine, String name, String attributes) {
-        upload(engine, "book.xml", event(name, "on-close", "5", 2, "<GM-order-book " + attributes + "/>"));
+        upload(engine, "book.xml", Scenario.file(
+                Scenario.event(name, "on-close", 5, "<GM-order-book " + attributes + "/>", "Yes", "No")));
     }
 
-    private static String lmsr(String name, String commissionType, String commission, String liquidity,
-                               int options) {
-        return event(name, commissionType, commission, options, "<GM-LMSR><b>" + liquidity + "</b></GM-LMSR>");
-    }
-
-    /** A file with one event, whose options are named Option 1, Option 2 and so on. */
-    private static String event(String name, String commissionType, String commission, int options,
-                                String method) {
-        StringBuilder xml = new StringBuilder("<Guess-Market><GM-events><GM-event name=\"" + name
-                + "\"><description>d</description><commission type=\"" + commissionType + "\">" + commission
-                + "</commission><GM-options>");
-        for (int number = 1; number <= options; number++) {
-            xml.append("<GM-option>Option ").append(number).append("</GM-option>");
-        }
-        return xml.append("</GM-options><GM-method>").append(method).append("</GM-method></GM-event>")
-                .append("</GM-events></Guess-Market>").toString();
+    /** A file with one LMSR event. */
+    private static String lmsr(String name, String commissionType, int commission, int liquidity,
+                               String... options) {
+        return Scenario.file(Scenario.lmsr(name, commissionType, commission, liquidity, options));
     }
 }

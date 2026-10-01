@@ -20,12 +20,10 @@ import gm.engine.exception.UnsupportedFileFormatException;
 import gm.engine.exception.UserNotFoundException;
 import gm.engine.exception.XmlParsingException;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /**
@@ -113,56 +111,61 @@ public class UsersAndUploadsTest extends Check {
         expectThrows(DuplicateEventNameException.class,
                 () -> upload(engine, "Bella", DATA + "ex3/small.xml"), "the same file again");
         expectThrows(DuplicateEventNameException.class,
-                () -> uploadText(engine, "Bella", "again.xml", eventsXml("Fresh one", "MUJTABA IS DEAD")),
+                () -> Scenario.upload(engine, "Bella", "again.xml", Scenario.lmsrFile("Fresh one", "MUJTABA IS DEAD")),
                 "a name that exists in another case, after a fresh event");
         expectThrows(DuplicateEventNameException.class,
-                () -> uploadText(engine, "Bella", "twice.xml", eventsXml("Twin", "twin")),
+                () -> Scenario.upload(engine, "Bella", "twice.xml", Scenario.lmsrFile("Twin", "twin")),
                 "the same name twice in one file");
         expect(4, engine.getAllEvents().size(), "a refused file adds no event at all");
 
         // A file that is not acceptable says why, and changes nothing.
         expectThrows(UnsupportedFileFormatException.class,
-                () -> upload(engine, "Bella", DATA + "ex2/multiple.xml"), "a file with users and ids");
+                () -> Scenario.upload(engine, "Bella", "users.xml",
+                        "<Guess-Market><GM-events/><GM-users/></Guess-Market>"), "a file with users");
+        expectThrows(UnsupportedFileFormatException.class,
+                () -> Scenario.upload(engine, "Bella", "ids.xml",
+                        Scenario.lmsrFile("Numbered").replace("<description>", "<id>7</id><description>")),
+                "a file with event ids");
         expectThrows(InvalidFilePathException.class,
-                () -> uploadText(engine, "Bella", "events.txt", eventsXml("Fine")), "a file that is not xml");
+                () -> Scenario.upload(engine, "Bella", "events.txt", Scenario.lmsrFile("Fine")), "a file that is not xml");
         expectThrows(XmlParsingException.class,
-                () -> uploadText(engine, "Bella", "broken.xml", "<Guess-Market><GM-events>"), "a broken file");
+                () -> Scenario.upload(engine, "Bella", "broken.xml", "<Guess-Market><GM-events>"), "a broken file");
         expectThrows(UserNotFoundException.class,
-                () -> uploadText(engine, "Nobody", "fine.xml", eventsXml("Fine")), "an unknown uploader");
+                () -> Scenario.upload(engine, "Nobody", "fine.xml", Scenario.lmsrFile("Fine")), "an unknown uploader");
         expect(4, engine.getAllEvents().size(), "the refused files added nothing");
 
         // A fault in an event of a file names the event, but shows no id: the file has none.
-        String badCommission = eventsXml("Costly").replace(">5</commission>", ">95</commission>");
+        String badCommission = Scenario.lmsrFile("Costly").replace(">5</commission>", ">95</commission>");
         expectThrows(InvalidCommissionException.class,
-                () -> uploadText(engine, "Bella", "costly.xml", badCommission), "a commission above the limit");
+                () -> Scenario.upload(engine, "Bella", "costly.xml", badCommission), "a commission above the limit");
         try {
-            uploadText(engine, "Bella", "costly.xml", badCommission);
+            Scenario.upload(engine, "Bella", "costly.xml", badCommission);
         } catch (GuessMarketException exception) {
             expectFalse(exception.getMessage().contains("(id"), "the message shows no event id");
         }
 
         // The input checks of exercise 1 apply to an uploaded file too: a liquidity of zero, and one option.
-        String zeroLiquidity = eventsXml("Flat").replace("<b>100</b>", "<b>0</b>");
+        String zeroLiquidity = Scenario.lmsrFile("Flat").replace("<b>100</b>", "<b>0</b>");
         expectThrows(InvalidLiquidityException.class,
-                () -> uploadText(engine, "Bella", "flat.xml", zeroLiquidity), "a liquidity of zero");
-        String singleOption = eventsXml("Lonely").replace("<GM-option>No</GM-option>", "");
+                () -> Scenario.upload(engine, "Bella", "flat.xml", zeroLiquidity), "a liquidity of zero");
+        String singleOption = Scenario.lmsrFile("Lonely").replace("<GM-option>No</GM-option>", "");
         expectThrows(InvalidOptionsException.class,
-                () -> uploadText(engine, "Bella", "lonely.xml", singleOption), "an event with one option");
+                () -> Scenario.upload(engine, "Bella", "lonely.xml", singleOption), "an event with one option");
         expect(4, engine.getAllEvents().size(), "the refused files added nothing, again");
 
         // Only English is accepted: in the name, the description and the options of an event.
         expectThrows(InvalidEventDetailsException.class,
-                () -> uploadText(engine, "Bella", "hebrew.xml", eventsXml("\u05E9\u05DC\u05D5\u05DD")),
+                () -> Scenario.upload(engine, "Bella", "hebrew.xml", Scenario.lmsrFile("\u05E9\u05DC\u05D5\u05DD")),
                 "an event name that is not in English");
-        String foreignOption = eventsXml("Foreign").replace("<GM-option>No</GM-option>",
+        String foreignOption = Scenario.lmsrFile("Foreign").replace("<GM-option>No</GM-option>",
                 "<GM-option>\u05DC\u05D0</GM-option>");
         expectThrows(InvalidEventDetailsException.class,
-                () -> uploadText(engine, "Bella", "foreign.xml", foreignOption),
+                () -> Scenario.upload(engine, "Bella", "foreign.xml", foreignOption),
                 "an option that is not in English");
         expect(4, engine.getAllEvents().size(), "the refused files added nothing, once more");
 
         // A file of another user is another market maker, and a name that is free is accepted.
-        UploadResultDTO third = uploadText(engine, "Bella", "bella.xml", eventsXml("Bella's event"));
+        UploadResultDTO third = Scenario.upload(engine, "Bella", "bella.xml", Scenario.lmsrFile("Bella's event"));
         expect("[Bella's event]", third.eventNames().toString(), "a new name is accepted");
         expect("Bella", engine.getAllEvents().get(4).marketMakerName(), "the second uploader is its maker");
         expect(5, engine.getAllEvents().get(4).id(), "the id continues");
@@ -176,23 +179,7 @@ public class UsersAndUploadsTest extends Check {
         }
     }
 
-    static UploadResultDTO uploadText(GuessMarketEngineImpl engine, String user, String fileName, String xml) {
-        return engine.uploadEvents(user, fileName, new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)));
-    }
-
     static UserInfoDTO user(GuessMarketEngineImpl engine, String name) {
         return engine.getAllUsers().stream().filter(user -> user.name().equals(name)).findFirst().orElseThrow();
-    }
-
-    /** A file with one lmsr event for every given name. */
-    static String eventsXml(String... names) {
-        StringBuilder xml = new StringBuilder("<Guess-Market><GM-events>");
-        for (String name : names) {
-            xml.append("<GM-event name=\"").append(name).append("\"><description>d</description>")
-                    .append("<commission type=\"on-close\">5</commission>")
-                    .append("<GM-options><GM-option>Yes</GM-option><GM-option>No</GM-option></GM-options>")
-                    .append("<GM-method><GM-LMSR><b>100</b></GM-LMSR></GM-method></GM-event>");
-        }
-        return xml.append("</GM-events></Guess-Market>").toString();
     }
 }

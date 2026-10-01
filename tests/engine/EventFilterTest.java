@@ -12,7 +12,8 @@ import java.util.Set;
 
 /**
  * Filtering events in the engine, the base of the events list of the server.
- * multiple.xml: 1 LMSR on-purchase, 2 OB on-close, 3 OB on-purchase, 4 LMSR on-close.
+ * The engine starts as {@link Scenario#multiple()}: 1 LMSR on-purchase, 2 OB on-close, 3 OB on-purchase,
+ * 4 LMSR on-close.
  */
 public class EventFilterTest extends Check {
 
@@ -25,8 +26,7 @@ public class EventFilterTest extends Check {
     }
 
     static void check() {
-        GuessMarketEngineImpl engine = new GuessMarketEngineImpl();
-        engine.loadEventsFile(DATA + "ex2/multiple.xml");
+        GuessMarketEngineImpl engine = Scenario.multiple();
 
         expect("[1, 2, 3, 4]", ids(engine, ALL_TYPES, ALL_STATUSES, ALL_COMMISSIONS), "everything selected");
         expect("[1, 4]", ids(engine, EnumSet.of(EventType.LMSR), ALL_STATUSES, ALL_COMMISSIONS), "LMSR only");

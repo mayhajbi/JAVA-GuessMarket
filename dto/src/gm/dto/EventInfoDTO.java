@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * General details of a single event, as presented to the user.
  *
- * @param id                event unique number, as given in the data file
+ * @param id                event unique number, given by the system
  * @param name              event name
  * @param description       free text describing the event and its closing condition
  * @param commissionPercent commission of the event, in percent (0 - 90)

@@ -9,7 +9,7 @@ import gm.engine.impl.GuessMarketEngineImpl;
 /**
  * A user creates an event and becomes its market maker, and every rule a data file obeys is checked
  * for a created event too.
- * multiple.xml: events 1-4, users Avrum 1000, Tikva 10000, Menash 100.
+ * The engine starts as {@link Scenario#multiple()}.
  */
 public class CreateEventTest extends Check {
 
@@ -18,10 +18,9 @@ public class CreateEventTest extends Check {
     }
 
     static void check() {
-        GuessMarketEngineImpl engine = new GuessMarketEngineImpl();
-        engine.loadEventsFile(DATA + "ex2/multiple.xml");
+        GuessMarketEngineImpl engine = Scenario.multiple();
 
-        // The id comes after the ones the file used, and the creator is the market maker.
+        // The id comes after the ones of the uploaded events, and the creator is the market maker.
         EventInfoDTO created = engine.createEvent(lmsr("Menash", "Snow in Tel Aviv", 5, 50));
         expect(5, created.id(), "the id of the new event");
         expect("Menash", created.marketMakerName(), "the market maker of the new event");

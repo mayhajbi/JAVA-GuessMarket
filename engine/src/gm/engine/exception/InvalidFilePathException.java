@@ -1,7 +1,7 @@
 package gm.engine.exception;
 
 /**
- * The given path does not point to a readable XML file.
+ * No file was given, or its name does not end with the XML extension.
  */
 public class InvalidFilePathException extends GuessMarketException {
 

@@ -2,17 +2,18 @@
 
 The choices made wherever the exercise did not decide.
 
-* **Data file** - only the exercise 2 schema is accepted (`Guess-Market` with `GM-events` and
-  `GM-users`). A file is loaded only if it is completely valid; a failed load leaves the previous
-  system untouched.
-* **Validation order** - the file is checked top to bottom and the load stops at the first fault:
-  the events, then the users (unique name, positive initial cash), then that every market maker
-  reference points to an event that exists, and finally that every event has exactly one market
-  maker.
-* **Market maker** - exactly one user per event, taken from the `GM-market-maker` blocks of the
-  file. Only that user may open and close the event. The market maker may also trade in the own
+* **Data file** - a file describes events only (`Guess-Market` with `GM-events`). A file with users
+  (`GM-users`) or with event ids is refused with a message that names the element. The events of a
+  file are added only if the whole file is valid; a refused file changes nothing.
+* **Validation order** - the file is checked top to bottom and the upload stops at the first fault.
+  After the file itself is valid, the names of its events are checked against each other and against
+  the events that already exist: an event name is unique, compared without case.
+* **Users** - a user registers by logging in with a name that is not taken (compared without case)
+  and starts with an empty account. The name stays taken until the server stops.
+* **Market maker** - exactly one user per event: the user who uploaded its file, or who created it.
+  Only that user may open and close the event. The market maker may also trade in the own
   event like any other user.
-* **Event life cycle** - every event is loaded as *inactive* (no trading). The market maker opens
+* **Event life cycle** - every event starts as *inactive* (no trading). The market maker opens
   it (*active*) and later closes it (*closed*); an event cannot be reopened.
 * **Opening an LMSR event** - the market maker pays the initial subsidy (`b * ln(2)`) from the own
   account into the event account. Opening must be fully covered: without enough money the event

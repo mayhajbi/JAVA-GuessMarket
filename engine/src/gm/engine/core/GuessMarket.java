@@ -3,7 +3,6 @@ package gm.engine.core;
 import gm.dto.CommissionType;
 import gm.dto.EventStatus;
 import gm.dto.EventType;
-import gm.engine.exception.DuplicateEventIdException;
 import gm.engine.exception.DuplicateEventNameException;
 import gm.engine.exception.DuplicateUserNameException;
 import gm.engine.exception.EventNotFoundException;
@@ -20,10 +19,9 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * The system itself: all the events that are currently loaded.
+ * The system itself: all its events and users.
  * <p>
- * The events are kept in the order they appeared in the data file, so that the order the user sees
- * is stable between commands.
+ * The events are kept in the order they were added, so that the order the user sees is stable.
  */
 public class GuessMarket {
 
@@ -33,24 +31,18 @@ public class GuessMarket {
     private final Map<String, User> usersByName = new LinkedHashMap<>();
 
     /**
-     * Adds an event to the system.
+     * Adds an event to the system. Its id is one the system gave it ({@link #nextEventId()}).
      *
-     * @throws DuplicateEventIdException   when an event with the same id already exists
      * @throws DuplicateEventNameException when an event with the same name (ignoring case) already
      *                                     exists
      */
     public void addEvent(Event event) {
-        Event existingEvent = eventsById.get(event.getId());
-        if (existingEvent != null) {
-            throw new DuplicateEventIdException(event.getId(), existingEvent.getName(),
-                    event.getName());
-        }
         requireNameNotInUse(event.getName());
         eventsById.put(event.getId(), event);
     }
 
     /**
-     * Adds all the events of a file that has no ids, or none of them: the names are checked against
+     * Adds all the events of a file, or none of them: the names are checked against
      * the system and against each other before the first event is added, and the events get the next
      * ids of the system, in the order of the list.
      *
@@ -84,7 +76,7 @@ public class GuessMarket {
     }
 
     /**
-     * @return an id no event in the system uses, for an event a user creates (bonus)
+     * @return an id no event in the system uses, for a new event
      */
     public int nextEventId() {
         int highestId = 0;
@@ -105,21 +97,13 @@ public class GuessMarket {
         return event;
     }
 
-    /**
-     * @return the event with this id, or {@code null} when no such event exists. Used while loading a
-     *         file, where a missing id is reported with a message that fits its context.
-     */
-    public Event findEvent(int eventId) {
-        return eventsById.get(eventId);
-    }
-
     public Collection<Event> getAllEvents() {
         return Collections.unmodifiableCollection(eventsById.values());
     }
 
     /**
      * @return the events whose type, status and commission method are all among the given values, in
-     *         the order of the data file
+     *         the order they were added
      */
     public List<Event> getEvents(Set<EventType> types, Set<EventStatus> statuses,
                                  Set<CommissionType> commissionTypes) {
@@ -131,18 +115,6 @@ public class GuessMarket {
             }
         }
         return matchingEvents;
-    }
-
-    public int getEventCount() {
-        return eventsById.size();
-    }
-
-    public double getTotalSubsidy() {
-        double total = 0;
-        for (Event event : eventsById.values()) {
-            total += event.getInitialSubsidy();
-        }
-        return total;
     }
 
     /**

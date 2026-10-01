@@ -2,21 +2,11 @@ package gm.engine.xml.generated;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
-import jakarta.xml.bind.annotation.XmlElement;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
- * The {@code <GM-users>} element: all the users of the system.
+ * The {@code <GM-users>} element of an older file format. Users register by logging in, so its content
+ * is never read: the element is only recognized, so that such a file is refused with a clear reason.
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 public class XmlUsers {
-
-    @XmlElement(name = "GM-user")
-    private List<XmlUser> userList;
-
-    public List<XmlUser> getUserList() {
-        return userList == null ? new ArrayList<>() : userList;
-    }
 }

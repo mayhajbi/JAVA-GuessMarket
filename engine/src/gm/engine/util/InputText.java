@@ -34,11 +34,10 @@ public final class InputText {
     }
 
     /**
-     * Cleans a file path the user gave: spaces at its edges are removed, and so is a single pair of
-     * surrounding double quotes, so a path that was copied from the file explorer (which wraps it in
-     * quotes) can be used as is.
+     * Cleans a file name or path the user gave: spaces at its edges are removed, and so is a single pair
+     * of surrounding double quotes, which the file explorer adds when a path is copied from it.
      *
-     * @return the clean path, or an empty text for {@code null}
+     * @return the clean name, or an empty text for {@code null}
      */
     public static String cleanPath(String rawPath) {
         String path = rawPath == null ? "" : rawPath.trim();
@@ -53,13 +52,5 @@ public final class InputText {
      */
     public static boolean hasExtension(String path, String extension) {
         return path.toLowerCase(Locale.ROOT).endsWith(extension);
-    }
-
-    /**
-     * The message for a path that cannot be a file path on this computer at all.
-     */
-    public static String illegalPathMessage(String path) {
-        return "The path '" + path + "' is not a legal file path on this computer. Please check it and "
-                + "try again.";
     }
 }

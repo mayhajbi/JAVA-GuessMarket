@@ -61,7 +61,7 @@ public class Event {
 
     private EventStatus status = EventStatus.INACTIVE;
     private Integer winningOptionIndex;
-    /** The single user allowed to open, fund and close this event; wired in while the file loads. */
+    /** The single user allowed to open, fund and close this event: the one who uploaded or created it. */
     private User marketMaker;
 
     /**
@@ -129,8 +129,8 @@ public class Event {
     }
 
     /**
-     * Gives the event its id, for an event that came from a file that has no ids: the system, and not
-     * the file, decides the id. Until then the id is 0, and the messages about the event do not show it.
+     * Gives the event its id, for an event that came from a file: the system, and not the file, decides
+     * the id. Until then the id is 0.
      */
     public void assignId(int id) {
         this.id = id;
@@ -165,8 +165,7 @@ public class Event {
     }
 
     /**
-     * Wires the market maker of this event. Called once, while the data file is loaded, after the
-     * users of the file are known.
+     * Wires the market maker of this event. Called once, before the event is added to the system.
      */
     public void setMarketMaker(User marketMaker) {
         this.marketMaker = marketMaker;

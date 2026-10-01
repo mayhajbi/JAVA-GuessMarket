@@ -5,7 +5,7 @@ package gm.engine.core;
  * balance of a user account.
  * <p>
  * The point is recorded at the moment the value changed, so a series of points describes the whole
- * way that value went through since the data file was loaded.
+ * way that value went through since it was first known.
  */
 public class HistoryPoint {
 

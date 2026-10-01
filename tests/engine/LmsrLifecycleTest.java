@@ -13,8 +13,8 @@ import gm.engine.impl.GuessMarketEngineImpl;
 /**
  * The life cycle of an LMSR event and where its money goes: opening, buying with the commission on
  * purchase or on close, going below zero, closing and the payout.
- * small.xml: event 1 LMSR b=100, on-purchase 5%, MM Tikva (10000). event 2 OB, MM Avrum.
- * lifecycle.xml: event 1 LMSR b=100 on-close 10%, MM Poor (50); event 2 LMSR b=100
+ * {@link Scenario#small()}: event 1 LMSR b=100, on-purchase 5%, MM Tikva (10000). event 2 OB, MM Avrum.
+ * {@link Scenario#lifecycle()}: event 1 LMSR b=100 on-close 10%, MM Poor (50); event 2 LMSR b=100
  * on-close 10%, MM Rich (10000). Users Alice (1000), Bob (5).
  */
 public class LmsrLifecycleTest extends Check {
@@ -24,10 +24,9 @@ public class LmsrLifecycleTest extends Check {
     }
 
     static void check() {
-        GuessMarketEngineImpl engine = new GuessMarketEngineImpl();
-        engine.loadEventsFile(DATA + "ex2/small.xml");
+        GuessMarketEngineImpl engine = Scenario.small();
 
-        // loaded events are INACTIVE with an empty account
+        // uploaded events are INACTIVE with an empty account
         expectTrue(engine.getAllEvents().get(0).status() == EventStatus.INACTIVE, "loads INACTIVE");
         near(0, engine.getAllEvents().get(0).accountBalance(), "account empty on load");
         expect("Tikva", engine.getAllEvents().get(0).marketMakerName(), "MM name in DTO");
@@ -89,9 +88,8 @@ public class LmsrLifecycleTest extends Check {
         }
         near(1000 + 10000 + 100, total + closed.accountBalance(), "money conserved (event 1)");
 
-        // on-close commission + insufficient funds, on a second file
-        GuessMarketEngineImpl engine2 = new GuessMarketEngineImpl();
-        engine2.loadEventsFile(DATA + "ex2/lifecycle.xml");
+        // on-close commission + insufficient funds, on a second system
+        GuessMarketEngineImpl engine2 = Scenario.lifecycle();
         expectThrows(InsufficientFundsException.class, () -> engine2.openEvent(1, "Poor"),
                 "MM without enough money");
         expectTrue(engine2.getAllEvents().get(0).status() == EventStatus.INACTIVE,

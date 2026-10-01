@@ -10,8 +10,8 @@ import java.util.List;
 /**
  * The price history of an event and the balance history of a user, the base of the price chart and
  * of the balance chart.
- * multiple.xml: 1 LMSR (b=100, Tikva), 2 OB (d=1, initial=100, mint, Avrum), users Tikva 10000,
- * Avrum 1000, Menash 100.
+ * The engine starts as {@link Scenario#multiple()}: 1 LMSR (b=100, Tikva), 2 OB (d=1, initial=100, mint,
+ * Avrum), users Tikva 10000, Avrum 1000, Menash 100.
  */
 public class HistoryTest extends Check {
 
@@ -20,12 +20,12 @@ public class HistoryTest extends Check {
     }
 
     static void check() {
-        GuessMarketEngineImpl engine = new GuessMarketEngineImpl();
-        engine.loadEventsFile(DATA + "ex2/multiple.xml");
+        GuessMarketEngineImpl engine = Scenario.multiple();
 
-        // A user that did nothing yet has exactly the amount of the file, and nothing before it.
-        expect(1, engine.getUserBalanceHistory("Menash").size(), "Menash points at load");
-        expect(100.0, last(engine.getUserBalanceHistory("Menash")), "Menash balance at load");
+        // A user that only loaded funds has two points: the empty account, and the amount that was loaded.
+        expect(2, engine.getUserBalanceHistory("Menash").size(), "Menash points at the start");
+        expect(0.0, engine.getUserBalanceHistory("Menash").get(0).value(), "Menash starts with an empty account");
+        expect(100.0, last(engine.getUserBalanceHistory("Menash")), "Menash balance at the start");
 
         // An LMSR event has no price at all before its market maker opens it.
         expect(0, points(engine, 1, 0).size(), "event 1 option 1 before open");
@@ -43,7 +43,7 @@ public class HistoryTest extends Check {
         expectTrue(last(points(engine, 1, 0)) > 0.5, "option 1 went up");
         expectTrue(last(points(engine, 1, 1)) < 0.5, "option 2 went down");
         expect(1.0, round(last(points(engine, 1, 0)) + last(points(engine, 1, 1))), "the two values sum to 1");
-        expect(2, engine.getUserBalanceHistory("Menash").size(), "Menash points after the purchase");
+        expect(3, engine.getUserBalanceHistory("Menash").size(), "Menash points after the purchase");
 
         // A closed event is worth what it actually pays: the full payout, or nothing.
         engine.closeEvent(1, "Tikva", 0);

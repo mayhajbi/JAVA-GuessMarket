@@ -4,7 +4,6 @@ import gm.dto.AccountEntryDTO;
 import gm.dto.EventFilterDTO;
 import gm.dto.EventInfoDTO;
 import gm.dto.HistoryPointDTO;
-import gm.dto.LoadResultDTO;
 import gm.dto.MarketStateDTO;
 import gm.dto.NewEventRequestDTO;
 import gm.dto.OrderBookStateDTO;
@@ -31,34 +30,25 @@ import java.util.List;
  * presented to the user as is.
  * <p>
  * Note about numbering: options are identified by a zero based index, exactly as they appear in the
- * data file. A user interface that presents them to the user starting from 1 has to subtract 1
+ * file of the event. A user interface that presents them to the user starting from 1 has to subtract 1
  * before calling the engine.
  */
 public interface GuessMarketEngine {
 
     /**
-     * Loads a data file into the system. A file is loaded only if it is completely valid, so a failed
-     * load never harms the data that is already in the system.
-     *
-     * @param xmlFilePath full path of the XML file
-     * @return details of the load that was performed
-     */
-    LoadResultDTO loadEventsFile(String xmlFilePath);
-
-    /**
-     * @return general details of all the events in the system, in the order of the data file
+     * @return general details of all the events in the system, in the order they were added
      */
     List<EventInfoDTO> getAllEvents();
 
     /**
      * @param filter the selected types, statuses and commission methods
-     * @return general details of the events that match all three selections, in the order of the
-     *         data file
+     * @return general details of the events that match all three selections, in the order they were
+     *         added
      */
     List<EventInfoDTO> getEvents(EventFilterDTO filter);
 
     /**
-     * @return general details of all the users in the system, in the order of the data file
+     * @return general details of all the users in the system, in the order they registered
      */
     List<UserInfoDTO> getAllUsers();
 
@@ -119,7 +109,7 @@ public interface GuessMarketEngine {
 
     /**
      * Adds the events of a file to the ones already in the system, and makes the user their market
-     * maker. Unlike {@link #loadEventsFile(String)} nothing is replaced. The whole file is checked
+     * maker. Nothing is replaced. The whole file is checked
      * first, and if anything in it is wrong no event of it is added. The content is only read, never
      * stored.
      *

@@ -6,7 +6,6 @@ import gm.dto.EventFilterDTO;
 import gm.dto.EventInfoDTO;
 import gm.dto.EventType;
 import gm.dto.HistoryPointDTO;
-import gm.dto.LoadResultDTO;
 import gm.dto.MarketStateDTO;
 import gm.dto.NewEventRequestDTO;
 import gm.dto.OrderBookStateDTO;
@@ -37,7 +36,7 @@ import java.io.InputStream;
 import java.util.List;
 
 /**
- * The engine of the system: it holds the loaded system, runs the requested logic on it and answers
+ * The engine of the system: it holds the system, runs the requested logic on it and answers
  * with data transfer objects only.
  */
 public class GuessMarketEngineImpl implements GuessMarketEngine {
@@ -47,15 +46,7 @@ public class GuessMarketEngineImpl implements GuessMarketEngine {
 
     private static final double NEW_USER_BALANCE = 0;
 
-    private GuessMarket market = new GuessMarket();
-
-    @Override
-    public LoadResultDTO loadEventsFile(String xmlFilePath) {
-        GuessMarket loadedMarket = fileLoader.loadFile(xmlFilePath);
-        this.market = loadedMarket;
-        return new LoadResultDTO(InputText.cleanPath(xmlFilePath), loadedMarket.getEventCount(),
-                loadedMarket.getAllUsers().size(), loadedMarket.getTotalSubsidy());
-    }
+    private final GuessMarket market = new GuessMarket();
 
     @Override
     public List<EventInfoDTO> getAllEvents() {
@@ -64,12 +55,11 @@ public class GuessMarketEngineImpl implements GuessMarketEngine {
 
     @Override
     public List<EventInfoDTO> getEvents(EventFilterDTO filter) {
-        GuessMarket loadedMarket = market;
         if (filter == null) {
-            return dtoFactory.toEventInfoList(loadedMarket.getAllEvents());
+            return dtoFactory.toEventInfoList(market.getAllEvents());
         }
         return dtoFactory.toEventInfoList(
-                loadedMarket.getEvents(filter.types(), filter.statuses(), filter.commissionTypes()));
+                market.getEvents(filter.types(), filter.statuses(), filter.commissionTypes()));
     }
 
     @Override
@@ -149,8 +139,7 @@ public class GuessMarketEngineImpl implements GuessMarketEngine {
         User marketMaker = requireUser(request.userName());
         marketMaker.requireNotBlocked("create events");
 
-        GuessMarket loadedMarket = market;
-        int id = loadedMarket.nextEventId();
+        int id = market.nextEventId();
         String name = InputText.normalize(request.name());
         EventValidator.requireName(name);
         EventValidator.requireDescription(name, request.description());
@@ -158,7 +147,7 @@ public class GuessMarketEngineImpl implements GuessMarketEngine {
         EventValidator.requireCommissionInRange(name, request.commissionPercent());
         Event event = buildEvent(request, id, name);
         event.setMarketMaker(marketMaker);
-        loadedMarket.addEvent(event);
+        market.addEvent(event);
         return dtoFactory.toEventInfo(event);
     }
 

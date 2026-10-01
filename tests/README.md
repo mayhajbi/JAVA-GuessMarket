@@ -27,8 +27,10 @@ There are three kinds of checks:
   rebuild the artifact in IntelliJ and restart Tomcat. If the server does not respond at all, these
   checks are skipped (not counted as failed), so a downed server is never mistaken for a real failure.
 
-Each check runs on its own (a failure in one does not stop the others). Test data files are in `data\`
-(`ex2\` and `ex3\` are the file formats of the two exercises).
+Each check runs on its own (a failure in one does not stop the others). Test data files are in `data\`:
+the example files of the exercise in `ex3\`, and the order book simulation the order book check replays.
+An engine check prepares its users and events with `engine\Scenario.java`, the way the users of the
+system do: they register, load money and upload files of events.
 
 ## What each check covers
 
@@ -36,7 +38,7 @@ Each check runs on its own (a failure in one does not stop the others). Test dat
 |---|---|
 | `UsersAndUploadsTest` | users registering by name, deposits, account entries, the block while the balance is negative, uploading event files (piling up, the uploader as market maker, refused files change nothing) |
 | `LmsrLifecycleTest` | the life cycle of an LMSR event: open, buy (commission on purchase or on close), going below zero, close and the payout, money conserved |
-| `OrderBookTest` | the order book: a replay of `data\ex2\clob_simulation.html` in both commission modes, rejected orders, blocked users, minting, the order book parameters |
+| `OrderBookTest` | the order book: a replay of `data\clob_simulation.html` in both commission modes, rejected orders, blocked users, minting, the order book parameters |
 | `EventFilterTest` | filtering events by type, status and commission |
 | `HistoryTest` | the price history of an event and the balance history of a user |
 | `CreateEventTest` | a user creating an event and becoming its market maker, and the rules a created event obeys |

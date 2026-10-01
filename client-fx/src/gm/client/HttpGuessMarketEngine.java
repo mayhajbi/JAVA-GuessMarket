@@ -5,7 +5,6 @@ import gm.dto.AccountEntryDTO;
 import gm.dto.EventFilterDTO;
 import gm.dto.EventInfoDTO;
 import gm.dto.HistoryPointDTO;
-import gm.dto.LoadResultDTO;
 import gm.dto.MarketStateDTO;
 import gm.dto.NewEventRequestDTO;
 import gm.dto.OrderBookStateDTO;
@@ -45,11 +44,6 @@ public class HttpGuessMarketEngine implements GuessMarketEngine {
      */
     public HttpGuessMarketEngine(HttpApi api) {
         this.api = api;
-    }
-
-    @Override
-    public LoadResultDTO loadEventsFile(String xmlFilePath) {
-        throw new UnsupportedOperationException("Loading a file from a path is not available in the client.");
     }
 
     @Override
