@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox spacing="10" alignment="CENTER" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="gm.client.login.LoginController" stylesheets="@/gm/ui/fx/common/app.css">
+    <padding>
+        <Insets top="30" right="40" bottom="30" left="40"/>
+    </padding>
+    <Label text="Guess Market" styleClass="app-title"/>
+    <Label text="Please enter your user name." wrapText="true"/>
+    <TextField fx:id="userNameField" promptText="User name" maxWidth="260" onAction="#onLogin"/>
+    <Button fx:id="loginButton" text="Log in" defaultButton="true" onAction="#onLogin"/>
+</VBox>

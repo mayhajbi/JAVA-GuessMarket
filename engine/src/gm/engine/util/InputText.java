@@ -24,6 +24,16 @@ public final class InputText {
     }
 
     /**
+     * Every input of the system has to be in English: the text may hold only characters of the basic
+     * (ASCII) set - English letters, digits, punctuation marks and white space.
+     *
+     * @return whether the text is written in English only; a {@code null} text is
+     */
+    public static boolean isEnglish(String value) {
+        return value == null || value.chars().allMatch(character -> character < 128);
+    }
+
+    /**
      * Cleans a file path the user gave: spaces at its edges are removed, and so is a single pair of
      * surrounding double quotes, so a path that was copied from the file explorer (which wraps it in
      * quotes) can be used as is.
@@ -49,7 +59,7 @@ public final class InputText {
      * The message for a path that cannot be a file path on this computer at all.
      */
     public static String illegalPathMessage(String path) {
-        return "The path [" + path + "] is not a legal file path on this computer. Please check it and "
+        return "The path '" + path + "' is not a legal file path on this computer. Please check it and "
                 + "try again.";
     }
 }

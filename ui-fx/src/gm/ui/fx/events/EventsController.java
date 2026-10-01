@@ -6,7 +6,6 @@ import gm.dto.EventInfoDTO;
 import gm.dto.EventStatus;
 import gm.dto.EventType;
 import gm.dto.NewEventRequestDTO;
-import gm.engine.exception.GuessMarketException;
 import gm.ui.fx.common.Dialogs;
 import gm.ui.fx.common.Formats;
 import gm.ui.fx.common.Skin;
@@ -56,8 +55,6 @@ public class EventsController extends EventDetailScreen {
     @FXML private Label eventsCountLabel;
     @FXML private Button newEventButton;
 
-    /** Whether a file was loaded - before that the engine has no events to ask for. */
-    private boolean isSystemLoaded;
     private int totalEventCount;
     private FilterGroup<EventType> typeFilter;
     private FilterGroup<EventStatus> statusFilter;
@@ -83,20 +80,16 @@ public class EventsController extends EventDetailScreen {
 
         eventsTable.getSelectionModel().selectedItemProperty().addListener(
                 (observable, previous, selected) -> eventDetailComponentController.showEvent(selected));
-        // There is nobody to create an event on behalf of until a file was loaded.
-        newEventButton.setDisable(true);
         applyFilters();
     }
 
     /**
-     * Pulls the events (and the users who may act on them) from the engine again. The selected event
+     * Pulls the events (and the user who acts on them) from the engine again. The selected event
      * stays selected when it still exists.
      */
     public void refresh() {
-        eventDetailComponentController.setUsers(engine.getAllUsers());
+        eventDetailComponentController.setActingUser(engine.getUserDetails(userName));
         totalEventCount = engine.getAllEvents().size();
-        isSystemLoaded = true;
-        newEventButton.setDisable(false);
         applyFilters();
     }
 
@@ -115,7 +108,7 @@ public class EventsController extends EventDetailScreen {
         }
         Skin.dress(dialogPane);
         NewEventController form = loader.getController();
-        form.setUsers(engine.getAllUsers(), eventDetailComponentController.actingUserName());
+        form.setCreatorName(eventDetailComponentController.actingUserName());
 
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.setDialogPane(dialogPane);
@@ -137,11 +130,9 @@ public class EventsController extends EventDetailScreen {
         if (answer.isPresent() && answer.get() == ButtonType.OK && created[0] != null) {
             refresh();
             ViewUtils.selectFirst(eventsTable, event -> event.id() == created[0].id());
-            Dialogs.showInformation("The event was created",
-                    GuessMarketException.describeEvent(created[0].name(), created[0].id())
-                    + " was created by " + created[0].marketMakerName()
-                    + ", who is now its market maker. The event is inactive until "
-                    + created[0].marketMakerName() + " opens it.");
+            Dialogs.showInformation("Event created", "Your event '" + created[0].name()
+                    + "' has been created.\nIt is not live yet. As its market maker, you can open it when you "
+                    + "are ready, and trading will begin.");
         }
     }
 
@@ -163,7 +154,7 @@ public class EventsController extends EventDetailScreen {
     }
 
     private void applyFilters() {
-        List<EventInfoDTO> visibleEvents = isSystemLoaded
+        List<EventInfoDTO> visibleEvents = engine != null
                 ? engine.getEvents(new EventFilterDTO(typeFilter.selectedValues(),
                         statusFilter.selectedValues(), commissionFilter.selectedValues()))
                 : List.of();

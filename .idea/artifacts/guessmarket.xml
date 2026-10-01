@@ -5,10 +5,11 @@
       <element id="artifact" artifact-name="server:Web exploded" />
       <element id="directory" name="WEB-INF">
         <element id="directory" name="lib">
-          <element id="file-copy" path="$PROJECT_DIR$/server/lib/gson-2.11.0.jar" />
           <element id="library" level="project" name="JAXB" />
           <element id="artifact" artifact-name="gm-dto" />
           <element id="artifact" artifact-name="gm-engine" />
+          <element id="artifact" artifact-name="gm-api" />
+          <element id="library" level="project" name="Gson" />
         </element>
       </element>
     </root>

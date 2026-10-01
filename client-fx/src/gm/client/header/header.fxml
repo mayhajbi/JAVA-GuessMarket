@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox styleClass="header" spacing="6" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="gm.client.header.HeaderController">
+    <padding>
+        <Insets top="8" right="12" bottom="8" left="12"/>
+    </padding>
+    <Label text="Guess Market" styleClass="app-title" maxWidth="Infinity" alignment="CENTER"/>
+    <HBox spacing="10" alignment="CENTER_RIGHT">
+        <Label text="Skin" styleClass="field-name"/>
+        <ComboBox fx:id="skinComboBox" prefWidth="130"/>
+        <CheckBox fx:id="animationsCheckBox" text="Animations"/>
+    </HBox>
+</VBox>

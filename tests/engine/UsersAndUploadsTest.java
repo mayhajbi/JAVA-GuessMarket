@@ -13,6 +13,9 @@ import gm.dto.EventInfoDTO;
 import gm.dto.UploadResultDTO;
 import gm.engine.exception.DuplicateEventNameException;
 import gm.engine.exception.InvalidFilePathException;
+import gm.engine.exception.InvalidEventDetailsException;
+import gm.engine.exception.InvalidLiquidityException;
+import gm.engine.exception.InvalidOptionsException;
 import gm.engine.exception.UnsupportedFileFormatException;
 import gm.engine.exception.UserNotFoundException;
 import gm.engine.exception.XmlParsingException;
@@ -51,6 +54,8 @@ public class UsersAndUploadsTest extends Check {
         expectThrows(DuplicateUserNameException.class, () -> engine.registerUser("dana levi"),
                 "the same name in another case");
         expectThrows(InvalidUserNameException.class, () -> engine.registerUser("   "), "a blank name");
+        expectThrows(InvalidUserNameException.class, () -> engine.registerUser("\u05E9\u05DC\u05D5\u05DD"),
+                "a name that is not in English");
         expect(1, engine.getAllUsers().size(), "failed registrations add nobody");
 
         // Depositing: positive amounts only, and every one is an entry, latest first.
@@ -135,6 +140,26 @@ public class UsersAndUploadsTest extends Check {
         } catch (GuessMarketException exception) {
             expectFalse(exception.getMessage().contains("(id"), "the message shows no event id");
         }
+
+        // The input checks of exercise 1 apply to an uploaded file too: a liquidity of zero, and one option.
+        String zeroLiquidity = eventsXml("Flat").replace("<b>100</b>", "<b>0</b>");
+        expectThrows(InvalidLiquidityException.class,
+                () -> uploadText(engine, "Bella", "flat.xml", zeroLiquidity), "a liquidity of zero");
+        String singleOption = eventsXml("Lonely").replace("<GM-option>No</GM-option>", "");
+        expectThrows(InvalidOptionsException.class,
+                () -> uploadText(engine, "Bella", "lonely.xml", singleOption), "an event with one option");
+        expect(4, engine.getAllEvents().size(), "the refused files added nothing, again");
+
+        // Only English is accepted: in the name, the description and the options of an event.
+        expectThrows(InvalidEventDetailsException.class,
+                () -> uploadText(engine, "Bella", "hebrew.xml", eventsXml("\u05E9\u05DC\u05D5\u05DD")),
+                "an event name that is not in English");
+        String foreignOption = eventsXml("Foreign").replace("<GM-option>No</GM-option>",
+                "<GM-option>\u05DC\u05D0</GM-option>");
+        expectThrows(InvalidEventDetailsException.class,
+                () -> uploadText(engine, "Bella", "foreign.xml", foreignOption),
+                "an option that is not in English");
+        expect(4, engine.getAllEvents().size(), "the refused files added nothing, once more");
 
         // A file of another user is another market maker, and a name that is free is accepted.
         UploadResultDTO third = uploadText(engine, "Bella", "bella.xml", eventsXml("Bella's event"));

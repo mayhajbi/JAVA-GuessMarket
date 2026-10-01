@@ -1,7 +1,5 @@
 package gm.engine.core.method;
 
-import java.io.Serializable;
-
 /**
  * The pricing rules of an event: how much a share is worth right now and how much a purchase costs.
  * <p>
@@ -10,7 +8,7 @@ import java.io.Serializable;
  * for the state of the event, and lets the system support additional trading methods (such as an
  * order book) later on without changing the event itself.
  */
-public interface TradingMethod extends Serializable {
+public interface TradingMethod {
 
     /**
      * The amount of money the market maker has to invest in the event when it starts, before any

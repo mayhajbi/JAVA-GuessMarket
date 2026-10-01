@@ -70,7 +70,7 @@ public abstract class GmServlet extends HttpServlet {
         try {
             return Integer.parseInt(value.trim());
         } catch (NumberFormatException e) {
-            throw new BadRequestException("The parameter '" + name + "' must be a whole number, but it is [" + value + "].");
+            throw new BadRequestException("The parameter '" + name + "' must be a whole number, but it is '" + value + "'.");
         }
     }
 
@@ -82,7 +82,7 @@ public abstract class GmServlet extends HttpServlet {
         try {
             return Double.parseDouble(value.trim());
         } catch (NumberFormatException e) {
-            throw new BadRequestException("The parameter '" + name + "' must be a number, but it is [" + value + "].");
+            throw new BadRequestException("The parameter '" + name + "' must be a number, but it is '" + value + "'.");
         }
     }
 

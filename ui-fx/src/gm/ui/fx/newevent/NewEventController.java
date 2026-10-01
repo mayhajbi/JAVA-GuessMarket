@@ -3,18 +3,17 @@ package gm.ui.fx.newevent;
 import gm.dto.CommissionType;
 import gm.dto.EventType;
 import gm.dto.NewEventRequestDTO;
-import gm.dto.UserInfoDTO;
 import gm.ui.fx.common.Dialogs;
 import gm.ui.fx.common.ViewUtils;
 import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 
-import java.util.List;
 
 /**
  * The form a user fills in to create a new event (bonus). It collects the details that every event
@@ -28,7 +27,7 @@ public class NewEventController {
 
     private static final String HEADER = "Creating an event";
 
-    @FXML private ComboBox<String> userComboBox;
+    @FXML private Label creatorLabel;
     @FXML private TextField nameField;
     @FXML private TextArea descriptionArea;
     @FXML private TextField firstOptionField;
@@ -54,16 +53,10 @@ public class NewEventController {
     }
 
     /**
-     * Offers the users of the system as the possible creator of the event.
-     *
-     * @param preselectedName the user to start with, when one is already selected on the screen
+     * Shows who creates the event: the user who is logged in, who becomes its market maker.
      */
-    public void setUsers(List<UserInfoDTO> users, String preselectedName) {
-        List<String> names = users.stream().map(UserInfoDTO::name).toList();
-        userComboBox.getItems().setAll(names);
-        if (names.contains(preselectedName)) {
-            userComboBox.setValue(preselectedName);
-        }
+    public void setCreatorName(String creatorName) {
+        creatorLabel.setText(creatorName);
     }
 
     /**
@@ -73,11 +66,7 @@ public class NewEventController {
      *         in which case the user was already told what is missing
      */
     public NewEventRequestDTO toRequest() {
-        String userName = userComboBox.getValue();
-        if (userName == null) {
-            return missing("Please choose the user who creates the event. That user becomes its "
-                    + "market maker.");
-        }
+        String userName = creatorLabel.getText();
         if (nameField.getText().isBlank()) {
             return missing("Please give the event a name.");
         }
@@ -135,8 +124,7 @@ public class NewEventController {
      * @return the whole number in the field, or {@code null} after telling the user it is not one
      */
     private Integer readNumber(TextField field, String what) {
-        return ViewUtils.readNumber(field, Integer::valueOf, HEADER, text -> "The value of " + what + " is ["
-                + text + "], which is not a whole number. Please enter a whole number, for example 100.");
+        return ViewUtils.readNumber(field, Integer::valueOf, HEADER, text -> "The value of " + what + " is '" + text + "', which is not a whole number. Please enter a whole number, for example 100.");
     }
 
     private NewEventRequestDTO missing(String message) {

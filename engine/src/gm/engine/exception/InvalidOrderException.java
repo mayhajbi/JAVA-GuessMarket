@@ -19,21 +19,21 @@ public class InvalidOrderException extends GuessMarketException {
                 + "a side (buy or sell), an option, a quantity and a price.");
     }
 
-    public static InvalidOrderException missingSide(int eventId, String eventName) {
-        return new InvalidOrderException("The order for the event " + describeEvent(eventName, eventId)
+    public static InvalidOrderException missingSide(String eventName) {
+        return new InvalidOrderException("The order for the event " + describeEvent(eventName)
                 + " does not say whether to buy or to sell. Please choose Buy or Sell.");
     }
 
-    public static InvalidOrderException priceOutOfRange(int eventId, String eventName, double price,
+    public static InvalidOrderException priceOutOfRange(String eventName, double price,
                                                         int baseValue) {
         return new InvalidOrderException(String.format(Locale.ROOT, "The price %s is not legal for the "
                 + "event %s. The price per share must be between 0.01 and %.2f (the base value d of the "
-                + "event is %d).", price, describeEvent(eventName, eventId), baseValue - 0.01, baseValue));
+                + "event is %d).", price, describeEvent(eventName), baseValue - 0.01, baseValue));
     }
 
-    public static InvalidOrderException priceNotWholeCents(int eventId, String eventName, double price) {
+    public static InvalidOrderException priceNotWholeCents(String eventName, double price) {
         return new InvalidOrderException(String.format(Locale.ROOT, "The price %s for the event %s has "
                 + "more than two digits after the decimal point. Prices are set in whole cents, for "
-                + "example 0.45.", price, describeEvent(eventName, eventId)));
+                + "example 0.45.", price, describeEvent(eventName)));
     }
 }

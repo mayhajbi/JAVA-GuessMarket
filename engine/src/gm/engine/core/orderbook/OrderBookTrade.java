@@ -2,16 +2,12 @@ package gm.engine.core.orderbook;
 
 import gm.engine.core.User;
 
-import java.io.Serializable;
-
 /**
  * A single trade in an order book event, from the side of one buyer. A resale creates one trade (the
  * counterparty is the seller). A mint creates two - one for each of the two buyers, each with the
  * other buyer as the counterparty.
  */
-public class OrderBookTrade implements Serializable {
-
-    private static final long serialVersionUID = 1L;
+public class OrderBookTrade {
 
     private final User buyer;
     private final User counterparty;

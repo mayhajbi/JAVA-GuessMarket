@@ -9,7 +9,7 @@ public class DuplicateEventNameException extends GuessMarketException {
     private static final long serialVersionUID = 1L;
 
     public DuplicateEventNameException(String eventName) {
-        super("The event name [" + eventName + "] is already in use. Every event must have a unique "
+        super("The event name '" + eventName + "' is already in use. Every event must have a unique "
                 + "name (names are compared without case).");
     }
 }

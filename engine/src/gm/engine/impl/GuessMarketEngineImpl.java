@@ -2,10 +2,8 @@ package gm.engine.impl;
 
 import gm.dto.AccountEntryDTO;
 import gm.dto.AccountEntryType;
-import gm.dto.CommissionType;
 import gm.dto.EventFilterDTO;
 import gm.dto.EventInfoDTO;
-import gm.dto.EventStatus;
 import gm.dto.EventType;
 import gm.dto.HistoryPointDTO;
 import gm.dto.LoadResultDTO;
@@ -32,12 +30,10 @@ import gm.engine.exception.InvalidDepositException;
 import gm.engine.exception.InvalidEventDetailsException;
 import gm.engine.exception.InvalidOrderException;
 import gm.engine.exception.InvalidUserNameException;
-import gm.engine.state.SystemStateSerializer;
 import gm.engine.util.InputText;
 import gm.engine.xml.EventsFileLoader;
 
 import java.io.InputStream;
-import java.util.EnumSet;
 import java.util.List;
 
 /**
@@ -47,7 +43,6 @@ import java.util.List;
 public class GuessMarketEngineImpl implements GuessMarketEngine {
 
     private final EventsFileLoader fileLoader = new EventsFileLoader();
-    private final SystemStateSerializer stateSerializer = new SystemStateSerializer();
     private final DtoFactory dtoFactory = new DtoFactory();
 
     private static final double NEW_USER_BALANCE = 0;
@@ -65,12 +60,6 @@ public class GuessMarketEngineImpl implements GuessMarketEngine {
     @Override
     public List<EventInfoDTO> getAllEvents() {
         return dtoFactory.toEventInfoList(market.getAllEvents());
-    }
-
-    @Override
-    public List<EventInfoDTO> getActiveEvents() {
-        return getEvents(new EventFilterDTO(EnumSet.allOf(EventType.class), EnumSet.of(EventStatus.ACTIVE),
-                EnumSet.allOf(CommissionType.class)));
     }
 
     @Override
@@ -119,6 +108,9 @@ public class GuessMarketEngineImpl implements GuessMarketEngine {
         if (name.isEmpty()) {
             throw new InvalidUserNameException();
         }
+        if (!InputText.isEnglish(name)) {
+            throw InvalidUserNameException.notEnglish();
+        }
         User user = new User(name, NEW_USER_BALANCE);
         market.addUser(user);
         return dtoFactory.toUserInfo(user, market.getAllEvents());
@@ -162,8 +154,8 @@ public class GuessMarketEngineImpl implements GuessMarketEngine {
         String name = InputText.normalize(request.name());
         EventValidator.requireName(name);
         EventValidator.requireDescription(name, request.description());
-        EventValidator.requireOptionNames(id, name, request.firstOption(), request.secondOption());
-        EventValidator.requireCommissionInRange(id, name, request.commissionPercent());
+        EventValidator.requireOptionNames(name, request.firstOption(), request.secondOption());
+        EventValidator.requireCommissionInRange(name, request.commissionPercent());
         Event event = buildEvent(request, id, name);
         event.setMarketMaker(marketMaker);
         loadedMarket.addEvent(event);
@@ -181,12 +173,12 @@ public class GuessMarketEngineImpl implements GuessMarketEngine {
                 new EventOption(InputText.normalize(request.secondOption())));
 
         if (request.type() == EventType.LMSR) {
-            EventValidator.requireLiquidityPositive(id, name, request.liquidity());
+            EventValidator.requireLiquidityPositive(name, request.liquidity());
             return Event.lmsr(id, name, description, request.commissionPercent(),
                     request.commissionType(), options, new LmsrTradingMethod(request.liquidity()));
         }
-        EventValidator.requireBaseValuePositive(id, name, request.baseValue());
-        EventValidator.requireInitialInvestment(id, name, request.initialInvestment(),
+        EventValidator.requireBaseValuePositive(name, request.baseValue());
+        EventValidator.requireInitialInvestment(name, request.initialInvestment(),
                 request.baseValue());
         return Event.orderBook(id, name, description, request.commissionPercent(),
                 request.commissionType(), options, request.baseValue(), request.allowMint(),
@@ -230,18 +222,6 @@ public class GuessMarketEngineImpl implements GuessMarketEngine {
         Event event = requireEvent(eventId);
         event.close(requireUser(userName), winningOptionIndex);
         return dtoFactory.toEventInfo(event);
-    }
-
-    @Override
-    public String saveSystemState(String pathWithoutExtension) {
-        return stateSerializer.save(market, pathWithoutExtension);
-    }
-
-    @Override
-    public String loadSystemState(String pathWithoutExtension) {
-        GuessMarket loadedMarket = stateSerializer.load(pathWithoutExtension);
-        this.market = loadedMarket;
-        return stateSerializer.resolveStateFilePath(pathWithoutExtension);
     }
 
     private Event requireEvent(int eventId) {

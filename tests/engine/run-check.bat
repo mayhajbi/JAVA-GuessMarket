@@ -8,5 +8,5 @@ rem ---------------------------------------------------------------------------
 setlocal
 cd /d "%~dp0.."
 for %%i in ("%~dp0..\..") do set ROOT=%%~fi
-java -cp "%TEMP%\gm-tests\classes;%ROOT%\lib\*;%ROOT%\server\lib\*" %1
+java -cp "%TEMP%\gm-tests\classes;%ROOT%\lib\*;%ROOT%\lib\gson\*" %1
 exit /b %ERRORLEVEL%

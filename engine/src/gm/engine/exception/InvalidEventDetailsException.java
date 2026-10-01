@@ -13,24 +13,28 @@ public class InvalidEventDetailsException extends GuessMarketException {
         super(message);
     }
 
+    public static InvalidEventDetailsException notEnglish() {
+        return new InvalidEventDetailsException("An event has to be written in English. Please write its name, "
+                + "its description and its options using English letters, digits and common punctuation marks "
+                + "only.");
+    }
+
     public static InvalidEventDetailsException missingName() {
         return new InvalidEventDetailsException("The new event has no name. "
                 + "Please give the event a name.");
     }
 
     public static InvalidEventDetailsException missingDescription(String eventName) {
-        return new InvalidEventDetailsException("The new event [" + eventName
-                + "] has no description. Please describe what the event is about.");
+        return new InvalidEventDetailsException("The new event '" + eventName + "' has no description. Please describe what the event is about.");
     }
 
     public static InvalidEventDetailsException missingOptionName(String eventName) {
-        return new InvalidEventDetailsException("The new event [" + eventName
-                + "] is missing one of its options. Please name both possible outcomes.");
+        return new InvalidEventDetailsException("The new event '" + eventName + "' is missing one of its options. Please name both possible outcomes.");
     }
 
-    public static InvalidEventDetailsException sameOptionNames(int id, String eventName, String optionName) {
-        return new InvalidEventDetailsException("Both options of the event " + describeEvent(eventName, id)
-                + " are named [" + optionName + "]. The two possible outcomes of an event must be "
+    public static InvalidEventDetailsException sameOptionNames(String eventName, String optionName) {
+        return new InvalidEventDetailsException("Both options of the event " + describeEvent(eventName)
+                + " are named '" + optionName + "'. The two possible outcomes of an event must be "
                 + "different (the names are compared without case).");
     }
 }

@@ -32,11 +32,4 @@ public final class Formats {
     public static String commission(int percent, CommissionType type) {
         return percent + "% " + type.getDisplayName();
     }
-
-    /**
-     * An option the way the user sees it, numbered from 1 - for example "1. Yes".
-     */
-    public static String numberedOption(int number, String optionName) {
-        return number + ". " + optionName;
-    }
 }

@@ -1,7 +1,5 @@
 package gm.engine.core;
 
-import java.io.Serializable;
-
 /**
  * The trading account of a single event.
  * <p>
@@ -10,9 +8,7 @@ import java.io.Serializable;
  * closed, and whatever is left goes back to the market maker. Commissions are paid straight to the
  * market maker - this account only keeps track of their total.
  */
-public class EventAccount implements Serializable {
-
-    private static final long serialVersionUID = 1L;
+public class EventAccount {
 
     private double balance;
     private double totalCommissionCollected;

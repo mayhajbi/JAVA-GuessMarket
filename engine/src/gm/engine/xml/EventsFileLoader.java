@@ -73,22 +73,22 @@ public class EventsFileLoader {
                     + "of the XML file you would like to load.");
         }
         if (!InputText.hasExtension(path, XML_EXTENSION)) {
-            throw new InvalidFilePathException("The path [" + path + "] does not point to an XML "
+            throw new InvalidFilePathException("The path '" + path + "' does not point to an XML "
                     + "file. The file name must end with the .xml extension.");
         }
     }
 
     private Path checkFile(Path file, String path) {
         if (!Files.exists(file)) {
-            throw new InvalidFilePathException("The file [" + path + "] does not exist. Please check "
+            throw new InvalidFilePathException("The file '" + path + "' does not exist. Please check "
                     + "the path and try again.");
         }
         if (!Files.isRegularFile(file)) {
-            throw new InvalidFilePathException("The path [" + path + "] does not point to a file "
+            throw new InvalidFilePathException("The path '" + path + "' does not point to a file "
                     + "(it may be a folder). Please enter the full path of the XML file itself.");
         }
         if (!Files.isReadable(file)) {
-            throw new InvalidFilePathException("The file [" + path + "] cannot be read. Please make "
+            throw new InvalidFilePathException("The file '" + path + "' cannot be read. Please make "
                     + "sure it is not open in another program and that you have permission to read "
                     + "it.");
         }

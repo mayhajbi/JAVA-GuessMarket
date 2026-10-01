@@ -18,8 +18,7 @@
                     <ColumnConstraints hgrow="ALWAYS"/>
                 </columnConstraints>
                 <Label text="Created by" styleClass="field-name" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-                <ComboBox fx:id="userComboBox" maxWidth="Infinity" promptText="Choose a user"
-                          GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                <Label fx:id="creatorLabel" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
                 <Label text="Name" styleClass="field-name" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
                 <TextField fx:id="nameField" promptText="What is the event called"
                            GridPane.rowIndex="1" GridPane.columnIndex="1"/>
