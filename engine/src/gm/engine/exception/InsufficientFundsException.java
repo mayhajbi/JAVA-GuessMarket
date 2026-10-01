@@ -12,7 +12,7 @@ public class InsufficientFundsException extends GuessMarketException {
 
     public InsufficientFundsException(String userName, String action, double required,
                                       double available) {
-        super(String.format(Locale.ROOT, "The user [%s] cannot %s: it requires %.2f, but the balance "
-                + "of the user is only %.2f.", userName, action, required, available));
+        super(String.format(Locale.ROOT, "The user '%s' cannot %s: %.2f is required, but the balance is "
+                + "only %.2f.", userName, action, required, available));
     }
 }

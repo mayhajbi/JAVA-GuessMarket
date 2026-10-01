@@ -44,8 +44,8 @@ class OptionBookView extends VBox {
                 ViewUtils.fieldName("Asks (sell)"), asksTable);
     }
 
-    void show(int optionNumber, OrderBookOptionDTO option) {
-        titleLabel.setText(Formats.numberedOption(optionNumber, option.optionName()));
+    void show(OrderBookOptionDTO option) {
+        titleLabel.setText(option.optionName());
         Double[] values = {option.lastPrice(), option.bestBid(), option.bestAsk(), option.midPrice(),
                 option.spread()};
         for (int index = 0; index < values.length; index++) {

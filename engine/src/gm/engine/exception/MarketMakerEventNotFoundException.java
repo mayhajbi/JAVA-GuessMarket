@@ -8,7 +8,7 @@ public class MarketMakerEventNotFoundException extends GuessMarketException {
     private static final long serialVersionUID = 1L;
 
     public MarketMakerEventNotFoundException(String userName, int eventId) {
-        super("The user [" + userName + "] is defined as the market maker of event id " + eventId
+        super("The user '" + userName + "' is defined as the market maker of event id " + eventId
                 + ", but no event with that id exists in the file.");
     }
 }

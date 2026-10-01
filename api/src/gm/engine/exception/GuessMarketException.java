@@ -19,10 +19,9 @@ public abstract class GuessMarketException extends RuntimeException {
     }
 
     /**
-     * How every message names an event: its name in brackets and then its id, for example
-     * "[World Cup Winner] (id 2)". An event that has no id yet (0) is named by its name only.
+     * How every message names an event: its name between single quotes, for example 'World Cup Winner'.
      */
-    public static String describeEvent(String eventName, int eventId) {
-        return eventId > 0 ? "[" + eventName + "] (id " + eventId + ")" : "[" + eventName + "]";
+    public static String describeEvent(String eventName) {
+        return "'" + eventName + "'";
     }
 }

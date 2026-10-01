@@ -1,5 +1,7 @@
 import gm.dto.CommissionType;
+import gm.dto.EventFilterDTO;
 import gm.dto.EventInfoDTO;
+import gm.dto.EventStatus;
 import gm.dto.EventType;
 import gm.dto.NewEventRequestDTO;
 import gm.engine.exception.InvalidEventDetailsException;
@@ -9,6 +11,7 @@ import gm.engine.impl.GuessMarketEngineImpl;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.EnumSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -37,7 +40,8 @@ public class EventRulesTest extends Check {
 
         // Only the active events are listed.
         engine.openEvent(1, "Tikva");
-        expect("[1]", engine.getActiveEvents().stream().map(event -> event.id()).toList().toString(),
+        expect("[1]", engine.getEvents(new EventFilterDTO(EnumSet.allOf(EventType.class),
+                EnumSet.of(EventStatus.ACTIVE), EnumSet.allOf(CommissionType.class))).stream().map(event -> event.id()).toList().toString(),
                 "active events");
 
         // Menash becomes blocked, and then may not create an event.

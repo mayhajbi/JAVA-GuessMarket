@@ -3,15 +3,11 @@ package gm.engine.core.orderbook;
 import gm.dto.OrderSide;
 import gm.engine.core.User;
 
-import java.io.Serializable;
-
 /**
  * A single order in the order book of one option: who placed it, buy or sell, the price per share (in
  * whole cents) and the quantity that is still waiting to be matched.
  */
-public class Order implements Serializable {
-
-    private static final long serialVersionUID = 1L;
+public class Order {
 
     private final User owner;
     private final OrderSide side;

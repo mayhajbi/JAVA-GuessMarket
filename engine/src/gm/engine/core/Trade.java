@@ -1,13 +1,9 @@
 package gm.engine.core;
 
-import java.io.Serializable;
-
 /**
  * A single purchase that was made in an event, and the user who made it.
  */
-public class Trade implements Serializable {
-
-    private static final long serialVersionUID = 1L;
+public class Trade {
 
     private final User buyer;
     private final int optionIndex;

@@ -9,8 +9,7 @@ public class MultipleMarketMakersException extends GuessMarketException {
 
     public MultipleMarketMakersException(int eventId, String eventName, String firstUser,
                                          String secondUser) {
-        super("The event " + describeEvent(eventName, eventId) + " has more than one market maker: ["
-                + firstUser + "] and [" + secondUser + "]. Exactly one user must be defined as its "
+        super("The event " + describeEvent(eventName) + " has more than one market maker: '" + firstUser + "' and '" + secondUser + "'. Exactly one user must be defined as its "
                 + "market maker.");
     }
 }

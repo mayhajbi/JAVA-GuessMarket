@@ -17,7 +17,6 @@ import gm.engine.exception.InvalidQuantityException;
 import gm.engine.exception.NotEventMarketMakerException;
 import gm.engine.exception.WrongTradingMethodException;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -36,9 +35,7 @@ import java.util.Optional;
  * An LMSR event is priced by its {@link TradingMethod} and shares are bought directly. An order book
  * event is traded through the orders of its {@link OrderBookMarket}.
  */
-public class Event implements Serializable {
-
-    private static final long serialVersionUID = 1L;
+public class Event {
 
     /** The amount that is paid at the end of an LMSR event for every share of the winning option. */
     private static final double LMSR_PAYOUT_PER_WINNING_SHARE = 1.0;
@@ -261,13 +258,13 @@ public class Event implements Serializable {
         if (status != EventStatus.INACTIVE) {
             throw new EventAlreadyOpenedException(id, name, status);
         }
-        user.requireNotBlocked("open the event [" + name + "]");
+        user.requireNotBlocked("open the event '" + name + "'");
 
         boolean isLmsr = type == EventType.LMSR;
         double required = isLmsr ? getInitialSubsidy() : orderBook.getInitialInvestment();
         double balance = user.getAccount().getBalance();
         if (balance < required) {
-            throw new InsufficientFundsException(user.getName(), "open the event [" + name + "] ("
+            throw new InsufficientFundsException(user.getName(), "open the event '" + name + "' ("
                     + (isLmsr ? "the initial subsidy" : "the initial investment") + ")", required, balance);
         }
 

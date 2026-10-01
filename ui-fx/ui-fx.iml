@@ -9,7 +9,6 @@
     <orderEntry type="module" module-name="api" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="dto" />
-    <orderEntry type="module" module-name="engine" />
     <orderEntry type="library" name="JavaFX" level="project" />
   </component>
 </module>

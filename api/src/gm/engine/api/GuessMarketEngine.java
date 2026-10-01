@@ -51,11 +51,6 @@ public interface GuessMarketEngine {
     List<EventInfoDTO> getAllEvents();
 
     /**
-     * @return general details of the events that are still active, in the order of the data file
-     */
-    List<EventInfoDTO> getActiveEvents();
-
-    /**
      * @param filter the selected types, statuses and commission methods
      * @return general details of the events that match all three selections, in the order of the
      *         data file
@@ -196,22 +191,4 @@ public interface GuessMarketEngine {
      * @return the details of the event after it was closed
      */
     EventInfoDTO closeEvent(int eventId, String userName, int winningOptionIndex);
-
-    /**
-     * Saves the whole current state of the system into a file, so that it can be loaded again later.
-     *
-     * @param pathWithoutExtension full path of the target file, without an extension
-     * @return the full path of the file that was created
-     */
-    String saveSystemState(String pathWithoutExtension);
-
-    /**
-     * Loads a state that was previously saved by
-     * {@link #saveSystemState(String)}. The state replaces the current content of the system, and
-     * only if it was read successfully.
-     *
-     * @param pathWithoutExtension full path of the state file, without an extension
-     * @return the full path of the file that was read
-     */
-    String loadSystemState(String pathWithoutExtension);
 }

@@ -56,8 +56,10 @@ ehthumbs.db
 # --- personal / local, never pushed ---
 # .local/  - every planning and working document, and any AI-assistant config
 # notes/   - the course material and the official test files
+# /run.bat - the developer shortcut that builds and runs the client
 .local/
 notes/
+/run.bat
 
 # The jar files under lib/ are committed on purpose, so that the project can be built right after a
 # clone. To keep binaries out of the repository, uncomment the next line instead.

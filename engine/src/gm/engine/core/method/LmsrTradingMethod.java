@@ -15,8 +15,6 @@ package gm.engine.core.method;
  */
 public class LmsrTradingMethod implements TradingMethod {
 
-    private static final long serialVersionUID = 1L;
-
     private final int liquidity;
 
     public LmsrTradingMethod(int liquidity) {

@@ -21,8 +21,8 @@ application on top of a passive engine; exercise 1 was a console application.
 ## Build and run
 
 ```
-build.bat        compiles into out\ and creates jars\ (gm-dto.jar, gm-engine.jar, gm-ui-fx.jar + lib\)
-run.bat          runs the JavaFX application; works from the project folder or from inside jars\
+build.bat        compiles into out\ and creates jars\client\ (gm-dto.jar, gm-api.jar, gm-ui-fx.jar, gm-client-fx.jar + lib\)
+run-client.bat   runs the JavaFX client (the server has to be running); works from the project folder or from inside jars\client\
 tests\run-all.bat   runs the regression checks: the engine checks compile from the sources and need nothing running, the server checks need a running server (see tests\README.md)
 ```
 
@@ -31,14 +31,11 @@ tests\run-all.bat   runs the regression checks: the engine checks compile from t
 | Module   | Package      | Role |
 |----------|--------------|------|
 | `dto`    | `gm.dto`     | Immutable data transfer objects (records) between the engine and any user interface |
-| `engine` | `gm.engine`  | The events, users, pricing rules, loading and validating the data file, and the engine interface |
-| `ui-fx`  | `gm.ui.fx`   | The JavaFX application: FXML screens with their controllers |
-| `ui`     | `gm.ui`      | The console application of exercise 1, started by `run-console.bat`. It belongs to the previous implementation and currently does not compile against the engine of exercise 2 (every action now needs a user), so it is not built and `run-console.bat` only prints that it is disabled |
-
-The files under `samples/` are data files of exercise 1, written in its schema (`comision` instead of
-`commission`, and no `GM-users`). They belong to the previous implementation, and the application of
-exercise 2, which accepts only the exercise 2 schema, rejects them; the exercise 2 test files are the
-ones published for the course.
+| `api`    | `gm.engine`  | The engine interface (`GuessMarketEngine`) and the base exception, shared by the engine and the client so that the client does not depend on the engine |
+| `engine` | `gm.engine`  | The events, users, pricing rules, loading and validating the data file, and the engine implementation |
+| `server` | `gm.server`  | The web application (WAR): the servlets that expose the engine over HTTP |
+| `ui-fx`  | `gm.ui.fx`   | The JavaFX screens the client uses: events, event details, new event, common components |
+| `client-fx` | `gm.client` | The JavaFX client: login, main window, and the engine that talks to the server over HTTP |
 
 A user interface talks to the engine only through `gm.engine.api.GuessMarketEngine` and receives
 only `gm.dto` objects. The engine stays passive - it never reaches back into a user interface.

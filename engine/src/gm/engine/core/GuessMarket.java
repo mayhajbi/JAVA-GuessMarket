@@ -9,7 +9,6 @@ import gm.engine.exception.DuplicateUserNameException;
 import gm.engine.exception.EventNotFoundException;
 import gm.engine.exception.UserNotFoundException;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -26,9 +25,7 @@ import java.util.Set;
  * The events are kept in the order they appeared in the data file, so that the order the user sees
  * is stable between commands.
  */
-public class GuessMarket implements Serializable {
-
-    private static final long serialVersionUID = 1L;
+public class GuessMarket {
 
     private final Map<Integer, Event> eventsById = new LinkedHashMap<>();
 

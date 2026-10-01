@@ -1,13 +1,9 @@
 package gm.engine.core;
 
-import java.io.Serializable;
-
 /**
  * A single possible outcome of an event, together with the amount of shares bought from it.
  */
-public class EventOption implements Serializable {
-
-    private static final long serialVersionUID = 1L;
+public class EventOption {
 
     private final String name;
     private long shares;

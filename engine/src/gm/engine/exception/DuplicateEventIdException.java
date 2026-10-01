@@ -9,7 +9,7 @@ public class DuplicateEventIdException extends GuessMarketException {
 
     public DuplicateEventIdException(int id, String firstEventName, String secondEventName) {
         super("The event id " + id + " appears more than once in the file: it is used both by the "
-                + "event [" + firstEventName + "] and by the event [" + secondEventName + "]. "
+                + "event '" + firstEventName + "' and by the event '" + secondEventName + "'. "
                 + "Every event must have a unique id.");
     }
 }

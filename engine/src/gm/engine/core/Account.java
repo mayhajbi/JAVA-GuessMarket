@@ -2,7 +2,6 @@ package gm.engine.core;
 
 import gm.dto.AccountEntryType;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -20,9 +19,7 @@ import java.util.List;
  * {@link #getEntries() entry} of its life, and the {@link #getBalanceHistory() history} of the
  * balance is derived from them.
  */
-public class Account implements Serializable {
-
-    private static final long serialVersionUID = 2L;
+public class Account {
 
     private final HistoryPoint openingBalance;
     private final List<AccountEntry> entries = new ArrayList<>();

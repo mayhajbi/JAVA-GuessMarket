@@ -20,7 +20,7 @@ public enum Skin {
     MIDNIGHT("Midnight", "midnight.css"),
     PARCHMENT("Parchment", "parchment.css");
 
-    private static final String STYLE_SHEET_FOLDER = "/gm/ui/fx/app/";
+    private static final String STYLE_SHEET_FOLDER = "/gm/ui/fx/common/";
     private static final String BASE_STYLE_SHEET = "app.css";
 
     private static Skin current = DEFAULT;

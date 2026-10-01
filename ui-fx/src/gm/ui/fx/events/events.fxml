@@ -4,7 +4,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<ScrollPane fitToWidth="true" fitToHeight="true" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1"
+<ScrollPane fitToWidth="true" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="gm.ui.fx.events.EventsController">
     <SplitPane dividerPositions="0.54" minWidth="980" minHeight="560">
         <VBox spacing="8">
@@ -35,7 +35,7 @@
                     <TableView fx:constant="CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS"/>
                 </columnResizePolicy>
                 <placeholder>
-                    <Label text="No events to show. Load a file, or change the filters." styleClass="placeholder"/>
+                    <Label text="No events to show. Upload a file, or change the filters." styleClass="placeholder"/>
                 </placeholder>
                 <columns>
                     <TableColumn fx:id="idColumn" text="#" prefWidth="35" styleClass="numeric"/>

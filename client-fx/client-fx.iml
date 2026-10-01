@@ -6,8 +6,12 @@
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
     </content>
     <orderEntry type="inheritedJdk" />
-    <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="dto" />
-    <orderEntry type="module" module-name="engine" />
+    <orderEntry type="module" module-name="api" />
+    <orderEntry type="module" module-name="ui-fx" />
+    <orderEntry type="library" name="JavaFX" level="project" />
+    <orderEntry type="library" name="Gson" level="project" />
+    <orderEntry type="library" name="OkHttp" level="project" />
+    <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>

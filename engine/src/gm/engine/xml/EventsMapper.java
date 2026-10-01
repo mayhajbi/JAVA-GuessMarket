@@ -85,7 +85,7 @@ public class EventsMapper {
         for (int position = 0; position < xmlEventList.size(); position++) {
             XmlEvent xmlEvent = xmlEventList.get(position);
             if (xmlEvent.getId() != null) {
-                throw new UnsupportedFileFormatException("the event [" + xmlEvent.getName() + "] has an "
+                throw new UnsupportedFileFormatException("the event '" + xmlEvent.getName() + "' has an "
                         + "<id> element. Events are identified by their names, so the file may not "
                         + "give them ids.");
             }
@@ -129,12 +129,14 @@ public class EventsMapper {
             throw new MissingXmlDataException("name attribute",
                     id == NO_ID ? "an event of the file" : "the event with id " + id);
         }
-        String location = "the event " + GuessMarketException.describeEvent(name, id);
+        EventValidator.requireEnglish(name);
+        String location = "the event " + GuessMarketException.describeEvent(name);
 
         String description = InputText.normalize(xmlEvent.getDescription());
         if (description.isEmpty()) {
             throw new MissingXmlDataException("description", location);
         }
+        EventValidator.requireEnglish(description);
 
         int commissionPercent = readCommissionValue(xmlEvent, id, name, location);
         CommissionType commissionType = readCommissionType(xmlEvent, id, name, location);
@@ -271,7 +273,7 @@ public class EventsMapper {
         if (name.isEmpty()) {
             throw new MissingXmlDataException("name attribute", location);
         }
-        location = "the user [" + name + "]";
+        location = "the user '" + name + "'";
 
         Integer initialCash = xmlUser.getInitialCash();
         if (initialCash == null) {
@@ -294,7 +296,7 @@ public class EventsMapper {
                 Integer eventId = reference.getId();
                 if (eventId == null) {
                     throw new MissingXmlDataException("id attribute of <event>",
-                            "the market-maker block of the user [" + user.getName() + "]");
+                            "the market-maker block of the user '" + user.getName() + "'");
                 }
                 Event event = market.findEvent(eventId);
                 if (event == null) {

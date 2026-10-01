@@ -8,7 +8,6 @@ import gm.engine.core.User;
 import gm.engine.exception.InsufficientSharesException;
 import gm.engine.exception.InvalidOrderException;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -29,9 +28,7 @@ import java.util.function.DoubleConsumer;
  * The events of the system always have exactly two options, which is what makes a mint (one share of
  * each option) possible.
  */
-public class OrderBookMarket implements Serializable {
-
-    private static final long serialVersionUID = 1L;
+public class OrderBookMarket {
 
     private static final int CENTS_PER_UNIT = 100;
     private static final double WHOLE_CENTS_TOLERANCE = 1e-6;

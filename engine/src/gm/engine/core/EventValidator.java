@@ -5,6 +5,7 @@ import gm.engine.exception.InvalidEventDetailsException;
 import gm.engine.exception.InvalidLiquidityException;
 import gm.engine.exception.InvalidOptionsException;
 import gm.engine.exception.InvalidOrderBookException;
+import gm.engine.util.InputText;
 
 /**
  * The rules an event has to obey, whatever created it.
@@ -26,12 +27,23 @@ public final class EventValidator {
         if (name == null || name.isBlank()) {
             throw InvalidEventDetailsException.missingName();
         }
+        requireEnglish(name);
+    }
+
+    /**
+     * Any text of an event - its name, its description or an option - has to be written in English.
+     */
+    public static void requireEnglish(String text) {
+        if (!InputText.isEnglish(text)) {
+            throw InvalidEventDetailsException.notEnglish();
+        }
     }
 
     public static void requireDescription(String eventName, String description) {
         if (description == null || description.isBlank()) {
             throw InvalidEventDetailsException.missingDescription(eventName);
         }
+        requireEnglish(description);
     }
 
     public static void requireCommissionInRange(int id, String eventName, int commissionPercent) {
@@ -55,6 +67,8 @@ public final class EventValidator {
                 || secondOption.isBlank()) {
             throw InvalidEventDetailsException.missingOptionName(eventName);
         }
+        requireEnglish(firstOption);
+        requireEnglish(secondOption);
         if (firstOption.trim().equalsIgnoreCase(secondOption.trim())) {
             throw InvalidEventDetailsException.sameOptionNames(id, eventName, firstOption.trim());
         }

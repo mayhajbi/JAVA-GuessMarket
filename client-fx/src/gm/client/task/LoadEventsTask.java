@@ -1,4 +1,4 @@
-package gm.ui.fx.task;
+package gm.client.task;
 
 import gm.dto.LoadResultDTO;
 import gm.engine.api.GuessMarketEngine;

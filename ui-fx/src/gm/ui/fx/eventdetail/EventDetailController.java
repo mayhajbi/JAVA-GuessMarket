@@ -16,7 +16,7 @@ import gm.dto.OrderSide;
 import gm.dto.PriceHistoryDTO;
 import gm.dto.PurchaseResultDTO;
 import gm.dto.TradeRecordDTO;
-import gm.dto.UserInfoDTO;
+import gm.dto.UserDetailsDTO;
 import gm.engine.api.GuessMarketEngine;
 import gm.ui.fx.common.Animations;
 import gm.ui.fx.common.Dialogs;
@@ -29,7 +29,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
-import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
@@ -45,9 +44,8 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * The details of a single event and the actions that can be performed on it. Used by both screens:
- * on the events screen the acting user is chosen out of all the users, and on the users screen the
- * selected user is the one who acts.
+ * The details of a single event and the actions that can be performed on it. The acting user is always
+ * the user who is logged in.
  * <p>
  * An LMSR event shows its option values and trading history; an order book event shows the order
  * book of every option, its participants and trades, and the position of the acting user. Which
@@ -56,7 +54,7 @@ import java.util.Map;
  */
 public class EventDetailController {
 
-    private static final String CHOOSE_USER = "Choose the user who performs the action.";
+    private static final String CHOOSE_USER = "No user is logged in.";
     private static final String BUYING_HEADER = "Buying shares";
     private static final String ORDER_HEADER = "Placing an order";
 
@@ -72,7 +70,6 @@ public class EventDetailController {
     @FXML private Label commissionCollectedValue;
     @FXML private Label winnerValue;
 
-    @FXML private ComboBox<String> actingUserComboBox;
     @FXML private Label actingUserLabel;
     @FXML private Label actingUserBlockedLabel;
     @FXML private HBox openBox;
@@ -95,7 +92,6 @@ public class EventDetailController {
     @FXML private VBox lmsrBox;
     @FXML private VBox lmsrHistoryBox;
     @FXML private TableView<OptionStateDTO> optionsTable;
-    @FXML private TableColumn<OptionStateDTO, String> optionNumberColumn;
     @FXML private TableColumn<OptionStateDTO, String> optionNameColumn;
     @FXML private TableColumn<OptionStateDTO, String> optionValueColumn;
     @FXML private TableColumn<OptionStateDTO, String> optionSharesColumn;
@@ -129,9 +125,8 @@ public class EventDetailController {
     private final List<OptionBookView> optionBookViews = new ArrayList<>();
     private GuessMarketEngine engine;
     private Runnable onDataChanged = () -> { };
-    private List<UserInfoDTO> users = List.of();
-    private boolean isActingUserFixed;
-    private UserInfoDTO fixedActingUser;
+    /** The user who is logged in and performs every action; {@code null} until the first refresh. */
+    private UserDetailsDTO actingUser;
     private EventInfoDTO currentEvent;
     /** The state of the shown order book event; {@code null} while an LMSR event is shown. */
     private OrderBookStateDTO currentOrderBook;
@@ -143,15 +138,6 @@ public class EventDetailController {
 
     @FXML
     private void initialize() {
-        // Options are presented to the user starting from 1.
-        ViewUtils.bindText(optionNumberColumn, option -> "");
-        optionNumberColumn.setCellFactory(column -> new TableCell<>() {
-            @Override
-            protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-                setText(empty ? null : String.valueOf(getIndex() + 1));
-            }
-        });
         ViewUtils.bindText(optionNameColumn, OptionStateDTO::name);
         ViewUtils.bindText(optionValueColumn, option -> Formats.decimal(option.value()));
         ViewUtils.bindText(optionSharesColumn, option -> String.valueOf(option.shares()));
@@ -172,8 +158,6 @@ public class EventDetailController {
         ViewUtils.bindText(obPriceColumn, trade -> Formats.decimal(trade.price()));
         ViewUtils.bindText(obCommissionColumn, trade -> Formats.decimal(trade.commissionPaid()));
 
-        actingUserComboBox.valueProperty().addListener((observable, previous, chosen) -> updateActions());
-        ViewUtils.show(actingUserLabel, false);
         clear();
     }
 
@@ -189,27 +173,12 @@ public class EventDetailController {
     }
 
     /**
-     * Lets the user choose who performs the actions out of the given users. The chosen user stays
-     * chosen when it still exists.
+     * Sets the user who performs every action here: the user who is logged in. Called on every refresh,
+     * so that the balance and the blocked state are always the current ones.
      */
-    public void setUsers(List<UserInfoDTO> users) {
-        this.users = users;
-        String chosenName = actingUserComboBox.getValue();
-        List<String> names = users.stream().map(UserInfoDTO::name).toList();
-        actingUserComboBox.getItems().setAll(names);
-        actingUserComboBox.setValue(names.contains(chosenName) ? chosenName : null);
-        updateActions();
-    }
-
-    /**
-     * Makes the given user the one who performs every action, without offering a choice.
-     */
-    public void setFixedActingUser(UserInfoDTO user) {
-        isActingUserFixed = true;
-        fixedActingUser = user;
-        ViewUtils.show(actingUserComboBox, false);
-        ViewUtils.show(actingUserLabel, true);
-        actingUserLabel.setText(user == null ? "" : user.name());
+    public void setActingUser(UserDetailsDTO user) {
+        actingUser = user;
+        actingUserLabel.setText(user.name());
         updateActions();
     }
 
@@ -289,7 +258,7 @@ public class EventDetailController {
 
     @FXML
     private void onOpen() {
-        String marketMakerName = actingUser().name();
+        String marketMakerName = actingUser.name();
         String eventName = currentEvent.name();
         int eventId = currentEvent.id();
         boolean isLmsr = currentEvent.type() == EventType.LMSR;
@@ -299,12 +268,12 @@ public class EventDetailController {
         String paid = Formats.decimal(openedEvent.accountBalance());
         String message;
         if (isLmsr) {
-            message = marketMakerName + " opened [" + eventName + "] and paid the initial subsidy of "
+            message = marketMakerName + " opened '" + eventName + "' and paid the initial subsidy of "
                     + paid + ". Trading in the event is now allowed.";
         } else {
             long pairs = findParticipant(engine.getOrderBookState(eventId), marketMakerName)
                     .sharesPerOption().get(0);
-            message = marketMakerName + " opened [" + eventName + "], paid the initial investment of "
+            message = marketMakerName + " opened '" + eventName + "', paid the initial investment of "
                     + paid + " and received " + pairs + " shares of every option, which may now be "
                     + "offered for sale. Trading in the event is now allowed.";
         }
@@ -325,8 +294,7 @@ public class EventDetailController {
         quantityField.clear();
         onDataChanged.run();
 
-        String details = buyerName + " bought " + result.shares() + " shares of ["
-                + result.optionName() + "].\n"
+        String details = buyerName + " bought " + result.shares() + " shares of '" + result.optionName() + "'.\n"
                 + "Shares cost: " + Formats.decimal(result.sharesCost()) + "\n"
                 + "Commission: " + Formats.decimal(result.commissionPaid()) + "\n"
                 + "Total paid: " + Formats.decimal(result.totalPaid()) + "\n"
@@ -342,7 +310,7 @@ public class EventDetailController {
             return;
         }
         Double price = ViewUtils.readNumber(orderPriceField, Double::valueOf, ORDER_HEADER,
-                text -> "The price [" + text + "] is not a number. Please enter the price per share, for "
+                text -> "The price '" + text + "' is not a number. Please enter the price per share, for "
                         + "example 0.45.");
         if (price == null) {
             return;
@@ -372,17 +340,16 @@ public class EventDetailController {
         }
         String eventName = currentEvent.name();
         String winnerName = currentEvent.optionNames().get(winnerIndex);
-        if (!Dialogs.confirm("Closing the event [" + eventName + "]", "Close the event with ["
-                + winnerName + "] as the winning option? The winners will be paid, and the event "
+        if (!Dialogs.confirm("Closing the event '" + eventName + "'", "Close the event with '" + winnerName + "' as the winning option? The winners will be paid, and the event "
                 + "cannot be traded or opened again.")) {
             return;
         }
 
-        String marketMakerName = actingUser().name();
+        String marketMakerName = actingUser.name();
         engine.closeEvent(currentEvent.id(), marketMakerName, winnerIndex);
         onDataChanged.run();
-        reportStatusChange("The event was closed", "[" + eventName + "] was closed by "
-                + marketMakerName + " with [" + winnerName + "] as the winning option. The winners "
+        reportStatusChange("The event was closed", "'" + eventName + "' was closed by "
+                + marketMakerName + " with '" + winnerName + "' as the winning option. The winners "
                 + "were paid, and the commission and what was left in the event account went to "
                 + "the market maker.");
     }
@@ -396,7 +363,7 @@ public class EventDetailController {
      */
     private TradeInput readTradeInput(String header, ComboBox<String> optionComboBox, String chooseOption,
                                       TextField quantityInput) {
-        UserInfoDTO user = actingUser();
+        UserDetailsDTO user = actingUser;
         if (user == null) {
             Dialogs.showWarning(header, CHOOSE_USER);
             return null;
@@ -406,8 +373,7 @@ public class EventDetailController {
             Dialogs.showWarning(header, chooseOption);
             return null;
         }
-        Long quantity = ViewUtils.readNumber(quantityInput, Long::valueOf, header, text -> "The quantity ["
-                + text + "] is not a whole number. Please enter the amount of shares as a positive whole "
+        Long quantity = ViewUtils.readNumber(quantityInput, Long::valueOf, header, text -> "The quantity '" + text + "' is not a whole number. Please enter the amount of shares as a positive whole "
                 + "number, for example 10.");
         return quantity == null ? null : new TradeInput(user.name(), optionIndex, quantity);
     }
@@ -440,8 +406,7 @@ public class EventDetailController {
     private String describeOrderResult(String userName, OrderSide side, String optionName, long quantity,
                                        double price, OrderResultDTO result) {
         StringBuilder text = new StringBuilder(userName + " placed an order to "
-                + side.getDisplayName().toLowerCase(Locale.ROOT) + " " + quantity + " shares of ["
-                + optionName + "] at " + Formats.decimal(price) + ".\n");
+                + side.getDisplayName().toLowerCase(Locale.ROOT) + " " + quantity + " shares of '" + optionName + "' at " + Formats.decimal(price) + ".\n");
 
         List<String> tradeLines = new ArrayList<>();
         for (OrderBookTradeDTO trade : result.trades()) {
@@ -476,27 +441,15 @@ public class EventDetailController {
      *         chosen. Used to start the form of a new event with the user already at hand.
      */
     public String actingUserName() {
-        UserInfoDTO user = actingUser();
+        UserDetailsDTO user = actingUser;
         return user == null ? null : user.name();
-    }
-
-    private UserInfoDTO actingUser() {
-        if (isActingUserFixed) {
-            return fixedActingUser;
-        }
-        for (UserInfoDTO user : users) {
-            if (user.name().equals(actingUserComboBox.getValue())) {
-                return user;
-            }
-        }
-        return null;
     }
 
     private void updateActions() {
         if (currentEvent == null) {
             return;
         }
-        UserInfoDTO user = actingUser();
+        UserDetailsDTO user = actingUser;
         EventStatus status = currentEvent.status();
         boolean isLmsr = currentEvent.type() == EventType.LMSR;
         boolean isMarketMaker = user != null && user.name().equals(currentEvent.marketMakerName());
@@ -521,7 +474,7 @@ public class EventDetailController {
         showPosition(user);
     }
 
-    private String describeAvailableActions(UserInfoDTO user, EventStatus status, boolean isMarketMaker,
+    private String describeAvailableActions(UserDetailsDTO user, EventStatus status, boolean isMarketMaker,
                                             boolean isBlocked) {
         if (status == EventStatus.CLOSED) {
             return "This event is closed - no further actions are possible.";
@@ -536,8 +489,7 @@ public class EventDetailController {
                     : "");
         }
         if (status == EventStatus.INACTIVE && !isMarketMaker) {
-            return "This event is not open yet. Only its market maker ["
-                    + currentEvent.marketMakerName() + "] can open it.";
+            return "This event is not open yet. Only its market maker '" + currentEvent.marketMakerName() + "' can open it.";
         }
         return "";
     }
@@ -554,7 +506,7 @@ public class EventDetailController {
             optionBooksBox.getChildren().add(view);
         }
         for (int index = 0; index < state.options().size(); index++) {
-            optionBookViews.get(index).show(index + 1, state.options().get(index));
+            optionBookViews.get(index).show(state.options().get(index));
         }
 
         rebuildParticipantColumns(state.eventInfo().optionNames());
@@ -590,7 +542,7 @@ public class EventDetailController {
      * Shows what the acting user holds, paid and received in the shown order book event, when the
      * acting user takes part in it.
      */
-    private void showPosition(UserInfoDTO user) {
+    private void showPosition(UserDetailsDTO user) {
         OrderBookParticipantDTO position = currentOrderBook == null || user == null
                 ? null
                 : findParticipant(currentOrderBook, user.name());
@@ -604,7 +556,7 @@ public class EventDetailController {
         List<String> optionNames = currentEvent.optionNames();
         int row = 0;
         for (int index = 0; index < optionNames.size(); index++) {
-            addPositionRow(row++, Formats.numberedOption(index + 1, optionNames.get(index)),
+            addPositionRow(row++, optionNames.get(index),
                     position.sharesPerOption().get(index) + " shares, value "
                             + Formats.optionalDecimal(position.holdingValuePerOption().get(index))
                             + ", paid " + Formats.decimal(position.paidPerOption().get(index)));
@@ -634,15 +586,11 @@ public class EventDetailController {
     }
 
     private void fillOptionChoices(List<String> optionNames) {
-        List<String> numberedNames = new ArrayList<>();
-        for (int index = 0; index < optionNames.size(); index++) {
-            numberedNames.add(Formats.numberedOption(index + 1, optionNames.get(index)));
-        }
         // Refilling a choice box clears its selection, so it is refilled only for a different event.
-        if (!buyOptionComboBox.getItems().equals(numberedNames)) {
-            buyOptionComboBox.getItems().setAll(numberedNames);
-            orderOptionComboBox.getItems().setAll(numberedNames);
-            winnerComboBox.getItems().setAll(numberedNames);
+        if (!buyOptionComboBox.getItems().equals(optionNames)) {
+            buyOptionComboBox.getItems().setAll(optionNames);
+            orderOptionComboBox.getItems().setAll(optionNames);
+            winnerComboBox.getItems().setAll(optionNames);
         }
     }
 

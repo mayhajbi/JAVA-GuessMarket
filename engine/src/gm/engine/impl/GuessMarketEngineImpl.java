@@ -2,10 +2,8 @@ package gm.engine.impl;
 
 import gm.dto.AccountEntryDTO;
 import gm.dto.AccountEntryType;
-import gm.dto.CommissionType;
 import gm.dto.EventFilterDTO;
 import gm.dto.EventInfoDTO;
-import gm.dto.EventStatus;
 import gm.dto.EventType;
 import gm.dto.HistoryPointDTO;
 import gm.dto.LoadResultDTO;
@@ -32,12 +30,10 @@ import gm.engine.exception.InvalidDepositException;
 import gm.engine.exception.InvalidEventDetailsException;
 import gm.engine.exception.InvalidOrderException;
 import gm.engine.exception.InvalidUserNameException;
-import gm.engine.state.SystemStateSerializer;
 import gm.engine.util.InputText;
 import gm.engine.xml.EventsFileLoader;
 
 import java.io.InputStream;
-import java.util.EnumSet;
 import java.util.List;
 
 /**
@@ -47,7 +43,6 @@ import java.util.List;
 public class GuessMarketEngineImpl implements GuessMarketEngine {
 
     private final EventsFileLoader fileLoader = new EventsFileLoader();
-    private final SystemStateSerializer stateSerializer = new SystemStateSerializer();
     private final DtoFactory dtoFactory = new DtoFactory();
 
     private static final double NEW_USER_BALANCE = 0;
@@ -65,12 +60,6 @@ public class GuessMarketEngineImpl implements GuessMarketEngine {
     @Override
     public List<EventInfoDTO> getAllEvents() {
         return dtoFactory.toEventInfoList(market.getAllEvents());
-    }
-
-    @Override
-    public List<EventInfoDTO> getActiveEvents() {
-        return getEvents(new EventFilterDTO(EnumSet.allOf(EventType.class), EnumSet.of(EventStatus.ACTIVE),
-                EnumSet.allOf(CommissionType.class)));
     }
 
     @Override
@@ -118,6 +107,9 @@ public class GuessMarketEngineImpl implements GuessMarketEngine {
         String name = InputText.normalize(userName);
         if (name.isEmpty()) {
             throw new InvalidUserNameException();
+        }
+        if (!InputText.isEnglish(name)) {
+            throw InvalidUserNameException.notEnglish();
         }
         User user = new User(name, NEW_USER_BALANCE);
         market.addUser(user);
@@ -230,18 +222,6 @@ public class GuessMarketEngineImpl implements GuessMarketEngine {
         Event event = requireEvent(eventId);
         event.close(requireUser(userName), winningOptionIndex);
         return dtoFactory.toEventInfo(event);
-    }
-
-    @Override
-    public String saveSystemState(String pathWithoutExtension) {
-        return stateSerializer.save(market, pathWithoutExtension);
-    }
-
-    @Override
-    public String loadSystemState(String pathWithoutExtension) {
-        GuessMarket loadedMarket = stateSerializer.load(pathWithoutExtension);
-        this.market = loadedMarket;
-        return stateSerializer.resolveStateFilePath(pathWithoutExtension);
     }
 
     private Event requireEvent(int eventId) {

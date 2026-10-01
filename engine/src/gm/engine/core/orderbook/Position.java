@@ -1,13 +1,9 @@
 package gm.engine.core.orderbook;
 
-import java.io.Serializable;
-
 /**
  * What a single user holds in one order book event, and the money the user paid and received in it.
  */
-public class Position implements Serializable {
-
-    private static final long serialVersionUID = 1L;
+public class Position {
 
     private final long[] shares;
     private final double[] paidPerOption;
