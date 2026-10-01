@@ -1,6 +1,8 @@
 package gm.engine.impl;
 
 import gm.dto.AccountEntryDTO;
+import gm.dto.ChatLineDTO;
+import gm.dto.ChatLinesDTO;
 import gm.dto.EventInfoDTO;
 import gm.dto.HistoryPointDTO;
 import gm.dto.MarketStateDTO;
@@ -15,6 +17,7 @@ import gm.dto.TradeRecordDTO;
 import gm.dto.UserDetailsDTO;
 import gm.dto.UserEventDTO;
 import gm.dto.UserInfoDTO;
+import gm.engine.chat.ChatLine;
 import gm.engine.core.Event;
 import gm.engine.core.EventOption;
 import gm.engine.core.HistoryPoint;
@@ -84,6 +87,14 @@ class DtoFactory {
     List<AccountEntryDTO> toAccountEntries(User user) {
         return mapAll(latestFirst(user.getAccount().getEntries()), entry -> new AccountEntryDTO(
                 entry.getType(), entry.getAmount(), entry.getBalanceAfter()));
+    }
+
+    /**
+     * @param version the version of the chat the lines bring a client to
+     */
+    ChatLinesDTO toChatLines(List<ChatLine> lines, int version) {
+        return new ChatLinesDTO(mapAll(lines,
+                line -> new ChatLineDTO(line.getUserName(), line.getTimeMillis(), line.getText())), version);
     }
 
     /**

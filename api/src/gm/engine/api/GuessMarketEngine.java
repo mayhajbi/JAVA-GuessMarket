@@ -1,6 +1,7 @@
 package gm.engine.api;
 
 import gm.dto.AccountEntryDTO;
+import gm.dto.ChatLinesDTO;
 import gm.dto.EventFilterDTO;
 import gm.dto.EventInfoDTO;
 import gm.dto.HistoryPointDTO;
@@ -181,4 +182,20 @@ public interface GuessMarketEngine {
      * @return the details of the event after it was closed
      */
     EventInfoDTO closeEvent(int eventId, String userName, int winningOptionIndex);
+
+    /**
+     * Adds a line to the chat all the users share (bonus). The line has to hold a text, in English.
+     *
+     * @param userName name of the user who writes the line
+     * @param text     what the user wrote
+     */
+    void sendChatLine(String userName, String text);
+
+    /**
+     * The lines of the chat that were written after the version the caller already has (bonus).
+     *
+     * @param fromVersion the version of the chat the caller has, 0 for a caller that has nothing yet
+     * @return the new lines, in the order they were written, and the version of the chat right now
+     */
+    ChatLinesDTO getChatLines(int fromVersion);
 }

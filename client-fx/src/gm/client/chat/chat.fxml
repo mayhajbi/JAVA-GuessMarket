@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox spacing="8" minWidth="320" minHeight="220" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="gm.client.chat.ChatController">
+    <padding>
+        <Insets top="10" right="10" bottom="10" left="10"/>
+    </padding>
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label text="Chat" styleClass="section-title"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <ToggleButton fx:id="autoScrollButton" text="Auto scroll" selected="true" minWidth="-Infinity"/>
+    </HBox>
+    <TextArea fx:id="chatLinesArea" editable="false" wrapText="true" VBox.vgrow="ALWAYS"
+              promptText="Nothing was written yet."/>
+    <HBox spacing="8" alignment="CENTER_LEFT">
+        <TextField fx:id="lineField" promptText="Say something..." onAction="#onSend" HBox.hgrow="ALWAYS"/>
+        <Button text="Send" onAction="#onSend" minWidth="-Infinity"/>
+    </HBox>
+</VBox>

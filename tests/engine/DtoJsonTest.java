@@ -1,6 +1,7 @@
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import gm.dto.AccountEntryDTO;
+import gm.dto.ChatLinesDTO;
 import gm.dto.EventInfoDTO;
 import gm.dto.MarketStateDTO;
 import gm.dto.OrderBookStateDTO;
@@ -68,6 +69,12 @@ public class DtoJsonTest extends Check {
                 "the account entries");
         roundTrip(engine.getAccountEntries("Tikva"), new TypeToken<List<AccountEntryDTO>>() { }.getType(),
                 "the account entries of a market maker");
+
+        // The chat (bonus): no lines at all, and then lines.
+        roundTrip(engine.getChatLines(0), ChatLinesDTO.class, "an empty chat");
+        engine.sendChatLine("Menash", "Hello");
+        engine.sendChatLine("Tikva", "Hi Menash");
+        roundTrip(engine.getChatLines(0), ChatLinesDTO.class, "a chat with lines");
     }
 
     static void roundTrip(Object value, Type type, String what) {

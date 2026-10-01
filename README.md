@@ -13,6 +13,7 @@ order book (bids, asks and minting, in the spirit of Polymarket).
 * Uploading and validating files of events, with a detailed message for every fault
 * Events with a life cycle and a market maker, LMSR trading and order book trading
 * Automatic updates between the clients, by pulling from the server
+* A chat between the users who are logged in
 * Graphs of prices and balances, user created events, skins and animations
 
 ## Requirements

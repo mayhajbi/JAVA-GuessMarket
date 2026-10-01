@@ -71,7 +71,7 @@ The choices made wherever the exercise did not decide.
 * **Text** - every textual value is compared without case, and whitespace at the edges (or line
   breaks and tabs inside a value, including a value typed into the form of a new event) is ignored.
 * **Server write requests** - every request that changes data (`/upload`, `/account/deposit`,
-  `/event/create`, `/event/open`, `/event/buy`, `/event/order`, `/event/close`) is accepted only as
+  `/event/create`, `/event/open`, `/event/buy`, `/event/order`, `/event/close`, `/chat/send`) is accepted only as
   POST; any other method gets 400 with the reason. The acting user is always the one of the session:
   a user name sent in the query or in the body is ignored.
 * **Server request details** - a JSON body must have every field it needs: a missing field, or a
@@ -84,6 +84,11 @@ The choices made wherever the exercise did not decide.
   the account, the other users, and the event that is shown. Only the screen that is shown is refreshed,
   and the details of an event only while an event is selected. An action of the user who is logged in
   is seen at once, without waiting for the next pull.
+* **Chat** - the chat lives on the server and is shared by all the users; it is gone when the server
+  stops. Only the lines that are new are pulled: the client remembers the version of the chat it
+  shows (the amount of lines) and asks for what came after it. A line is cleaned like every other
+  text, has to be in English and may not be empty; a blocked user may write as well. The time of a
+  line is the moment the server received it.
 * **Refresh keeps the screen** - a pull that brought nothing new changes nothing on the screen. What
   the user typed into a field, and the selected row of a table, survive every pull; a table whose rows
   did change is filled again, and its selected row stays selected when the same row is still there.

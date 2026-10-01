@@ -1,0 +1,92 @@
+import gm.client.chat.ChatController;
+import gm.dto.ChatLineDTO;
+import gm.dto.ChatLinesDTO;
+import gm.engine.api.GuessMarketEngine;
+import javafx.application.Platform;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.Pane;
+
+import java.lang.reflect.Proxy;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+
+/**
+ * The chat screen (bonus): the lines that are new are added once, the screen remembers the version it
+ * shows, and a line that was sent leaves the field empty and appears on the screen at once. Needs
+ * nothing running: the screen works here against a canned engine.
+ */
+public class ChatViewTest extends Check {
+
+    /** The lines the canned engine holds: what was sent through it. */
+    static final List<ChatLineDTO> sent = new ArrayList<>();
+
+    public static void main(String[] args) {
+        run("chat-view", ChatViewTest::check);
+    }
+
+    static void check() throws Exception {
+        CompletableFuture<Void> done = new CompletableFuture<>();
+        Platform.startup(() -> {
+            try {
+                chatScreen();
+                done.complete(null);
+            } catch (Throwable failure) {
+                done.completeExceptionally(failure);
+            }
+        });
+        done.get();
+    }
+
+    static void chatScreen() throws Exception {
+        FXMLLoader loader = new FXMLLoader(ChatController.class.getResource("chat.fxml"));
+        Pane root = loader.load();
+        ChatController chat = loader.getController();
+        TextArea lines = (TextArea) loader.getNamespace().get("chatLinesArea");
+        TextField field = (TextField) loader.getNamespace().get("lineField");
+        chat.start(cannedEngine(), "Dana");
+
+        expect(0, chat.version(), "a new screen is at version 0");
+        chat.showChatLines(new ChatLinesDTO(List.of(), 0));
+        expect("", lines.getText(), "an answer without lines shows nothing");
+
+        ChatLinesDTO two = new ChatLinesDTO(List.of(line("Avi", "Hello"), line("Bella", "Hi Avi")), 2);
+        chat.showChatLines(two);
+        expect(2, chat.version(), "the screen remembers the version it shows");
+        expect(2L, lines.getText().lines().count(), "every line of the chat is a line on the screen");
+        expectTrue(lines.getText().lines().findFirst().orElse("").endsWith("| Avi: Hello"),
+                "a line shows who wrote it and what");
+
+        chat.showChatLines(two);
+        expect(2L, lines.getText().lines().count(), "the same answer again adds nothing");
+
+        chat.showChatLines(new ChatLinesDTO(List.of(line("Avi", "Third")), 3));
+        expect(3L, lines.getText().lines().count(), "only the new line is added");
+        expect(3, chat.version(), "the version follows the chat");
+
+        // Sending: the canned engine holds what was sent, and answers with it from the asked version on.
+        sent.addAll(List.of(line("Avi", "Hello"), line("Bella", "Hi Avi"), line("Avi", "Third")));
+        field.setText("My line");
+        ((Button) root.lookup(".button")).fire();
+        expect("", field.getText(), "the field is empty after a line was sent");
+        expect(4, chat.version(), "a line that was sent is pulled at once");
+        expectTrue(lines.getText().strip().endsWith("| Dana: My line"), "a line that was sent appears on the screen");
+    }
+
+    static ChatLineDTO line(String userName, String text) {
+        return new ChatLineDTO(userName, System.currentTimeMillis(), text);
+    }
+
+    /** An engine that keeps the lines it is sent, and answers with the ones after the asked version. */
+    static GuessMarketEngine cannedEngine() {
+        return (GuessMarketEngine) Proxy.newProxyInstance(ChatViewTest.class.getClassLoader(),
+                new Class<?>[] {GuessMarketEngine.class}, (proxy, method, args) -> switch (method.getName()) {
+                    case "sendChatLine" -> sent.add(line((String) args[0], (String) args[1]));
+                    case "getChatLines" -> new ChatLinesDTO(sent.subList((int) args[0], sent.size()), sent.size());
+                    default -> throw new UnsupportedOperationException(method.getName());
+                });
+    }
+}

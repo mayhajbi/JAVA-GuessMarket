@@ -20,6 +20,10 @@
   * *Balance over time* - the balance of the user after every change.
   * *Events - market maker / participant* - the events the user is the market maker of or takes
     part in, and the details of the selected one.
+* **Chat** - a third tab: everything the users wrote, each line with its time and its writer, and a
+  field with *Send* (or Enter) to add a line. Every user sees what every other user writes, within
+  about half a second while the tab is shown. *Auto scroll* follows the last line; turned off, the
+  screen stays where the user is reading. A user who logs in later sees the whole chat.
 * **Event details** (on the Events and Account screens), laid out as in the sketch of the exercise - the name, the
   description and the summary of the event, then an LMSR event shows its option values and an order
   book event the order books of its two options side by side (with LAST / BID / ASK / MID / SPREAD)

@@ -5,6 +5,7 @@ import gm.client.HttpApi;
 import gm.client.Query;
 import gm.client.Refresher;
 import gm.client.account.AccountController;
+import gm.client.chat.ChatController;
 import gm.client.header.HeaderController;
 import gm.dto.EventInfoDTO;
 import gm.engine.api.GuessMarketEngine;
@@ -27,7 +28,7 @@ import java.util.function.IntConsumer;
 import java.util.function.Supplier;
 
 /**
- * The main controller of the client. It connects the header and the two screens (events and account),
+ * The main controller of the client. It connects the header and the screens (events, account and chat),
  * hands them the engine and the name of the user who is logged in, and keeps them up to date with what
  * the other users do.
  */
@@ -39,8 +40,10 @@ public class AppController {
     @FXML private HeaderController headerComponentController;
     @FXML private EventsController eventsComponentController;
     @FXML private AccountController accountComponentController;
+    @FXML private ChatController chatComponentController;
     @FXML private Tab eventsTab;
     @FXML private Tab accountTab;
+    @FXML private Tab chatTab;
 
     @FXML private TabPane screens;
     @FXML private Label serverStatusLabel;
@@ -72,6 +75,7 @@ public class AppController {
         accountComponentController.setEngine(engine);
         accountComponentController.setUserName(userName);
         accountComponentController.setOnDataChanged(this::refreshAll);
+        chatComponentController.start(engine, userName);
         refreshAll();
         startRefreshers();
     }
@@ -117,6 +121,9 @@ public class AppController {
         schedule(accountTimer, accountShown, Query::balanceHistory,
                 accountComponentController::showBalanceHistory);
         scheduleEventDetail(accountShown, accountComponentController.eventDetail());
+
+        schedule(newTimer(), chatTab.selectedProperty(), () -> Query.chat(chatComponentController.version()),
+                chatComponentController::showChatLines);
     }
 
     /**

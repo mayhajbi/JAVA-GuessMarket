@@ -2,6 +2,7 @@ package gm.client;
 
 import com.google.gson.Gson;
 import gm.dto.AccountEntryDTO;
+import gm.dto.ChatLinesDTO;
 import gm.dto.EventFilterDTO;
 import gm.dto.EventInfoDTO;
 import gm.dto.HistoryPointDTO;
@@ -34,6 +35,9 @@ public class HttpGuessMarketEngine implements GuessMarketEngine {
     private static final Map<String, String> NO_PARAMS = Map.of();
 
     private record BuyBody(int eventId, int optionIndex, long quantity) {
+    }
+
+    private record ChatBody(String text) {
     }
 
     private final HttpApi api;
@@ -148,6 +152,16 @@ public class HttpGuessMarketEngine implements GuessMarketEngine {
         Map<String, String> params = Map.of("id", String.valueOf(eventId),
                 "winner", String.valueOf(winningOptionIndex));
         return gson.fromJson(api.post("/event/close", params, null), EventInfoDTO.class);
+    }
+
+    @Override
+    public void sendChatLine(String userName, String text) {
+        api.post("/chat/send", NO_PARAMS, gson.toJson(new ChatBody(text)));
+    }
+
+    @Override
+    public ChatLinesDTO getChatLines(int fromVersion) {
+        return pull(Query.chat(fromVersion));
     }
 
     /**

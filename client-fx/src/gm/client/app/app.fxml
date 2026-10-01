@@ -24,6 +24,11 @@
                         <fx:include fx:id="accountComponent" source="../account/account.fxml"/>
                     </content>
                 </Tab>
+                <Tab fx:id="chatTab" text="Chat">
+                    <content>
+                        <fx:include fx:id="chatComponent" source="../chat/chat.fxml"/>
+                    </content>
+                </Tab>
             </tabs>
         </TabPane>
     </center>

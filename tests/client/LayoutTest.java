@@ -18,6 +18,7 @@ import gm.dto.UserDetailsDTO;
 import gm.dto.UserEventDTO;
 import gm.dto.UserInfoDTO;
 import gm.client.account.AccountController;
+import gm.client.chat.ChatController;
 import gm.client.header.HeaderController;
 import gm.client.login.LoginController;
 import gm.engine.api.GuessMarketEngine;
@@ -70,6 +71,7 @@ public class LayoutTest extends Check {
                         "account screen");
                 plainScreen(LoginController.class.getResource("login.fxml"), "login screen");
                 plainScreen(HeaderController.class.getResource("header.fxml"), "header");
+                plainScreen(ChatController.class.getResource("chat.fxml"), "chat screen");
                 done.complete(null);
             } catch (Throwable failure) {
                 done.completeExceptionally(failure);

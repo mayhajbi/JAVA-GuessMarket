@@ -44,6 +44,9 @@ system do: they register, load money and upload files of events.
 | `CreateEventTest` | a user creating an event and becoming its market maker, and the rules a created event obeys |
 | `MessageWordingTest` | the wording of the refusals: no brackets, money with two digits, the name of the XML element or attribute in a message about an uploaded file |
 | `EventRulesTest` | text cleanup of a created event, the active events, a blocked user creating an event, options of the same name in a file |
+| `ChatTest` | the chat: the lines pile up in order, a caller that knows a version gets only what came after it, an empty line and a line that is not in English are refused |
+| `client\ChatViewTest` | the chat screen: new lines are added once, the screen remembers its version, and a line that was sent appears at once and leaves the field empty |
+| `server\test-chat.bat` | the chat with the classes of the client (`ChatCheck.java`): refused without a session, a line of one user reaches another as the only new line, the writer is the user of the session, wrong lines are refused with the reason |
 | `client\ViewRefreshTest` | what an automatic update may change on the screen: equal rows and equal points leave a table and a graph untouched, the selected row stays selected, and the quantity typed for an event survives every refresh |
 | `client\LayoutTest` | the screens in a window of 1200x760, 800x600 and 640x480: a screen scrolls instead of shrinking below its minimal size, fills the width of the window, nothing sticks out of it and no label or button is too narrow for its text |
 | `server\test-live-pull.bat` | the automatic updates with the classes of the client (`LivePullCheck.java`): not logged in (401), a logged in client gets its data, what another user does arrives within 2 seconds, nothing is pulled while the updates are off |

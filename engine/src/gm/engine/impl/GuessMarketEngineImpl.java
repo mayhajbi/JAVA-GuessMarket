@@ -2,6 +2,7 @@ package gm.engine.impl;
 
 import gm.dto.AccountEntryDTO;
 import gm.dto.AccountEntryType;
+import gm.dto.ChatLinesDTO;
 import gm.dto.EventFilterDTO;
 import gm.dto.EventInfoDTO;
 import gm.dto.EventType;
@@ -17,6 +18,7 @@ import gm.dto.UploadResultDTO;
 import gm.dto.UserDetailsDTO;
 import gm.dto.UserInfoDTO;
 import gm.engine.api.GuessMarketEngine;
+import gm.engine.chat.ChatManager;
 import gm.engine.core.Event;
 import gm.engine.core.EventOption;
 import gm.engine.core.EventValidator;
@@ -47,6 +49,7 @@ public class GuessMarketEngineImpl implements GuessMarketEngine {
     private static final double NEW_USER_BALANCE = 0;
 
     private final GuessMarket market = new GuessMarket();
+    private final ChatManager chat = new ChatManager();
 
     @Override
     public List<EventInfoDTO> getAllEvents() {
@@ -211,6 +214,16 @@ public class GuessMarketEngineImpl implements GuessMarketEngine {
         Event event = requireEvent(eventId);
         event.close(requireUser(userName), winningOptionIndex);
         return dtoFactory.toEventInfo(event);
+    }
+
+    @Override
+    public void sendChatLine(String userName, String text) {
+        chat.addLine(requireUser(userName).getName(), text);
+    }
+
+    @Override
+    public ChatLinesDTO getChatLines(int fromVersion) {
+        return dtoFactory.toChatLines(chat.getLines(fromVersion), chat.getVersion());
     }
 
     private Event requireEvent(int eventId) {

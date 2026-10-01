@@ -68,4 +68,13 @@
         <servlet-name>UploadServlet</servlet-name>
         <url-pattern>/upload</url-pattern>
     </servlet-mapping>
+    <servlet>
+        <servlet-name>ChatServlet</servlet-name>
+        <servlet-class>gm.server.ChatServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ChatServlet</servlet-name>
+        <url-pattern>/chat</url-pattern>
+        <url-pattern>/chat/send</url-pattern>
+    </servlet-mapping>
 </web-app>

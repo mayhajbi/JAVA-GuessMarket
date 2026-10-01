@@ -16,7 +16,6 @@ public class InvalidUserNameException extends GuessMarketException {
     }
 
     public static InvalidUserNameException notEnglish() {
-        return new InvalidUserNameException("The user name has to be written in English. Please use English "
-                + "letters, digits and common punctuation marks only.");
+        return new InvalidUserNameException("The user name has to be written in English. " + USE_ENGLISH);
     }
 }

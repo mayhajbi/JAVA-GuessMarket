@@ -3,6 +3,7 @@ package gm.client;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import gm.dto.AccountEntryDTO;
+import gm.dto.ChatLinesDTO;
 import gm.dto.EventFilterDTO;
 import gm.dto.EventInfoDTO;
 import gm.dto.EventStateDTO;
@@ -97,6 +98,14 @@ public record Query<T>(String path, Map<String, String> params, Function<String,
 
     public static Query<List<PriceHistoryDTO>> prices(int eventId) {
         return json("/event/prices", eventParam(eventId), PRICE_HISTORIES);
+    }
+
+    /**
+     * The lines of the chat that were written after the version the client already has: only what is
+     * new travels, the way the chat of the course example does.
+     */
+    public static Query<ChatLinesDTO> chat(int fromVersion) {
+        return json("/chat", Map.of("version", String.valueOf(fromVersion)), ChatLinesDTO.class);
     }
 
     /**

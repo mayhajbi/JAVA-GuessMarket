@@ -109,7 +109,9 @@ public class HttpApi {
         try (Response response = client.newCall(request).execute()) {
             String body = response.body() == null ? NO_BODY : response.body().string();
             if (!response.isSuccessful()) {
-                throw new ServerException(body.isBlank()
+                // The application answers a refusal with its reason as plain text. Anything else is an
+                // error page of Tomcat itself, which is not a message for the user.
+                throw new ServerException(body.isBlank() || !isPlainText(response)
                         ? "The server refused the request with the status " + response.code() + "."
                         : body);
             }
@@ -117,6 +119,11 @@ public class HttpApi {
         } catch (IOException e) {
             throw new ServerException(CONNECTION_MESSAGE, e);
         }
+    }
+
+    private static boolean isPlainText(Response response) {
+        MediaType type = response.body() == null ? null : response.body().contentType();
+        return type != null && "plain".equals(type.subtype());
     }
 
     /**
