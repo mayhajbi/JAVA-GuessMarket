@@ -2,14 +2,22 @@
 
 ## Screens
 
-* **Header** - *Load File...* opens a file chooser (XML files only). The file is loaded in the
-  background with a progress bar; a failed load shows the detailed reason and keeps the previous data.
 * **Events** - every event with its status, type, commission, market maker and account balance,
   filtered by type, status and commission method (each with *All*).
-* **Users** - every user with the balance; for the selected user, the events the user is the market
-  maker of or takes part in, and *Balance over time* - the amount the user started with and every
-  change since then.
-* **Event details** (on both screens), laid out as in the sketch of the exercise - the name, the
+* **Account** - the screen of the user who is logged in:
+  * *Load file* opens a file chooser (XML files only). The file is uploaded to the server in the
+    background, with a progress bar and a message while it is on its way; only another upload waits
+    until it is finished. The events of the file are added to the system and the user becomes their
+    market maker; a refused file shows the reason the server gave.
+  * *Users* - the other users, with the name, the balance and whether the user is a market maker.
+  * *Account details* - every movement of money in the account (type, amount and the balance after
+    it), in the order the server recorded them.
+  * *Load funds* adds an amount to the balance. A user who is blocked can load funds as well: it
+    is the way out of the block.
+  * *Balance over time* - the balance of the user after every change.
+  * *Events - market maker / participant* - the events the user is the market maker of or takes
+    part in, and the details of the selected one.
+* **Event details** (on the Events and Account screens), laid out as in the sketch of the exercise - the name, the
   description and the summary of the event, then an LMSR event shows its option values and an order
   book event the order books of its two options side by side (with LAST / BID / ASK / MID / SPREAD)
   and the participants with their holdings. Next come the actions (with the position of the acting
@@ -18,19 +26,18 @@
   opened until it was closed (where the winning option is worth its full payout and the other one
   nothing). An event that was never opened, and an order book option that never had both a bid and
   an ask, have no prices to draw yet.
-* **Actions** - performed by the acting user (chosen on the events screen, the selected user on the
-  users screen): *Open event* and *Close event* for the market maker, *Buy* shares of an LMSR event,
+* **Actions** - performed by the user who is logged in: *Open event* and *Close event* for the market maker, *Buy* shares of an LMSR event,
   *Place order* (buy or sell, quantity, option, price) in an order book event.
 
 Every window can be resized freely; when it is small, the screens scroll instead of cutting content.
 
 ## Additional features
 
-* **Graphs** - a price over time graph for every event and a balance over time graph for every
-  user. Always on: the price graph is part of the event details on both screens, and the balance
-  graph is part of the users screen. The engine records a point whenever the value actually changes,
-  so the graphs describe the whole session from the moment the data file was loaded.
-* **Creating an event** - *New event...* on the events screen opens a form where a user creates an
+* **Graphs** - a price over time graph for every event and a balance over time graph for the user
+  who is logged in. Always on: the price graph is part of the event details on both screens, and the
+  balance graph is part of the Account screen. The engine records a point whenever the value
+  actually changes.
+* **Creating an event** - *New event* on the events screen opens a form where a user creates an
   event of their own and becomes its market maker. The form asks for the details every event has,
   and then only the fields of the trading method that was chosen: the liquidity (b) of an LMSR
   event, or the base value (d), the initial investment and whether minting is allowed of an order

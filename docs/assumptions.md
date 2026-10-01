@@ -47,7 +47,7 @@ The choices made wherever the exercise did not decide.
   the winning option and 0 for the other.
 * **Options** - the two options of an event must have different names (compared without case),
   whether the event comes from a data file or is created by a user.
-* **Users screen** - lists every event the selected user is the market maker of or has taken part
+* **Account screen** - lists every event the user is the market maker of or has taken part
   in, in any status and not only the active ones: the details the exercise asks for include those of
   a closed event (the shares of every option and the winner, or the profit / loss), so a closed
   event stays in the list.
