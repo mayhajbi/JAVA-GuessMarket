@@ -45,6 +45,19 @@
         <servlet-name>AccountServlet</servlet-name>
         <url-pattern>/account</url-pattern>
         <url-pattern>/account/log</url-pattern>
+        <url-pattern>/account/deposit</url-pattern>
+    </servlet-mapping>
+    <servlet>
+        <servlet-name>EventActionServlet</servlet-name>
+        <servlet-class>gm.server.EventActionServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>EventActionServlet</servlet-name>
+        <url-pattern>/event/open</url-pattern>
+        <url-pattern>/event/close</url-pattern>
+        <url-pattern>/event/buy</url-pattern>
+        <url-pattern>/event/order</url-pattern>
+        <url-pattern>/event/create</url-pattern>
     </servlet-mapping>
     <servlet>
         <servlet-name>UploadServlet</servlet-name>

@@ -74,6 +74,27 @@ public abstract class GmServlet extends HttpServlet {
         }
     }
 
+    protected static double requireDouble(HttpServletRequest request, String name) {
+        String value = request.getParameter(name);
+        if (value == null) {
+            throw new BadRequestException("The parameter '" + name + "' is missing.");
+        }
+        try {
+            return Double.parseDouble(value.trim());
+        } catch (NumberFormatException e) {
+            throw new BadRequestException("The parameter '" + name + "' must be a number, but it is [" + value + "].");
+        }
+    }
+
+    /**
+     * An action that changes data is only accepted as POST.
+     */
+    protected static void requirePost(HttpServletRequest request) {
+        if (!"POST".equals(request.getMethod())) {
+            throw new BadRequestException("This request changes data, so it must be sent as POST.");
+        }
+    }
+
     protected static void fail(HttpServletResponse response, int status, String message) throws IOException {
         response.setStatus(status);
         response.getWriter().print(message);
