@@ -53,3 +53,16 @@ The choices made wherever the exercise did not decide.
   event stays in the list.
 * **Text** - every textual value is compared without case, and whitespace at the edges (or line
   breaks and tabs inside a value, including a value typed into the form of a new event) is ignored.
+* **Server write requests** - every request that changes data (`/upload`, `/account/deposit`,
+  `/event/create`, `/event/open`, `/event/buy`, `/event/order`, `/event/close`) is accepted only as
+  POST; any other method gets 400 with the reason. The acting user is always the one of the session:
+  a user name sent in the query or in the body is ignored.
+* **Server request details** - a JSON body must have every field it needs: a missing field, or a
+  value that does not fit (for example an unknown order side), gets 400 naming the field. When an
+  event is created, `liquidity` is needed only for an LMSR event, and `baseValue`, `allowMint` and
+  `initialInvestment` only for an order book event; the fields of the other method are ignored.
+  The option of a buy, an order or a close is sent as 0 or 1 (the first or the second option).
+* **Upload** - the file travels as a multipart field and is read straight from memory, never written
+  to the disk of the server; it may not be bigger than 1MB, and a bigger one is refused with a
+  message. The events of a valid file are added to the existing ones, and the uploader becomes their
+  market maker.

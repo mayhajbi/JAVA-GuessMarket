@@ -38,6 +38,10 @@ Each check runs on its own (a failure in one does not stop the others). Test dat
 | `CreateEventTest` | a user creating an event and becoming its market maker, and the rules a created event obeys |
 | `EventRulesTest` | text cleanup of a created event, the active events, a blocked user creating an event, options of the same name in a file |
 | `server\test-login.bat` | `/login`: a valid login (200 + session cookie), the same name from another session (401), a missing name (409) |
+| `server\test-read-api.bat` | the read endpoints: refused without a session, wrong parameters (400), a user sees only the own account |
+| `server\test-upload.bat` | `/upload`: a valid file, the same file again, a broken file, no file, a file over 1MB, and that the upload leaves no new file in the folders of Tomcat |
+| `server\test-deposit.bat` | `/account/deposit`: wrong amounts (400 with the reason), the new balance, the movement in the account log |
+| `server\test-write-api.bat` | create, open, buy, order and close end to end with three users: every wrong request (400 with the reason) and every balance, compared with a number computed from the LMSR formula and the order book rules |
 
 ## Adding a check
 
@@ -46,4 +50,7 @@ Name decides, `run-all.bat` needs no edit:
 - an engine check: a class `engine\<Name>Test.java` that extends `Check` and gives its assertions to
   `run(...)` (see any existing one);
 - a server check: a script `server\test-<name>.bat` with the same [PASS]/[FAIL] output, which exits
-  with the failure count.
+  with the failure count. A check that has to read JSON or compute decimal numbers (not possible in a
+  plain batch file) keeps its logic in `server\<name>-check.ps1`, which sends every request with
+  `curl.exe`; `test-<name>.bat` then only runs it and exits with its exit code (see
+  `test-write-api.bat`).
