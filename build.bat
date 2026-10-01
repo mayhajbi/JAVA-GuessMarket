@@ -1,6 +1,6 @@
 @echo off
 rem ---------------------------------------------------------------------------
-rem  Builds the dto, engine and ui-fx modules of Guess Market into three
+rem  Builds the dto, api, engine and ui-fx modules of Guess Market into four
 rem  separate jar files. The result is created under the "jars" folder, which is
 rem  exactly what needs to be submitted (the jars, the third party libraries
 rem  under lib, and the run script).
@@ -18,24 +18,30 @@ set FX=lib\javafx-sdk-22.0.2\lib
 if exist out rmdir /s /q out
 if exist jars rmdir /s /q jars
 mkdir out\dto
+mkdir out\api
 mkdir out\engine
 mkdir out\ui-fx
 mkdir jars\lib
 
-echo [1/3] Compiling the dto module...
+echo [1/4] Compiling the dto module...
 dir /s /b dto\src\*.java > out\sources-dto.txt
 javac -encoding UTF-8 -d out\dto @out\sources-dto.txt
 if errorlevel 1 goto failed
 
-echo [2/3] Compiling the engine module...
-dir /s /b engine\src\*.java > out\sources-engine.txt
-javac -encoding UTF-8 -cp "out\dto;lib\*" -d out\engine @out\sources-engine.txt
+echo [2/4] Compiling the api module...
+dir /s /b api\src\*.java > out\sources-api.txt
+javac -encoding UTF-8 -cp "out\dto" -d out\api @out\sources-api.txt
 if errorlevel 1 goto failed
 
-echo [3/3] Compiling the ui-fx module (JavaFX)...
+echo [3/4] Compiling the engine module...
+dir /s /b engine\src\*.java > out\sources-engine.txt
+javac -encoding UTF-8 -cp "out\dto;out\api;lib\*" -d out\engine @out\sources-engine.txt
+if errorlevel 1 goto failed
+
+echo [4/4] Compiling the ui-fx module (JavaFX)...
 dir /s /b ui-fx\src\*.java > out\sources-ui-fx.txt
 javac -encoding UTF-8 --module-path "%FX%" --add-modules javafx.controls,javafx.fxml ^
-      -cp "out\dto;out\engine" -d out\ui-fx @out\sources-ui-fx.txt
+      -cp "out\dto;out\api;out\engine" -d out\ui-fx @out\sources-ui-fx.txt
 if errorlevel 1 goto failed
 rem The screens are described in FXML files with their style sheets, loaded from the jar at run time.
 xcopy /s /y /q ui-fx\src\*.fxml out\ui-fx\ >nul
@@ -45,6 +51,8 @@ if errorlevel 1 goto failed
 
 echo Creating the jar files...
 jar --create --file jars\gm-dto.jar -C out\dto .
+if errorlevel 1 goto failed
+jar --create --file jars\gm-api.jar -C out\api .
 if errorlevel 1 goto failed
 jar --create --file jars\gm-engine.jar -C out\engine .
 if errorlevel 1 goto failed

@@ -15,5 +15,5 @@ set PATH=%CD%\%FX%\bin;%PATH%
 
 java --module-path "%FX%\lib" --add-modules javafx.controls,javafx.fxml ^
      --enable-native-access=javafx.graphics ^
-     -cp "gm-ui-fx.jar;gm-engine.jar;gm-dto.jar;lib\*" gm.ui.fx.GuessMarketApp
+     -cp "gm-ui-fx.jar;gm-engine.jar;gm-api.jar;gm-dto.jar;lib\*" gm.ui.fx.GuessMarketApp
 endlocal
