@@ -16,8 +16,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * The single place that talks HTTP to the server: every request of the client goes through here, so the
@@ -31,11 +29,6 @@ public class HttpApi {
     private static final String NO_BODY = "";
     private static final String CONNECTION_MESSAGE = "The server could not be reached at " + Constants.BASE_URL
             + ". Start Tomcat and check that it listens on localhost:8080.";
-
-    static {
-        // Development only: shows which request leaked a connection. To be removed before the submission.
-        Logger.getLogger(OkHttpClient.class.getName()).setLevel(Level.FINE);
-    }
 
     private final OkHttpClient client = new OkHttpClient.Builder()
             .cookieJar(new SessionCookies())
