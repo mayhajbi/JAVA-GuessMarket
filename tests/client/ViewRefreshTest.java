@@ -5,6 +5,8 @@ import gm.dto.EventType;
 import gm.dto.HistoryPointDTO;
 import gm.dto.MarketStateDTO;
 import gm.dto.OptionStateDTO;
+import gm.dto.OrderBookOptionDTO;
+import gm.dto.OrderBookStateDTO;
 import gm.dto.UserDetailsDTO;
 import gm.engine.api.GuessMarketEngine;
 import gm.ui.fx.common.HistoryChart;
@@ -14,10 +16,13 @@ import gm.ui.fx.events.EventsController;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.RadioButton;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Proxy;
 import java.util.List;
 import java.util.Map;
@@ -25,13 +30,16 @@ import java.util.Map;
 /**
  * What an automatic update may and may not change on the screen: a refresh that brought nothing new
  * leaves a table and a graph untouched, the selected row stays selected, and what the user typed into
- * the quantity field of an event survives every refresh of the events and of the event itself.
+ * the quantity field of an event, or typed and chose for an order, survives every refresh of the events
+ * and of the event itself.
  * Needs nothing running: the screens work here against a canned engine.
  */
 public class ViewRefreshTest extends Check {
 
     static final List<String> OPTIONS = List.of("Yes", "No");
     static final UserDetailsDTO USER = new UserDetailsDTO("Dana", 100, false, List.of());
+    static final EventInfoDTO BOOK = new EventInfoDTO(3, "Event 3", "A canned order book event", 5,
+            CommissionType.ON_PURCHASE, OPTIONS, EventStatus.ACTIVE, EventType.ORDER_BOOK, "Mor", 100);
 
     public static void main(String[] args) {
         run("view-refresh", ViewRefreshTest::check);
@@ -42,6 +50,7 @@ public class ViewRefreshTest extends Check {
             tableRows();
             chart();
             eventsScreen();
+            orderFields();
         });
     }
 
@@ -89,9 +98,9 @@ public class ViewRefreshTest extends Check {
         @SuppressWarnings("unchecked")
         TableView<EventInfoDTO> eventsTable = (TableView<EventInfoDTO>) loader.getNamespace().get("eventsTable");
         EventDetailController detail = screen.eventDetail();
-        TextField quantityField = quantityFieldOf(detail);
+        TextField quantityField = Screens.part(detail, "quantityField");
 
-        screen.setEngine(cannedEngine());
+        screen.setEngine(cannedEngine(List.of(event(1, 10), event(2, 10))));
         screen.setUserName(USER.name());
         screen.refresh();
         expect(2, eventsTable.getItems().size(), "the screen shows the events of the engine");
@@ -121,21 +130,55 @@ public class ViewRefreshTest extends Check {
         expect(null, detail.shownEvent(), "an event that left the table is not shown any more");
     }
 
-    /** The quantity field is private to the details component, so the check reaches it by its name. */
-    static TextField quantityFieldOf(EventDetailController detail) throws Exception {
-        Field field = EventDetailController.class.getDeclaredField("quantityField");
-        field.setAccessible(true);
-        return (TextField) field.get(detail);
+    /**
+     * What the user typed and chose for an order - side, quantity, option and price - survives every
+     * refresh of an order book event, and a blocked user is told why nothing can be placed.
+     */
+    static void orderFields() throws Exception {
+        FXMLLoader loader = new FXMLLoader(EventsController.class.getResource("/gm/ui/fx/events/events.fxml"));
+        loader.load();
+        EventsController screen = loader.getController();
+        @SuppressWarnings("unchecked")
+        TableView<EventInfoDTO> eventsTable = (TableView<EventInfoDTO>) loader.getNamespace().get("eventsTable");
+        EventDetailController detail = screen.eventDetail();
+        screen.setEngine(cannedEngine(List.of(BOOK)));
+        screen.setUserName(USER.name());
+        screen.refresh();
+        eventsTable.getSelectionModel().select(0);
+
+        TextField quantity = Screens.part(detail, "orderQuantityField");
+        TextField price = Screens.part(detail, "orderPriceField");
+        RadioButton buy = Screens.part(detail, "orderBuyToggle");
+        ComboBox<String> option = Screens.part(detail, "orderOptionComboBox");
+        quantity.setText("4");
+        price.setText("0.33");
+        buy.getToggleGroup().getToggles().get(1).setSelected(true);
+        option.getSelectionModel().select("No");
+
+        detail.showState(orderBookState(BOOK, 0.55));
+        screen.showEvents(List.of(BOOK));
+        screen.showActingUser(new UserDetailsDTO("Dana", 40, false, List.of()));
+        expect("4", quantity.getText(), "a refresh keeps the quantity of the order");
+        expect("0.33", price.getText(), "a refresh keeps the price of the order");
+        expectFalse(buy.isSelected(), "a refresh keeps the chosen side of the order");
+        expect("No", option.getValue(), "a refresh keeps the chosen option of the order");
+
+        screen.showActingUser(new UserDetailsDTO("Dana", -5, true, List.of()));
+        Label hint = Screens.part(detail, "actionsHintLabel");
+        expectTrue(hint.getText().startsWith("Dana is blocked, because the balance is below zero")
+                && hint.getText().endsWith("until funds are loaded."), "a blocked user is told why and until when");
+        Button placeOrder = Screens.part(detail, "placeOrderButton");
+        expectTrue(placeOrder.isDisabled(), "a blocked user cannot place an order");
     }
 
     /** An engine that answers the few questions the events screen asks, always the same way. */
-    static GuessMarketEngine cannedEngine() {
-        List<EventInfoDTO> events = List.of(event(1, 10), event(2, 10));
+    static GuessMarketEngine cannedEngine(List<EventInfoDTO> events) {
         return (GuessMarketEngine) Proxy.newProxyInstance(ViewRefreshTest.class.getClassLoader(),
                 new Class<?>[] {GuessMarketEngine.class}, (proxy, method, args) -> switch (method.getName()) {
                     case "getUserDetails" -> USER;
                     case "getAllEvents", "getEvents" -> events;
                     case "getMarketState" -> marketState(event((int) args[0], 10), 0.5);
+                    case "getOrderBookState" -> orderBookState(BOOK, 0.40);
                     case "getEventPriceHistory" -> List.of();
                     default -> throw new UnsupportedOperationException(method.getName());
                 });
@@ -144,6 +187,13 @@ public class ViewRefreshTest extends Check {
     static EventInfoDTO event(int id, double accountBalance) {
         return new EventInfoDTO(id, "Event " + id, "A canned event", 5, CommissionType.ON_PURCHASE, OPTIONS,
                 EventStatus.ACTIVE, EventType.LMSR, "Mor", accountBalance);
+    }
+
+    static OrderBookStateDTO orderBookState(EventInfoDTO event, Double lastPrice) {
+        return new OrderBookStateDTO(event, 1, true, 100,
+                List.of(new OrderBookOptionDTO("Yes", List.of(), List.of(), lastPrice, null, null, null, null),
+                        new OrderBookOptionDTO("No", List.of(), List.of(), null, null, null, null, null)),
+                List.of(), List.of(), 0, null);
     }
 
     static MarketStateDTO marketState(EventInfoDTO event, double firstValue) {

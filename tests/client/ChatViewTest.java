@@ -1,3 +1,4 @@
+import gm.client.ServerException;
 import gm.client.chat.ChatController;
 import gm.dto.ChatLineDTO;
 import gm.dto.ChatLinesDTO;
@@ -15,13 +16,16 @@ import java.util.List;
 
 /**
  * The chat screen (bonus): the lines that are new are added once, the screen remembers the version it
- * shows, and a line that was sent leaves the field empty and appears on the screen at once. Needs
- * nothing running: the screen works here against a canned engine.
+ * shows, a line that was sent (with the button or with Enter) leaves the field empty and appears on the
+ * screen at once, and a refused line stays in the field. Needs nothing running: the screen works here
+ * against a canned engine.
  */
 public class ChatViewTest extends Check {
 
     /** The lines the canned engine holds: what was sent through it. */
     static final List<ChatLineDTO> sent = new ArrayList<>();
+    static final String REFUSED = "refuse me";
+    static final String REFUSAL = "The chat line is refused.";
 
     public static void main(String[] args) {
         run("chat-view", ChatViewTest::check);
@@ -68,19 +72,38 @@ public class ChatViewTest extends Check {
         expect(4, chat.version(), "a line that was sent is pulled at once");
         expectTrue(lines.getText().strip().endsWith("| Dana: My line"), "a line that was sent appears on the screen");
 
-        chat.showChatLines(new ChatLinesDTO(List.of(line("Maximilian-Alexander", "Hi")), 5));
+        sent.add(line("Maximilian-Alexander", "Hi"));
+        chat.refresh();
         expectTrue(lines.getText().strip().endsWith("| Maximilian: Hi"), "a long name is cut to 10 characters");
+
+        field.setText("By enter");
+        Screens.fire(field);
+        expect("", field.getText(), "Enter in the field sends the line");
+        expectTrue(lines.getText().strip().endsWith("| Dana: By enter"), "a line that was sent with Enter appears");
+
+        field.setText(REFUSED);
+        Screens.fire(field);
+        expect(REFUSED, field.getText(), "a line the engine refuses stays in the field");
+        expect("[The line was not sent: " + REFUSAL + "]", Screens.closeDialogs().toString(),
+                "a refused line is reported with its reason");
     }
 
     static ChatLineDTO line(String userName, String text) {
         return new ChatLineDTO(userName, System.currentTimeMillis(), text);
     }
 
-    /** An engine that keeps the lines it is sent, and answers with the ones after the asked version. */
+    static boolean send(String userName, String text) {
+        if (REFUSED.equals(text)) {
+            throw new ServerException(REFUSAL);
+        }
+        return sent.add(line(userName, text));
+    }
+
+    /** An engine that keeps the lines it is sent (but one it refuses), and answers with the ones after the asked version. */
     static GuessMarketEngine cannedEngine() {
         return (GuessMarketEngine) Proxy.newProxyInstance(ChatViewTest.class.getClassLoader(),
                 new Class<?>[] {GuessMarketEngine.class}, (proxy, method, args) -> switch (method.getName()) {
-                    case "sendChatLine" -> sent.add(line((String) args[0], (String) args[1]));
+                    case "sendChatLine" -> send((String) args[0], (String) args[1]);
                     case "getChatLines" -> new ChatLinesDTO(sent.subList((int) args[0], sent.size()), sent.size());
                     default -> throw new UnsupportedOperationException(method.getName());
                 });

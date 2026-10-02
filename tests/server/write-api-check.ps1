@@ -9,7 +9,6 @@ $tmp = $env:TEMP
 $bodyFile = Join-Path $tmp 'gm_write_body.txt'
 $jsonFile = Join-Path $tmp 'gm_write_request.json'
 $rnd = '{0}{1}' -f (Get-Random -Maximum 99999), (Get-Random -Maximum 99999)
-$script:fails = 0
 
 function New-Session($name) {
     $cookies = Join-Path $tmp "gm_write_cookies_$name.txt"
@@ -32,8 +31,7 @@ function Send($session, $method, $path, $body = $null) {
     [pscustomobject]@{ Status = [int]$status; Text = $text }
 }
 
-function Pass($name, $detail) { Write-Host "[PASS] ${name}: $detail" }
-function Fail($name, $detail) { Write-Host "[FAIL] ${name}: $detail"; $script:fails++ }
+. (Join-Path $PSScriptRoot 'report.ps1')
 
 # The answer has the status, and the text (any case) in it.
 function Expect($name, $reply, $status, $text = '') {

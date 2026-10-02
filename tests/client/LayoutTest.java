@@ -33,6 +33,8 @@ import javafx.scene.Scene;
 import javafx.scene.control.Labeled;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.SplitPane;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
@@ -46,7 +48,8 @@ import java.util.List;
 /**
  * The screens of the client in a big window and in small ones: a screen is never squeezed below the size
  * it needs (it scrolls instead), nothing sticks out of it where it would be cut, and no label or button
- * is too narrow for its text. Needs nothing running: the screens work here against a canned engine, and
+ * is too narrow for its text; the titles and labels are the agreed ones, without brackets, and the tabs are
+ * in their order. Needs nothing running: the screens work here against a canned engine, and
  * no window is opened.
  */
 public class LayoutTest extends Check {
@@ -73,6 +76,7 @@ public class LayoutTest extends Check {
             plainScreen(ChatController.class.getResource("chat.fxml"), "chat screen");
             // The main window holds all of them: loading it proves every screen is found and connected.
             plainScreen(AppController.class.getResource("app.fxml"), "main window");
+            tabs();
         });
     }
 
@@ -102,7 +106,44 @@ public class LayoutTest extends Check {
                         what + ": the screen fills the width of the window");
                 checkParts(content, what);
             }
+            checkTexts(texts((Region) root.getContent()), screen.eventDetail().shownEvent().type(), shown);
         }
+    }
+
+    /** The titles and labels of the details of an event, by its trading method, and none with brackets. */
+    static void checkTexts(List<String> texts, EventType type, String what) {
+        List<String> expected = type == EventType.LMSR
+                ? List.of("Options", "Trading history, latest first", "Price over time")
+                : List.of("Bids: buy orders", "Asks: sell orders", "Participants", "Trades, latest first",
+                        "Received from sales and payout", "Price over time");
+        for (String title : expected) {
+            expectTrue(texts.contains(title), what + ": shows '" + title + "'");
+        }
+        if (type == EventType.ORDER_BOOK) {
+            expectTrue(texts.stream().anyMatch(text -> text.startsWith("Every winning share pays 1.00.")),
+                    what + ": says what a winning share pays");
+        }
+        expect("[]", texts.stream().filter(text -> text.chars().anyMatch(character -> "()[]<>{}".indexOf(character) >= 0)).toList().toString(),
+                what + ": no title or label has brackets");
+    }
+
+    static List<String> texts(Region content) {
+        List<String> texts = new ArrayList<>();
+        for (Node part : visibleParts(content, new ArrayList<>())) {
+            if (part instanceof Labeled labeled && labeled.getText() != null) {
+                texts.add(labeled.getText());
+            }
+        }
+        return texts;
+    }
+
+    /** The screens of the main window, in the order of the sketch, and the chat after them. */
+    static void tabs() throws Exception {
+        FXMLLoader loader = new FXMLLoader(AppController.class.getResource("app.fxml"));
+        loader.load();
+        TabPane screens = (TabPane) loader.getNamespace().get("screens");
+        expect("[Events, Account, Chat]", screens.getTabs().stream().map(Tab::getText).toList().toString(),
+                "main window: the tabs and their order");
     }
 
     /** A screen without events and without scrolling: it has to fit the smallest window as it is. */
