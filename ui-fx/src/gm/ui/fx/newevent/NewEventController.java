@@ -12,6 +12,8 @@ import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.VBox;
 
 
@@ -49,6 +51,20 @@ public class NewEventController {
         lmsrToggle.selectedProperty().addListener(
                 (observable, previous, chosen) -> showMethodFields(chosen));
         showMethodFields(true);
+        // In the description, TAB moves to the next field like everywhere in the form (the text area
+        // would indent); Ctrl+TAB is the move key of a text area.
+        descriptionArea.addEventFilter(KeyEvent.KEY_PRESSED, pressed -> {
+            if (pressed.getCode() == KeyCode.TAB && !pressed.isControlDown()) {
+                pressed.consume();
+                descriptionArea.fireEvent(new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.TAB,
+                        pressed.isShiftDown(), true, pressed.isAltDown(), pressed.isMetaDown()));
+            }
+        });
+        descriptionArea.addEventFilter(KeyEvent.KEY_TYPED, typed -> {
+            if ("\t".equals(typed.getCharacter())) {
+                typed.consume();
+            }
+        });
     }
 
     /**
@@ -117,6 +133,10 @@ public class NewEventController {
     private void showMethodFields(boolean isLmsr) {
         ViewUtils.show(lmsrFields, isLmsr);
         ViewUtils.show(orderBookFields, !isLmsr);
+        // The other method has other fields: the window follows the size of the form.
+        if (descriptionArea.getScene() != null && descriptionArea.getScene().getWindow() != null) {
+            descriptionArea.getScene().getWindow().sizeToScene();
+        }
     }
 
     /**

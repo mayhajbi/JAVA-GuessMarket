@@ -34,7 +34,6 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
 import java.util.ArrayList;
@@ -72,10 +71,10 @@ public class EventDetailController {
 
     @FXML private Label actingUserLabel;
     @FXML private Label actingUserBlockedLabel;
-    @FXML private HBox openBox;
+    @FXML private VBox openBox;
     @FXML private Button openButton;
     @FXML private Label openHintLabel;
-    @FXML private HBox buyBox;
+    @FXML private FlowPane buyBox;
     @FXML private TextField quantityField;
     @FXML private ComboBox<String> buyOptionComboBox;
     @FXML private Button buyButton;
@@ -85,7 +84,7 @@ public class EventDetailController {
     @FXML private ComboBox<String> orderOptionComboBox;
     @FXML private TextField orderPriceField;
     @FXML private Button placeOrderButton;
-    @FXML private HBox closeBox;
+    @FXML private FlowPane closeBox;
     @FXML private ComboBox<String> winnerComboBox;
     @FXML private Label actionsHintLabel;
 
@@ -109,7 +108,7 @@ public class EventDetailController {
     @FXML private VBox positionBox;
     @FXML private Label positionTitleLabel;
     @FXML private GridPane positionGrid;
-    @FXML private HBox optionBooksBox;
+    @FXML private FlowPane optionBooksBox;
     @FXML private TableView<OrderBookParticipantDTO> participantsTable;
     @FXML private TableView<OrderBookTradeDTO> orderBookTradesTable;
     @FXML private TableColumn<OrderBookTradeDTO, String> obBuyerColumn;

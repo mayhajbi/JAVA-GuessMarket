@@ -3,7 +3,9 @@ import gm.dto.NewEventRequestDTO;
 import gm.ui.fx.newevent.NewEventController;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
+import javafx.scene.control.DialogPane;
 import javafx.scene.control.Labeled;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
@@ -30,7 +32,7 @@ public class NewEventViewTest extends Check {
         Node orderBookFields = (Node) parts.get("orderBookFields");
         form.setCreatorName("Dana");
 
-        List<String> labels = loader.<Node>getRoot().lookupAll(".label").stream()
+        List<String> labels = ((ScrollPane) loader.<DialogPane>getRoot().getContent()).getContent().lookupAll(".label").stream()
                 .map(label -> ((Labeled) label).getText()).toList();
         expectTrue(labels.contains("Liquidity") && labels.contains("Base value"),
                 "the fields of the trading methods are named in words");

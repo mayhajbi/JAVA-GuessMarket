@@ -12,7 +12,7 @@
     <Label text="Guess Market" styleClass="app-title" maxWidth="Infinity" alignment="CENTER"/>
     <HBox spacing="10" alignment="CENTER_RIGHT">
         <Label text="Skin" styleClass="field-name"/>
-        <ComboBox fx:id="skinComboBox" prefWidth="130"/>
+        <ComboBox fx:id="skinComboBox"/>
         <CheckBox fx:id="animationsCheckBox" text="Animations"/>
     </HBox>
 </VBox>

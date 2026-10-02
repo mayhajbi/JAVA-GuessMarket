@@ -3,6 +3,8 @@ package gm.ui.fx.common;
 import gm.engine.exception.GuessMarketException;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.Region;
 
 /**
@@ -64,7 +66,17 @@ public final class Dialogs {
         Alert alert = new Alert(type, message, ButtonType.OK);
         alert.setHeaderText(header);
         alert.setResizable(true);
-        alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
+        // The message sits in a scroll pane, so a window that was made smaller than the message gets a
+        // scroll bar instead of cutting the text.
+        Label text = new Label(message);
+        text.setWrapText(true);
+        text.setMinHeight(Region.USE_PREF_SIZE);
+        ScrollPane scroll = new ScrollPane(text);
+        scroll.setFitToWidth(true);
+        scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        scroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        scroll.setStyle("-fx-background-color: transparent; -fx-padding: 0;");
+        alert.getDialogPane().setContent(scroll);
         // JavaFX puts a picture next to the header (a red square with an X for an error), which looks
         // like a button that does nothing. The title bar and the header already say what happened.
         alert.setGraphic(null);

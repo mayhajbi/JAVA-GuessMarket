@@ -6,7 +6,7 @@
 
 <ScrollPane fitToWidth="true" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="gm.ui.fx.events.EventsController">
-    <SplitPane dividerPositions="0.54" minWidth="980" minHeight="560">
+    <SplitPane dividerPositions="0.54" minHeight="560">
         <VBox spacing="8">
             <padding>
                 <Insets top="10" right="10" bottom="10" left="10"/>
@@ -19,7 +19,7 @@
             </HBox>
             <GridPane hgap="8" vgap="6">
                 <columnConstraints>
-                    <ColumnConstraints minWidth="80"/>
+                    <ColumnConstraints minWidth="-Infinity"/>
                     <ColumnConstraints hgrow="ALWAYS"/>
                 </columnConstraints>
                 <Label text="Type" styleClass="field-name" GridPane.rowIndex="0" GridPane.columnIndex="0"/>

@@ -7,8 +7,7 @@ import gm.ui.fx.common.ViewUtils;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
 import java.util.List;
@@ -29,14 +28,17 @@ class OptionBookView extends VBox {
 
     OptionBookView() {
         setSpacing(6);
-        HBox.setHgrow(this, Priority.ALWAYS);
         titleLabel.getStyleClass().add("section-title");
 
         GridPane statistics = new GridPane();
         statistics.setHgap(14);
         for (int index = 0; index < STATISTICS.length; index++) {
             statisticValues[index] = new Label(Formats.NOT_AVAILABLE);
-            statistics.add(ViewUtils.fieldName(STATISTICS[index]), index, 0);
+            Label name = ViewUtils.fieldName(STATISTICS[index]);
+            // A column never gets narrower than its text.
+            name.setMinWidth(Region.USE_PREF_SIZE);
+            statisticValues[index].setMinWidth(Region.USE_PREF_SIZE);
+            statistics.add(name, index, 0);
             statistics.add(statisticValues[index], index, 1);
         }
 

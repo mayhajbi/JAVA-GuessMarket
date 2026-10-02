@@ -8,7 +8,7 @@
 
 <ScrollPane fitToWidth="true" hbarPolicy="AS_NEEDED" vbarPolicy="AS_NEEDED" xmlns="http://javafx.com/javafx/22"
             xmlns:fx="http://javafx.com/fxml/1" fx:controller="gm.client.account.AccountController">
-    <VBox spacing="8" minWidth="1000" minHeight="640">
+    <VBox spacing="8" minHeight="640">
         <padding>
             <Insets top="10" right="10" bottom="10" left="10"/>
         </padding>
