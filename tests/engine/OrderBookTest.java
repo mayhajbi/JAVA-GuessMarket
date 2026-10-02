@@ -1,3 +1,5 @@
+import gm.dto.AccountEntryDTO;
+import gm.dto.AccountEntryType;
 import gm.dto.OrderBookOptionDTO;
 import gm.dto.OrderBookParticipantDTO;
 import gm.dto.OrderBookStateDTO;
@@ -38,6 +40,7 @@ public class OrderBookTest extends Check {
             simulation(true);
             simulation(false);
             edgeCases();
+            accountRows();
         });
     }
 
@@ -218,6 +221,39 @@ public class OrderBookTest extends Check {
         expectThrows(InvalidOrderBookException.class, () -> Scenario.upload(Scenario.clobOnClose(), "Zoe",
                 "odd.xml", Scenario.file(Scenario.orderBook("Odd Investment", "on-close", 1, true, 100, 3,
                         "YES", "NO"))), "initial not divisible by d");
+    }
+
+    /**
+     * The rows of the accounts around an order book trade: an order that only waits moves no money, a
+     * trade pays the seller and the market maker, and closing pays the holders of the winning option.
+     */
+    static void accountRows() {
+        // Event 3: the order book of Tikva, commission of 50% on purchase, no minting.
+        GuessMarketEngine engine = Scenario.multiple();
+        engine.openEvent(3, "Tikva");
+        int tikvaRows = engine.getAccountEntries("Tikva").size();
+
+        order(engine, 3, "Menash", BUY, YES, 10, 0.40);
+        expect(1, engine.getAccountEntries("Menash").size(), "a waiting buy order adds no row to the buyer");
+        expect(tikvaRows, engine.getAccountEntries("Tikva").size(), "a waiting buy order pays no commission");
+
+        order(engine, 3, "Tikva", SELL, YES, 10, 0.40);
+        row(engine, "Menash", 0, AccountEntryType.EVENT, -6, "the buyer pays the price and the commission");
+        row(engine, "Tikva", 0, AccountEntryType.COMMISSION, 2, "the market maker receives the commission");
+        row(engine, "Tikva", 1, AccountEntryType.EVENT, 4, "the seller receives the price");
+
+        engine.closeEvent(3, "Tikva", YES);
+        row(engine, "Menash", 0, AccountEntryType.PAYOUT, 10, "a holder of the winning option is paid on close");
+    }
+
+    /**
+     * @param index the place of the row in the account of the user, 0 for the latest one
+     */
+    static void row(GuessMarketEngine engine, String user, int index, AccountEntryType type, double amount,
+                    String what) {
+        AccountEntryDTO entry = engine.getAccountEntries(user).get(index);
+        expect(type, entry.type(), what + ": the type of the row");
+        near(amount, entry.amount(), what + ": the amount of the row");
     }
 
     static OrderResultDTO order(GuessMarketEngine engine, int eventId, String user, OrderSide side,

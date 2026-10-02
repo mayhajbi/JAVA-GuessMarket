@@ -21,7 +21,7 @@ if exist "%COOKIES%" del /q "%COOKIES%"
 rem --- no session ---
 call "%~dp0expect.bat" "no-session" GET 401 "account/history" nocookie "not logged in" ""
 
-curl.exe -s -o nul -c "%COOKIES%" "%BASE_URL%/login?username=%GM_USER%"
+curl.exe -s -o nul -c "%COOKIES%" -X POST "%BASE_URL%/login?username=%GM_USER%"
 
 rem --- a new user has a list (a list of points, so the answer starts with a bracket) ---
 call "%~dp0expect.bat" "history-of-a-new-user" GET 200 "account/history" cookie "[" ""

@@ -38,19 +38,19 @@ system do: they register, load money and upload files of events.
 |---|---|
 | `UsersAndUploadsTest` | users registering by name, deposits, account entries, the block while the balance is negative, uploading event files (piling up, the uploader as market maker, refused files change nothing) |
 | `LmsrLifecycleTest` | the life cycle of an LMSR event: open, buy (commission on purchase or on close), going below zero, close and the payout, money conserved |
-| `OrderBookTest` | the order book: a replay of `data\clob_simulation.html` in both commission modes, rejected orders, blocked users, minting, the order book parameters |
+| `OrderBookTest` | the order book: a replay of `data\clob_simulation.html` in both commission modes, rejected orders, blocked users, minting, the order book parameters, and the account rows of a waiting order, a trade and a close |
 | `EventFilterTest` | filtering events by type, status and commission |
-| `HistoryTest` | the price history of an event and the balance history of a user |
+| `HistoryTest` | the price history of an event and the balance history of a user, each kept to its latest 50 points |
 | `CreateEventTest` | a user creating an event and becoming its market maker, and the rules a created event obeys |
 | `MessageWordingTest` | the wording of the refusals: no brackets, money with two digits, the name of the XML element or attribute in a message about an uploaded file |
 | `EventRulesTest` | text cleanup of a created event, the active events, a blocked user creating an event, options of the same name in a file |
 | `ChatTest` | the chat: the lines pile up in order, a caller that knows a version gets only what came after it, an empty line and a line that is not in English are refused |
-| `client\ChatViewTest` | the chat screen: new lines are added once, the screen remembers its version, and a line that was sent appears at once and leaves the field empty |
+| `client\ChatViewTest` | the chat screen: new lines are added once, the screen remembers its version and shows it, a long name is cut to 10 characters, and a line that was sent appears at once and leaves the field empty |
 | `server\test-chat.bat` | the chat with the classes of the client (`ChatCheck.java`): refused without a session, a line of one user reaches another as the only new line, the writer is the user of the session, wrong lines are refused with the reason |
 | `client\ViewRefreshTest` | what an automatic update may change on the screen: equal rows and equal points leave a table and a graph untouched, the selected row stays selected, and the quantity typed for an event survives every refresh |
 | `client\LayoutTest` | the screens in a window of 1200x760, 800x600 and 640x480: a screen scrolls instead of shrinking below its minimal size, fills the width of the window, nothing sticks out of it and no label or button is too narrow for its text |
 | `server\test-live-pull.bat` | the automatic updates with the classes of the client (`LivePullCheck.java`): not logged in (401), a logged in client gets its data, what another user does arrives within 2 seconds, nothing is pulled while the updates are off |
-| `server\test-login.bat` | `/login`: a valid login (200 + session cookie), the same name from another session (401), a missing name (409) |
+| `server\test-login.bat` | `/login`: a valid login (200 + session cookie), the same name from another session (401), a missing name (409), a login that is not sent as POST (400) |
 | `server\test-read-api.bat` | the read endpoints: refused without a session, wrong parameters (400), a user sees only the own account |
 | `server\test-upload.bat` | `/upload`: a valid file, the same file again, a broken file, no file, a file over 1MB, and that the upload leaves no new file in the folders of Tomcat |
 | `server\test-deposit.bat` | `/account/deposit`: wrong amounts (400 with the reason), the new balance, the movement in the account log |

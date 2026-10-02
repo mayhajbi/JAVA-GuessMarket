@@ -15,7 +15,7 @@ function New-Session($name) {
     $cookies = Join-Path $tmp "gm_write_cookies_$name.txt"
     Remove-Item $cookies -ErrorAction SilentlyContinue
     $user = 'write_{0}_{1}' -f $name, (Get-Random -Maximum 99999)
-    curl.exe -s -o NUL -c $cookies "$base/login?username=$user" | Out-Null
+    curl.exe -s -o NUL -c $cookies -X POST "$base/login?username=$user" | Out-Null
     [pscustomobject]@{ Cookies = $cookies; User = $user }
 }
 

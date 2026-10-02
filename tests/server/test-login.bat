@@ -16,7 +16,7 @@ set TMP_COOKIES=%TEMP%\gm_login_check_cookies.txt
 if exist "%TMP_COOKIES%" del /q "%TMP_COOKIES%"
 
 rem --- a valid login returns 200 and a session cookie ---
-for /f %%s in ('curl.exe -s -o "%TMP_BODY%" -w "%%{http_code}" -c "%TMP_COOKIES%" "%BASE_URL%/login?username=%USERNAME%"') do set STATUS=%%s
+for /f %%s in ('curl.exe -s -o "%TMP_BODY%" -w "%%{http_code}" -c "%TMP_COOKIES%" -X POST "%BASE_URL%/login?username=%USERNAME%"') do set STATUS=%%s
 if "!STATUS!"=="200" (
     findstr /c:"JSESSIONID" "%TMP_COOKIES%" >nul
     if !errorlevel! equ 0 (
@@ -31,7 +31,7 @@ if "!STATUS!"=="200" (
 )
 
 rem --- the same name from another session (no cookie) is rejected ---
-for /f %%s in ('curl.exe -s -o "%TMP_BODY%" -w "%%{http_code}" "%BASE_URL%/login?username=%USERNAME%"') do set STATUS=%%s
+for /f %%s in ('curl.exe -s -o "%TMP_BODY%" -w "%%{http_code}" -X POST "%BASE_URL%/login?username=%USERNAME%"') do set STATUS=%%s
 set /p BODY=<"%TMP_BODY%"
 if "!STATUS!"=="401" (
     echo !BODY! | findstr /c:"already defined" >nul
@@ -47,7 +47,7 @@ if "!STATUS!"=="401" (
 )
 
 rem --- a missing name is rejected ---
-for /f %%s in ('curl.exe -s -o "%TMP_BODY%" -w "%%{http_code}" "%BASE_URL%/login"') do set STATUS=%%s
+for /f %%s in ('curl.exe -s -o "%TMP_BODY%" -w "%%{http_code}" -X POST "%BASE_URL%/login"') do set STATUS=%%s
 set /p BODY=<"%TMP_BODY%"
 if "!STATUS!"=="409" (
     echo !BODY! | findstr /c:"No user name was given" >nul
@@ -59,6 +59,22 @@ if "!STATUS!"=="409" (
     )
 ) else (
     echo [FAIL] login-missing-name: expected status 409, got !STATUS! ^(body: !BODY!^)
+    set /a FAILS+=1
+)
+
+rem --- a login changes data, so a login that is not sent as POST is refused ---
+for /f %%s in ('curl.exe -s -o "%TMP_BODY%" -w "%%{http_code}" "%BASE_URL%/login?username=%USERNAME%_get"') do set STATUS=%%s
+set /p BODY=<"%TMP_BODY%"
+if "!STATUS!"=="400" (
+    echo !BODY! | findstr /c:"must be sent as POST" >nul
+    if !errorlevel! equ 0 (
+        echo [PASS] login-not-post: 400 with the expected message
+    ) else (
+        echo [FAIL] login-not-post: got 400 but the message was: !BODY!
+        set /a FAILS+=1
+    )
+) else (
+    echo [FAIL] login-not-post: expected status 400, got !STATUS! ^(body: !BODY!^)
     set /a FAILS+=1
 )
 

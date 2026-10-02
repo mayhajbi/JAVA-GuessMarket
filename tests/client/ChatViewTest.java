@@ -4,6 +4,7 @@ import gm.dto.ChatLinesDTO;
 import gm.engine.api.GuessMarketEngine;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.Pane;
@@ -36,7 +37,9 @@ public class ChatViewTest extends Check {
         ChatController chat = loader.getController();
         TextArea lines = (TextArea) loader.getNamespace().get("chatLinesArea");
         TextField field = (TextField) loader.getNamespace().get("lineField");
+        Label versionLabel = (Label) loader.getNamespace().get("chatVersionLabel");
         chat.start(cannedEngine(), "Dana");
+        expect("Chat Version: 0", versionLabel.getText(), "the version label of a new screen");
 
         expect(0, chat.version(), "a new screen is at version 0");
         chat.showChatLines(new ChatLinesDTO(List.of(), 0));
@@ -55,6 +58,7 @@ public class ChatViewTest extends Check {
         chat.showChatLines(new ChatLinesDTO(List.of(line("Avi", "Third")), 3));
         expect(3L, lines.getText().lines().count(), "only the new line is added");
         expect(3, chat.version(), "the version follows the chat");
+        expect("Chat Version: 3", versionLabel.getText(), "the version label follows the chat");
 
         // Sending: the canned engine holds what was sent, and answers with it from the asked version on.
         sent.addAll(List.of(line("Avi", "Hello"), line("Bella", "Hi Avi"), line("Avi", "Third")));
@@ -63,6 +67,9 @@ public class ChatViewTest extends Check {
         expect("", field.getText(), "the field is empty after a line was sent");
         expect(4, chat.version(), "a line that was sent is pulled at once");
         expectTrue(lines.getText().strip().endsWith("| Dana: My line"), "a line that was sent appears on the screen");
+
+        chat.showChatLines(new ChatLinesDTO(List.of(line("Maximilian-Alexander", "Hi")), 5));
+        expectTrue(lines.getText().strip().endsWith("| Maximilian: Hi"), "a long name is cut to 10 characters");
     }
 
     static ChatLineDTO line(String userName, String text) {

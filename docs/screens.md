@@ -20,7 +20,8 @@
   * *Balance over time* - the balance of the user after every change.
   * *Events - market maker / participant* - the events the user is the market maker of or takes
     part in, and the details of the selected one.
-* **Chat** - a third tab: everything the users wrote, each line with its time and its writer, and a
+* **Chat** - a third tab: everything the users wrote, each line with its time and its writer (up to 10 characters of
+  the name), the version of the chat, and a
   field with *Send* (or Enter) to add a line. Every user sees what every other user writes, within
   about half a second while the tab is shown. *Auto scroll* follows the last line; turned off, the
   screen stays where the user is reading. A user who logs in later sees the whole chat.
@@ -50,7 +51,7 @@ Every window can be resized freely; when it is small, the screens scroll instead
 * **Graphs** - a price over time graph for every event and a balance over time graph for the user
   who is logged in. Always on: the price graph is part of the event details on both screens, and the
   balance graph is part of the Account screen. The engine records a point whenever the value
-  actually changes.
+  actually changes, and a graph shows the latest 50 points.
 * **Creating an event** - *New event* on the events screen opens a form where a user creates an
   event of their own and becomes its market maker. The form asks for the details every event has,
   and then only the fields of the trading method that was chosen: the liquidity of an LMSR

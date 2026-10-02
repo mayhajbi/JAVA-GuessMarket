@@ -11,6 +11,7 @@ import gm.engine.exception.UserNotFoundException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -27,6 +28,9 @@ public class GuessMarket {
 
     private final Map<Integer, Event> eventsById = new LinkedHashMap<>();
 
+    /** Keyed by the lower case name, so that a name that is already in use is found without a scan. */
+    private final Map<String, Event> eventsByName = new HashMap<>();
+
     /** Keyed by the lower case name, so that the lookup is case insensitive. */
     private final Map<String, User> usersByName = new LinkedHashMap<>();
 
@@ -39,6 +43,7 @@ public class GuessMarket {
     public void addEvent(Event event) {
         requireNameNotInUse(event.getName());
         eventsById.put(event.getId(), event);
+        eventsByName.put(nameKey(event.getName()), event);
     }
 
     /**
@@ -64,10 +69,8 @@ public class GuessMarket {
     }
 
     private void requireNameNotInUse(String name) {
-        for (Event event : eventsById.values()) {
-            if (nameKey(event.getName()).equals(nameKey(name))) {
-                throw new DuplicateEventNameException(name);
-            }
+        if (eventsByName.containsKey(nameKey(name))) {
+            throw new DuplicateEventNameException(name);
         }
     }
 

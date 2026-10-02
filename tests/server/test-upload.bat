@@ -38,7 +38,7 @@ powershell -NoProfile -Command "[IO.File]::WriteAllBytes('%BIG_XML%', (New-Objec
 rem --- no session ---
 call :expect "no-session" 401 "" -F "file=@%GOOD_XML%"
 
-curl.exe -s -o nul -c "%COOKIES%" "%BASE_URL%/login?username=%GM_USER%"
+curl.exe -s -o nul -c "%COOKIES%" -X POST "%BASE_URL%/login?username=%GM_USER%"
 
 rem --- the disk before the upload ---
 call :count_files BEFORE

@@ -22,6 +22,7 @@ public class UploadServlet extends GmServlet {
 
     @Override
     protected void handle(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        requirePost(request);
         String username = requireUsername(request);
         Part file = readFilePart(request);
         try (InputStream content = file.getInputStream()) {

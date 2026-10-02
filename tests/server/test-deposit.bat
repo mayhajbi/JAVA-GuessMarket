@@ -22,7 +22,7 @@ if exist "%COOKIES%" del /q "%COOKIES%"
 rem --- no session ---
 call "%~dp0expect.bat" "no-session" POST 401 "account/deposit?amount=10" nocookie "not logged in" ""
 
-curl.exe -s -o nul -c "%COOKIES%" "%BASE_URL%/login?username=%GM_USER%"
+curl.exe -s -o nul -c "%COOKIES%" -X POST "%BASE_URL%/login?username=%GM_USER%"
 
 rem --- a wrong request ---
 call "%~dp0expect.bat" "deposit-as-get" GET 400 "account/deposit?amount=10" cookie "must be sent as POST" ""

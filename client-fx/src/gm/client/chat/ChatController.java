@@ -5,6 +5,7 @@ import gm.dto.ChatLinesDTO;
 import gm.engine.api.GuessMarketEngine;
 import gm.ui.fx.common.Dialogs;
 import javafx.fxml.FXML;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
@@ -18,10 +19,12 @@ import java.util.Locale;
  */
 public class ChatController {
 
-    /** The time the line was written, who wrote it and what it says. */
-    private static final String LINE_FORMAT = "%tH:%tM:%tS | %s: %s%n";
+    /** The time the line was written, who wrote it (up to 10 characters of the name) and what it says. */
+    private static final String LINE_FORMAT = "%tH:%tM:%tS | %.10s: %s%n";
+    private static final String VERSION_FORMAT = "Chat Version: %d";
 
     @FXML private ToggleButton autoScrollButton;
+    @FXML private Label chatVersionLabel;
     @FXML private TextArea chatLinesArea;
     @FXML private TextField lineField;
 
@@ -58,6 +61,7 @@ public class ChatController {
             return;
         }
         version = chat.version();
+        chatVersionLabel.setText(String.format(Locale.ROOT, VERSION_FORMAT, version));
         StringBuilder text = new StringBuilder();
         for (ChatLineDTO line : chat.lines()) {
             long time = line.timeMillis();

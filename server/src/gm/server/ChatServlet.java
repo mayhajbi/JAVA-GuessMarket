@@ -6,7 +6,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
- * The chat of the users: the lines a client does not have yet ({@code /chat?version=}, with the version
+ * The chat of the users: the lines a client does not have yet ({@code /chat?chatversion=}, with the version
  * of the chat the client already has) and adding a line ({@code /chat/send}, POST, with the text as a
  * JSON body). The line is always written by the user of the session.
  */
@@ -25,6 +25,6 @@ public class ChatServlet extends GmServlet {
             engine.sendChatLine(username, ServletUtils.readJson(request, ChatBody.class).text());
             return;
         }
-        ServletUtils.writeJson(response, engine.getChatLines(requireInt(request, "version")));
+        ServletUtils.writeJson(response, engine.getChatLines(requireInt(request, "chatversion")));
     }
 }

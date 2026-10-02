@@ -12,6 +12,7 @@
     <HBox spacing="10" alignment="CENTER_LEFT">
         <Label text="Chat" styleClass="section-title"/>
         <Region HBox.hgrow="ALWAYS"/>
+        <Label fx:id="chatVersionLabel" text="Chat Version: 0" minWidth="-Infinity"/>
         <ToggleButton fx:id="autoScrollButton" text="Auto scroll" selected="true" minWidth="-Infinity"/>
     </HBox>
     <TextArea fx:id="chatLinesArea" editable="false" wrapText="true" VBox.vgrow="ALWAYS"

@@ -105,7 +105,7 @@ public record Query<T>(String path, Map<String, String> params, Function<String,
      * new travels, the way the chat of the course example does.
      */
     public static Query<ChatLinesDTO> chat(int fromVersion) {
-        return json("/chat", Map.of("version", String.valueOf(fromVersion)), ChatLinesDTO.class);
+        return json("/chat", Map.of("chatversion", String.valueOf(fromVersion)), ChatLinesDTO.class);
     }
 
     /**

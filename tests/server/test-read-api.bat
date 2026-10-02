@@ -29,7 +29,7 @@ call "%~dp0expect.bat" "no-session-account" GET 401 "account" nocookie "" ""
 call "%~dp0expect.bat" "no-session-account-log" GET 401 "account/log" nocookie "" ""
 
 rem --- log in; from here on the requests carry the session ---
-for /f %%s in ('curl.exe -s -o nul -w "%%{http_code}" -c "%COOKIES%" "%BASE_URL%/login?username=%GM_USER%"') do set STATUS=%%s
+for /f %%s in ('curl.exe -s -o nul -w "%%{http_code}" -c "%COOKIES%" -X POST "%BASE_URL%/login?username=%GM_USER%"') do set STATUS=%%s
 if not "!STATUS!"=="200" (
     echo [FAIL] login-for-read-api: expected status 200, got !STATUS!
     set /a FAILS+=1

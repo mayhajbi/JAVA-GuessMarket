@@ -66,6 +66,19 @@ public class HistoryTest extends Check {
             expect(round(user.balance()), round(last(engine.getUserBalanceHistory(user.name()))),
                     "the last point of " + user.name());
         }
+
+        // A graph holds its latest 50 points only, and the last of them is still the state right now.
+        for (int deposit = 0; deposit < 60; deposit++) {
+            engine.deposit("Menash", 1);
+        }
+        expect(50, engine.getUserBalanceHistory("Menash").size(), "the balance history keeps the latest 50 points");
+        expect(round(engine.deposit("Menash", 1).balance()), round(last(engine.getUserBalanceHistory("Menash"))),
+                "the last balance point after many deposits");
+        engine.openEvent(4, "Tikva");
+        for (int purchase = 0; purchase < 60; purchase++) {
+            engine.buyShares(4, "Tikva", 0, 1);
+        }
+        expect(50, points(engine, 4, 0).size(), "the price history keeps the latest 50 points");
     }
 
     static List<HistoryPointDTO> points(GuessMarketEngineImpl engine, int eventId, int optionIndex) {

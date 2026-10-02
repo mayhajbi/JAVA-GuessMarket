@@ -14,6 +14,7 @@ public class LoginServlet extends GmServlet {
 
     @Override
     protected void handle(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        requirePost(request);
         if (ServletUtils.getUsername(request) != null) {
             response.setStatus(HttpServletResponse.SC_OK);
             return;

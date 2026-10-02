@@ -42,6 +42,9 @@ import java.util.stream.IntStream;
  */
 class DtoFactory {
 
+    /** A graph shows the latest points only, so that what travels to a client does not grow forever. */
+    static final int MAX_HISTORY_POINTS = 50;
+
     EventInfoDTO toEventInfo(Event event) {
         return new EventInfoDTO(event.getId(), event.getName(), event.getDescription(),
                 event.getCommissionPercent(), event.getCommissionType(),
@@ -97,7 +100,7 @@ class DtoFactory {
     }
 
     /**
-     * The value of every option of the event over time, one series per option.
+     * The value of every option of the event over time, one series per option, each with its latest points.
      */
     List<PriceHistoryDTO> toPriceHistory(Event event) {
         return perOption(event, index -> new PriceHistoryDTO(event.getOptionName(index),
@@ -105,14 +108,15 @@ class DtoFactory {
     }
 
     /**
-     * The balance of the account of the user over time.
+     * The balance of the account of the user over time: its latest points.
      */
     List<HistoryPointDTO> toBalanceHistory(User user) {
         return toHistoryPoints(user.getAccount().getBalanceHistory());
     }
 
     private List<HistoryPointDTO> toHistoryPoints(List<HistoryPoint> points) {
-        return mapAll(points, point -> new HistoryPointDTO(point.getTimeMillis(), point.getValue()));
+        List<HistoryPoint> latest = points.subList(Math.max(0, points.size() - MAX_HISTORY_POINTS), points.size());
+        return mapAll(latest, point -> new HistoryPointDTO(point.getTimeMillis(), point.getValue()));
     }
 
     MarketStateDTO toMarketState(Event event) {
