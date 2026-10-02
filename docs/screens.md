@@ -44,7 +44,10 @@
   answer; the screens are locked until it does. After a restart of the server the client returns to the
   login screen.
 
-Every window can be resized freely; when it is small, the screens scroll instead of cutting content.
+Every window can be resized freely. Each screen has one pair of scroll bars for the whole screen, and the two halves of the Events and Account screens
+keep a minimal width in which no label, button or column title is cut to "..." - a smaller window scrolls instead of hiding anything.
+The details pane has the width of its widest state: the message before an event is selected, or the details of an LMSR or an order book event.
+A table cell whose text does not fit is cut, and shows its whole text in a tooltip after the mouse rests on it for half a second.
 
 ## Additional features
 
@@ -59,7 +62,7 @@ Every window can be resized freely; when it is small, the screens scroll instead
   book event. The event is created inactive with an id no other event uses, and the same user opens,
   trades in and closes it like any other event of theirs. Every rule a data file has to obey is
   checked here as well - the engine shares one validator between the two ways in. The form stays
-  open until the engine accepted the event, so a rejected event keeps whatever was already typed.
+  open until the engine accepted the event, so a rejected event keeps whatever was already typed. Every field says what to enter and gives an example; the form scrolls when the window is small, and the window follows the form when the trading method is changed.
 * **Skins** - *Skin* in the header switches the whole window between three looks: the regular one,
   *Midnight* (dark, sans serif) and *Parchment* (warm paper, serif). Each changes the background,
   the buttons, and the font and its size of every label - including the message dialogs and the form
