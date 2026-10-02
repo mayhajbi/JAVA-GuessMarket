@@ -143,6 +143,12 @@ public class HttpGuessMarketEngine implements GuessMarketEngine {
     }
 
     @Override
+    public PurchaseResultDTO quoteShares(int eventId, String userName, int optionIndex, long quantity) {
+        String body = gson.toJson(new BuyBody(eventId, optionIndex, quantity));
+        return gson.fromJson(api.post("/event/quote", NO_PARAMS, body), PurchaseResultDTO.class);
+    }
+
+    @Override
     public OrderResultDTO submitOrder(OrderRequestDTO request) {
         return gson.fromJson(api.post("/event/order", NO_PARAMS, gson.toJson(request)), OrderResultDTO.class);
     }

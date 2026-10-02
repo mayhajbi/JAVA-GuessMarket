@@ -71,7 +71,7 @@ The choices made wherever the exercise did not decide.
 * **Text** - every textual value is compared without case, and whitespace at the edges (or line
   breaks and tabs inside a value, including a value typed into the form of a new event) is ignored.
 * **Server write requests** - every request that changes data (`/login`, `/upload`, `/account/deposit`,
-  `/event/create`, `/event/open`, `/event/buy`, `/event/order`, `/event/close`, `/chat/send`) is accepted only as
+  `/event/create`, `/event/open`, `/event/buy`, `/event/quote`, `/event/order`, `/event/close`, `/chat/send`) is accepted only as
   POST; any other method gets 400 with the reason. The acting user is always the one of the session:
   a user name sent in the query or in the body is ignored.
 * **Server request details** - a JSON body must have every field it needs: a missing field, or a

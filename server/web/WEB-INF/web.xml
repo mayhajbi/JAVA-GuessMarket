@@ -57,6 +57,7 @@
         <url-pattern>/event/open</url-pattern>
         <url-pattern>/event/close</url-pattern>
         <url-pattern>/event/buy</url-pattern>
+        <url-pattern>/event/quote</url-pattern>
         <url-pattern>/event/order</url-pattern>
         <url-pattern>/event/create</url-pattern>
     </servlet-mapping>

@@ -101,6 +101,10 @@ Expect 'buy-option-out-of-range' (Send $b POST 'event/buy' @{ eventId = $lmsr.id
 Expect 'buy-zero-quantity' (Send $b POST 'event/buy' @{ eventId = $lmsr.id; optionIndex = 0; quantity = 0 }) 400 'greater than zero'
 Expect 'buy-zero-quantity-title' (Send $b POST 'event/buy' @{ eventId = $lmsr.id; optionIndex = 0; quantity = 0 }) 400 '"title":"Invalid quantity"'
 Expect 'buy-unknown-event' (Send $b POST 'event/buy' @{ eventId = 999999; optionIndex = 0; quantity = 5 }) 400 '999999'
+Expect 'quote-zero-quantity' (Send $b POST 'event/quote' @{ eventId = $lmsr.id; optionIndex = 0; quantity = 0 }) 400 'greater than zero'
+$quoteReply = Send $b POST 'event/quote' @{ eventId = $lmsr.id; optionIndex = 0; quantity = 10 }
+Expect 'quote-ok' $quoteReply 200 'buyerBalance'
+$quote = $quoteReply.Text | ConvertFrom-Json
 $reply = Send $b POST 'event/buy' @{ eventId = $lmsr.id; optionIndex = 0; quantity = 10 }
 Expect 'buy-ok' $reply 200 'buyerBalance'
 $purchase = $reply.Text | ConvertFrom-Json
@@ -108,6 +112,7 @@ $cost = 100 * ([math]::Log([math]::Exp(0.1) + 1) - [math]::Log(2))
 Near 'buy-price' $purchase.sharesCost $cost
 Near 'buy-commission' $purchase.commissionPaid ($cost * 0.05)
 Near 'b-balance-after-buy' $purchase.buyerBalance (500 - $cost * 1.05)
+Near 'quote-is-the-price-of-the-purchase' $quote.totalPaid $purchase.totalPaid
 
 # --- closing: only the market maker, once; the winners are paid 1 a share ---
 Expect 'close-not-market-maker' (Send $b POST "event/close?id=$($lmsr.id)&winner=0") 400 'Only its market maker'

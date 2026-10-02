@@ -162,6 +162,16 @@ public interface GuessMarketEngine {
     PurchaseResultDTO buyShares(int eventId, String userName, int optionIndex, long quantity);
 
     /**
+     * What {@link #buyShares} would do right now, without doing it: the same checks, the same price and
+     * the same commission, and nothing changes. The price depends on the shares that exist, so a trade
+     * of another user in between can change it.
+     *
+     * @return the purchase as it would be: in {@code buyerBalance} the balance the buyer would have
+     *         afterwards, and in {@code buyerBlocked} whether that would block the buyer
+     */
+    PurchaseResultDTO quoteShares(int eventId, String userName, int optionIndex, long quantity);
+
+    /**
      * Places an order in the order book of an active order book event, on behalf of a user, and
      * matches it right away against the waiting orders.
      *

@@ -290,6 +290,26 @@ public class Event {
      * @return the trade that was created
      */
     public Trade buy(User buyer, int optionIndex, long quantity) {
+        Trade trade = quote(buyer, optionIndex, quantity);
+
+        options.get(optionIndex).addShares(quantity);
+        buyer.getAccount().withdraw(trade.getSharesCost() + trade.getCommission(), AccountEntryType.EVENT);
+        account.deposit(trade.getSharesCost());
+        payCommission(trade.getCommission());
+
+        trades.add(trade);
+        recordPrices();
+        return trade;
+    }
+
+    /**
+     * What buying shares of one of the options of an LMSR event would cost right now. It makes the same
+     * checks as {@link #buy} and works out the same price, and changes nothing: no shares move, no
+     * money is paid and no trade is recorded.
+     *
+     * @return the trade that a purchase would create at this moment
+     */
+    public Trade quote(User buyer, int optionIndex, long quantity) {
         requireType(EventType.LMSR, "buy shares directly");
         requireActive();
         buyer.requireNotBlocked("buy shares");
@@ -299,17 +319,8 @@ public class Event {
         }
 
         double sharesCost = tradingMethod.buyCost(sharesPerOption(), optionIndex, quantity);
-        double commission = commissionOn(sharesCost, CommissionType.ON_PURCHASE);
-
-        options.get(optionIndex).addShares(quantity);
-        buyer.getAccount().withdraw(sharesCost + commission, AccountEntryType.EVENT);
-        account.deposit(sharesCost);
-        payCommission(commission);
-
-        Trade trade = new Trade(buyer, optionIndex, quantity, sharesCost, commission);
-        trades.add(trade);
-        recordPrices();
-        return trade;
+        return new Trade(buyer, optionIndex, quantity, sharesCost,
+                commissionOn(sharesCost, CommissionType.ON_PURCHASE));
     }
 
     /**

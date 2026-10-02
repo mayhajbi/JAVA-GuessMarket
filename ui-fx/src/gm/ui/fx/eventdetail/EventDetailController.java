@@ -1,5 +1,6 @@
 package gm.ui.fx.eventdetail;
 
+import gm.dto.CommissionType;
 import gm.dto.EventInfoDTO;
 import gm.dto.EventStateDTO;
 import gm.dto.EventStatus;
@@ -57,6 +58,9 @@ import java.util.Map;
 public class EventDetailController {
 
     private static final String CHOOSE_USER = "You are not logged in.";
+    private static final double PERCENT = 100;
+    private static final String BLOCKING_WARNING = "\n\nYour balance will drop below zero, and you will be "
+            + "blocked from trading until you load funds.";
     private static final String BUYING_HEADER = "Buy shares";
     private static final String ORDER_HEADER = "Place an order";
 
@@ -366,17 +370,34 @@ public class EventDetailController {
         }
 
         String buyerName = input.userName();
+        PurchaseResultDTO quote = engine.quoteShares(currentEvent.id(), buyerName, input.optionIndex(),
+                input.quantity());
+        if (!Dialogs.confirm("Confirm purchase", describeQuote(quote))) {
+            return;
+        }
         PurchaseResultDTO result = engine.buyShares(currentEvent.id(), buyerName, input.optionIndex(),
                 input.quantity());
         quantityField.clear();
         onDataChanged.run();
 
-        String details = "You bought " + result.shares() + " shares of '" + result.optionName() + "'.\n"
-                + "Shares cost: " + Formats.decimal(result.sharesCost()) + "\n"
-                + "Commission: " + Formats.decimal(result.commissionPaid()) + "\n"
-                + "Total paid: " + Formats.decimal(result.totalPaid()) + "\n"
-                + "Your balance: " + Formats.decimal(result.buyerBalance());
+        String details = "You bought " + result.shares() + " shares of '" + result.optionName() + "' for "
+                + Formats.decimal(result.totalPaid()) + ".\nYour balance: " + Formats.decimal(result.buyerBalance());
         showActionResult("Purchase completed", details, result.buyerBlocked());
+    }
+
+    /**
+     * What the user is asked to confirm before buying shares of an LMSR event: the price and the commission
+     * as they are now, and the balance that is left. The price depends on what the other users buy, so it
+     * can change until the user confirms.
+     */
+    private static String describeQuote(PurchaseResultDTO quote) {
+        return "Buy " + quote.shares() + " shares of '" + quote.optionName() + "'?\n"
+                + "Shares cost: " + Formats.decimal(quote.sharesCost()) + "\n"
+                + "Commission: " + Formats.decimal(quote.commissionPaid()) + "\n"
+                + "Total: " + Formats.decimal(quote.totalPaid()) + "\n"
+                + "Balance after: " + Formats.decimal(quote.buyerBalance()) + "\n"
+                + "The price can change if other users trade before you confirm."
+                + (quote.buyerBlocked() ? BLOCKING_WARNING : "");
     }
 
     @FXML
@@ -395,6 +416,10 @@ public class EventDetailController {
         String userName = input.userName();
         OrderSide side = orderBuyToggle.isSelected() ? OrderSide.BUY : OrderSide.SELL;
         String optionName = currentEvent.optionNames().get(input.optionIndex());
+        if (side == OrderSide.BUY && !Dialogs.confirm("Confirm order",
+                describeBuyOrder(optionName, input.quantity(), price))) {
+            return;
+        }
         OrderResultDTO result = engine.submitOrder(new OrderRequestDTO(currentEvent.id(), userName, side,
                 input.optionIndex(), input.quantity(), price));
         orderQuantityField.clear();
@@ -470,6 +495,23 @@ public class EventDetailController {
         } else {
             Dialogs.showInformation(header, details);
         }
+    }
+
+    /**
+     * What the user is asked to confirm before placing an order to buy: the most it can cost, when every
+     * share is bought at the price of the order, and the balance that would be left then.
+     */
+    private String describeBuyOrder(String optionName, long quantity, double price) {
+        double cost = quantity * price;
+        double commission = currentEvent.commissionType() == CommissionType.ON_PURCHASE
+                ? cost * currentEvent.commissionPercent() / PERCENT : 0;
+        double balanceAfter = actingUser.balance() - cost - commission;
+        return "Buy " + quantity + " shares of '" + optionName + "' at " + Formats.decimal(price) + "?\n"
+                + "Highest cost: " + Formats.decimal(cost) + "\n"
+                + "Highest commission: " + Formats.decimal(commission) + "\n"
+                + "Balance after: " + Formats.decimal(balanceAfter) + "\n"
+                + "Shares may be bought at a lower price, and what is not bought waits in the order book."
+                + (balanceAfter < 0 ? BLOCKING_WARNING : "");
     }
 
     /**

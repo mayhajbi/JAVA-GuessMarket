@@ -189,9 +189,21 @@ public class GuessMarketEngineImpl implements GuessMarketEngine {
         Event event = requireEvent(eventId);
         User buyer = requireUser(userName);
         Trade trade = event.buy(buyer, optionIndex, quantity);
+        return toPurchaseResult(event, trade, buyer.getAccount().getBalance(), buyer.getAccount().isBlocked());
+    }
+
+    @Override
+    public PurchaseResultDTO quoteShares(int eventId, String userName, int optionIndex, long quantity) {
+        Event event = requireEvent(eventId);
+        User buyer = requireUser(userName);
+        Trade trade = event.quote(buyer, optionIndex, quantity);
+        double balanceAfter = buyer.getAccount().getBalance() - trade.getTotalPaid();
+        return toPurchaseResult(event, trade, balanceAfter, balanceAfter < 0);
+    }
+
+    private static PurchaseResultDTO toPurchaseResult(Event event, Trade trade, double balance, boolean blocked) {
         return new PurchaseResultDTO(event.getOptionName(trade.getOptionIndex()), trade.getShares(),
-                trade.getSharesCost(), trade.getCommission(), trade.getTotalPaid(),
-                buyer.getAccount().getBalance(), buyer.getAccount().isBlocked());
+                trade.getSharesCost(), trade.getCommission(), trade.getTotalPaid(), balance, blocked);
     }
 
     @Override

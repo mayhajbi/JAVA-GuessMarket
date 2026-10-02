@@ -1,6 +1,8 @@
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.scene.Node;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.DialogPane;
 import javafx.stage.Window;
 
@@ -48,5 +50,22 @@ final class Screens {
             }
         }
         return dialogs;
+    }
+
+    /**
+     * Answers the dialog that the next action opens and waits for: the answer is given from the loop that
+     * the dialog starts, once it is showing, by pressing the button of the given type.
+     *
+     * @param seenText receives the text of the dialog, as the user read it
+     */
+    static void answerNextDialog(ButtonType answer, List<String> seenText) {
+        Platform.runLater(() -> {
+            for (Window window : List.copyOf(Window.getWindows())) {
+                if (window.getScene() != null && window.getScene().getRoot() instanceof DialogPane pane) {
+                    seenText.add(pane.getHeaderText() + ": " + pane.getContentText());
+                    ((Button) pane.lookupButton(answer)).fire();
+                }
+            }
+        });
     }
 }

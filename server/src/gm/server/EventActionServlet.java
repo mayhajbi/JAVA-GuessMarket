@@ -13,7 +13,7 @@ import java.io.IOException;
 /**
  * The actions of the user of the session on an event, all of them POST: opening it
  * ({@code /event/open?id=}), closing it with its winning option ({@code /event/close?id=&winner=}),
- * buying shares ({@code /event/buy}), placing an order ({@code /event/order}) and creating a new
+ * buying shares ({@code /event/buy}), the price of a purchase before it is made ({@code /event/quote}), placing an order ({@code /event/order}) and creating a new
  * event ({@code /event/create}); the last three get their details as a JSON body. The user is always the one of the session, never a name sent by
  * the client.
  */
@@ -47,9 +47,11 @@ public class EventActionServlet extends GmServlet {
         switch (request.getServletPath()) {
             case "/event/open" -> result = engine.openEvent(requireInt(request, "id"), username);
             case "/event/close" -> result = engine.closeEvent(requireInt(request, "id"), username, requireInt(request, "winner"));
-            case "/event/buy" -> {
+            case "/event/buy", "/event/quote" -> {
                 BuyRequest buy = ServletUtils.readJson(request, BuyRequest.class);
-                result = engine.buyShares(buy.eventId(), username, buy.optionIndex(), buy.quantity());
+                result = request.getServletPath().equals("/event/buy")
+                        ? engine.buyShares(buy.eventId(), username, buy.optionIndex(), buy.quantity())
+                        : engine.quoteShares(buy.eventId(), username, buy.optionIndex(), buy.quantity());
             }
             case "/event/create" -> result = engine.createEvent(readNewEvent(request, username));
             default -> {
