@@ -23,6 +23,7 @@ import gm.client.chat.ChatController;
 import gm.client.header.HeaderController;
 import gm.client.login.LoginController;
 import gm.engine.api.GuessMarketEngine;
+import gm.ui.fx.common.Skin;
 import gm.ui.fx.eventdetail.EventDetailScreen;
 import gm.ui.fx.events.EventsController;
 import javafx.fxml.FXML;
@@ -36,8 +37,11 @@ import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextArea;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Paint;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Proxy;
@@ -77,7 +81,35 @@ public class LayoutTest extends Check {
             // The main window holds all of them: loading it proves every screen is found and connected.
             plainScreen(AppController.class.getResource("app.fxml"), "main window");
             tabs();
+            textAreaSkins();
         });
+    }
+
+    /** A multi-line text field (the description of an event, the chat) is dressed by every skin, like a text field. */
+    static void textAreaSkins() {
+        StackPane root = new StackPane();
+        TextArea area = new TextArea();
+        root.getChildren().add(area);
+        new Scene(root).getStylesheets().add("/gm/ui/fx/common/app.css");
+        Skin.apply(area, Skin.DEFAULT);
+        layOut(root, new double[] {300, 200});
+        Paint defaultBackground = backgroundOf(area);
+        Paint defaultContent = backgroundOf(area.lookup(".content"));
+        for (Skin skin : Skin.values()) {
+            if (skin == Skin.DEFAULT) {
+                continue;
+            }
+            Skin.apply(area, skin);
+            layOut(root, new double[] {300, 200});
+            expectTrue(!defaultBackground.equals(backgroundOf(area)), skin + ": the text area is dressed");
+            expectTrue(!defaultContent.equals(backgroundOf(area.lookup(".content"))),
+                    skin + ": the inside of the text area is dressed");
+        }
+        Skin.apply(area, Skin.DEFAULT);
+    }
+
+    static Paint backgroundOf(Node node) {
+        return ((Region) node).getBackground().getFills().get(0).getFill();
     }
 
     /** A screen that shows the details of an event: checked with an event of each trading method. */

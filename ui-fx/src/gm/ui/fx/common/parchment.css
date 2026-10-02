@@ -50,7 +50,8 @@
 .button,
 .toggle-button,
 .combo-box-base,
-.text-field {
+.text-field,
+.text-area {
     -fx-background-color: #b98a4e;
     -fx-text-fill: #fdf8ee;
     -fx-border-color: #8a6231;
@@ -92,10 +93,20 @@
     -fx-opacity: 0.45;
 }
 
-.text-field {
+.text-field,
+.text-area {
     -fx-background-color: #fdf8ee;
     -fx-text-fill: #402f1d;
     -fx-prompt-text-fill: #a2917a;
+}
+
+/* The inner padding of a text area comes from its content. */
+.text-area {
+    -fx-padding: 0;
+}
+
+.text-area .content {
+    -fx-background-color: #fdf8ee;
 }
 
 .tab-pane .tab-header-background {
