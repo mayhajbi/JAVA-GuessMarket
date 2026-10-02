@@ -10,7 +10,7 @@ public class NotEventMarketMakerException extends GuessMarketException {
 
     public NotEventMarketMakerException(String eventName, String marketMakerName,
                                         String action) {
-        super("You cannot " + action + " " + describeEvent(eventName) + ". Only its market maker, '"
+        super("Not the market maker", "You cannot " + action + " " + describeEvent(eventName) + ". Only its market maker, '"
                 + marketMakerName + "', can do that.");
     }
 }

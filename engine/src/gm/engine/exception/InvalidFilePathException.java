@@ -8,6 +8,6 @@ public class InvalidFilePathException extends GuessMarketException {
     private static final long serialVersionUID = 1L;
 
     public InvalidFilePathException(String message) {
-        super(message);
+        super("Invalid file", message);
     }
 }

@@ -8,6 +8,6 @@ public class EventNotFoundException extends GuessMarketException {
     private static final long serialVersionUID = 1L;
 
     public EventNotFoundException(int eventId) {
-        super("Event " + eventId + " was not found. Select an event from the list.");
+        super("Event not found", "Event " + eventId + " was not found. Select an event from the list.");
     }
 }

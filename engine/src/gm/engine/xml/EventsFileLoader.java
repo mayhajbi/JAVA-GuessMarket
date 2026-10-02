@@ -39,8 +39,7 @@ public class EventsFileLoader {
 
     private void requireXmlName(String name) {
         if (name.isEmpty()) {
-            throw new InvalidFilePathException("No file was given. Please choose the XML file you would "
-                    + "like to upload.");
+            throw new InvalidFilePathException("No file was selected. Choose an XML file to upload.");
         }
         if (!InputText.hasExtension(name, XML_EXTENSION)) {
             throw new InvalidFilePathException("The file '" + name + "' is not an XML file. The file name "

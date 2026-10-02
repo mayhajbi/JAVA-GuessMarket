@@ -158,7 +158,7 @@ public class AccountController extends EventDetailScreen {
         uploadMessageLabel.textProperty().bind(
                 Bindings.when(task.runningProperty()).then(task.messageProperty()).otherwise(""));
         task.setOnSucceeded(done -> uploadSucceeded(task.getValue()));
-        task.setOnFailed(failed -> Dialogs.showError("Upload failed", task.getException()));
+        task.setOnFailed(failed -> Dialogs.showError(task.getException()));
 
         Thread uploader = new Thread(task, "upload-events");
         uploader.setDaemon(true);
@@ -192,7 +192,7 @@ public class AccountController extends EventDetailScreen {
                 engine.deposit(userName, amount);
                 onDataChanged.run();
             } catch (RuntimeException refused) {
-                Dialogs.showError("Funds not loaded", refused);
+                Dialogs.showError(refused);
             }
         });
     }

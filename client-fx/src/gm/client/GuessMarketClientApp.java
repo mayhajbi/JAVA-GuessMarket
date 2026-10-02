@@ -36,7 +36,7 @@ public class GuessMarketClientApp extends Application {
         // The single central point that reports failures: any exception that escapes an action
         // handler is shown to the user with its message, whatever its specific type is.
         Thread.currentThread().setUncaughtExceptionHandler(
-                (thread, failure) -> Dialogs.showError("Action failed", failure));
+                (thread, failure) -> Dialogs.showError(failure));
 
         showLogin(stage);
         stage.show();

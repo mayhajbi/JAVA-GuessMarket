@@ -75,7 +75,7 @@ Expect 'create-lmsr' $reply 200 "Write check LMSR $rnd"
 $lmsr = ($reply.Text | ConvertFrom-Json)
 if ($lmsr.status -eq 'INACTIVE' -and $lmsr.marketMakerName -eq $a.User) { Pass 'create-lmsr-inactive-and-mine' 'INACTIVE, market maker is the creator' }
 else { Fail 'create-lmsr-inactive-and-mine' "status $($lmsr.status), market maker $($lmsr.marketMakerName)" }
-Expect 'create-same-name-other-case' (Send $a POST 'event/create' (New-Lmsr "write check lmsr $rnd" 5 'ON_PURCHASE')) 400 'already in use'
+Expect 'create-same-name-other-case' (Send $a POST 'event/create' (New-Lmsr "write check lmsr $rnd" 5 'ON_PURCHASE')) 400 'already exists'
 $noLiquidity = New-Lmsr "Missing liquidity $rnd" 5 'ON_PURCHASE'; $noLiquidity.Remove('liquidity')
 Expect 'create-missing-liquidity' (Send $a POST 'event/create' $noLiquidity) 400 "'liquidity' is missing"
 [IO.File]::WriteAllText($jsonFile, '{"name":"broken', (New-Object Text.UTF8Encoding($false)))
@@ -98,7 +98,8 @@ Expect 'b-deposit' (Send $b POST 'account/deposit?amount=500') 200 'balance'
 Expect 'buy-missing-quantity' (Send $b POST 'event/buy' @{ eventId = $lmsr.id; optionIndex = 0 }) 400 "'quantity' is missing"
 Expect 'buy-missing-option' (Send $b POST 'event/buy' @{ eventId = $lmsr.id; quantity = 5 }) 400 "'optionIndex' is missing"
 Expect 'buy-option-out-of-range' (Send $b POST 'event/buy' @{ eventId = $lmsr.id; optionIndex = 5; quantity = 5 }) 400 'option'
-Expect 'buy-zero-quantity' (Send $b POST 'event/buy' @{ eventId = $lmsr.id; optionIndex = 0; quantity = 0 }) 400 'positive'
+Expect 'buy-zero-quantity' (Send $b POST 'event/buy' @{ eventId = $lmsr.id; optionIndex = 0; quantity = 0 }) 400 'greater than zero'
+Expect 'buy-zero-quantity-title' (Send $b POST 'event/buy' @{ eventId = $lmsr.id; optionIndex = 0; quantity = 0 }) 400 '"title":"Invalid quantity"'
 Expect 'buy-unknown-event' (Send $b POST 'event/buy' @{ eventId = 999999; optionIndex = 0; quantity = 5 }) 400 '999999'
 $reply = Send $b POST 'event/buy' @{ eventId = $lmsr.id; optionIndex = 0; quantity = 10 }
 Expect 'buy-ok' $reply 200 'buyerBalance'
@@ -134,7 +135,7 @@ Expect 'c-can-still-deposit' (Send $c POST 'account/deposit?amount=5') 200 'bala
 $reply = Send $a POST 'event/create' (New-OrderBook "Write check OB $rnd" 1 100)
 Expect 'create-ob' $reply 200 'ORDER_BOOK'
 $ob = $reply.Text | ConvertFrom-Json
-Expect 'create-ob-not-divisible' (Send $a POST 'event/create' (New-OrderBook "Write check OB bad $rnd" 3 100)) 400 'divide'
+Expect 'create-ob-not-divisible' (Send $a POST 'event/create' (New-OrderBook "Write check OB bad $rnd" 3 100)) 400 'multiple'
 $noInitial = New-OrderBook "Write check OB missing $rnd" 1 100; $noInitial.Remove('initialInvestment')
 Expect 'create-ob-missing-field' (Send $a POST 'event/create' $noInitial) 400 "'initialInvestment' is missing"
 Expect 'open-ob' (Send $a POST "event/open?id=$($ob.id)") 200 'ACTIVE'

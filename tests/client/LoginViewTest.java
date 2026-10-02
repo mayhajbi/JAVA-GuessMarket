@@ -47,7 +47,7 @@ public class LoginViewTest extends Check {
         Screens.fire(field);
         expect("[Dana, Avi]", loggedIn.toString(), "a refused name does not log in");
         expect(TAKEN, field.getText(), "a refused name stays in the field");
-        expect("[Login failed: " + REFUSAL + "]", Screens.closeDialogs().toString(),
+        expect("[User name taken: " + REFUSAL + "]", Screens.closeDialogs().toString(),
                 "a refused name is reported with the reason of the server");
     }
 
@@ -59,7 +59,7 @@ public class LoginViewTest extends Check {
                         throw new UnsupportedOperationException(method.getName());
                     }
                     if (TAKEN.equals(args[0])) {
-                        throw new ServerException(REFUSAL);
+                        throw new ServerException("User name taken", REFUSAL);
                     }
                     return new UserInfoDTO((String) args[0], 0, false, false);
                 });

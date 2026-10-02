@@ -19,16 +19,17 @@ public final class Dialogs {
      * Reports a failure. The message of the engine is shown as is, so this method does not need to
      * know the specific type of the failure. An exception thrown from an action handler arrives
      * wrapped by JavaFX, so the chain of causes is searched for the original engine exception.
-     *
-     * @param header short description of the action that failed
+     * <p>
+     * The title of the dialog is the one of the error: what went wrong, not where it happened.
      */
-    public static void showError(String header, Throwable failure) {
+    public static void showError(Throwable failure) {
         Throwable cause = originalCause(failure);
         if (!(cause instanceof GuessMarketException)) {
             failure.printStackTrace();
         }
         String message = cause.getMessage() != null ? cause.getMessage() : cause.toString();
-        create(Alert.AlertType.ERROR, header, message).show();
+        String title = cause instanceof GuessMarketException refused ? refused.getTitle() : "Unexpected error";
+        create(Alert.AlertType.ERROR, title, message).show();
     }
 
     /**

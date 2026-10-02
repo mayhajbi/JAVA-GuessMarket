@@ -1,5 +1,7 @@
 package gm.client;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import okhttp3.Callback;
 import okhttp3.Cookie;
 import okhttp3.CookieJar;
@@ -27,6 +29,7 @@ public class HttpApi {
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
     private static final MediaType XML = MediaType.get("application/xml");
     private static final String NO_BODY = "";
+    private static final String CONNECTION_TITLE = "Server not reachable";
     private static final String CONNECTION_MESSAGE = "The server could not be reached at " + Constants.BASE_URL
             + ". Start Tomcat and check that it listens on localhost:8080.";
 
@@ -102,21 +105,26 @@ public class HttpApi {
         try (Response response = client.newCall(request).execute()) {
             String body = response.body() == null ? NO_BODY : response.body().string();
             if (!response.isSuccessful()) {
-                // The application answers a refusal with its reason as plain text. Anything else is an
-                // error page of Tomcat itself, which is not a message for the user.
-                throw new ServerException(body.isBlank() || !isPlainText(response)
-                        ? "The server refused the request with the status " + response.code() + "."
-                        : body);
+                throw refusal(response.code(), body);
             }
             return body;
         } catch (IOException e) {
-            throw new ServerException(CONNECTION_MESSAGE, e);
+            throw new ServerException(CONNECTION_TITLE, CONNECTION_MESSAGE, e);
         }
     }
 
-    private static boolean isPlainText(Response response) {
-        MediaType type = response.body() == null ? null : response.body().contentType();
-        return type != null && "plain".equals(type.subtype());
+    /**
+     * The application answers a refusal with a JSON object that has a title and a message. Anything
+     * else is an error page of Tomcat itself, which is not a message for the user.
+     */
+    private static ServerException refusal(int status, String body) {
+        try {
+            JsonObject answer = JsonParser.parseString(body).getAsJsonObject();
+            return new ServerException(answer.get("title").getAsString(), answer.get("message").getAsString());
+        } catch (RuntimeException notOurs) {
+            return new ServerException("Request refused",
+                    "The server refused the request with the status " + status + ".");
+        }
     }
 
     /**

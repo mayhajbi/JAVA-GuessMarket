@@ -12,7 +12,8 @@ public class EventNotActiveException extends GuessMarketException {
 
     public EventNotActiveException(String eventName, EventStatus status,
                                    String marketMakerName) {
-        super(status == EventStatus.INACTIVE
+        super(status == EventStatus.INACTIVE ? "Event not open" : "Event closed",
+                status == EventStatus.INACTIVE
                 ? describeEvent(eventName) + " is not open yet. Only its market maker, '" + marketMakerName
                         + "', can open it."
                 : describeEvent(eventName) + " is closed, so it can no longer be traded or closed.");

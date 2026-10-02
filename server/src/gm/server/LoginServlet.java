@@ -24,9 +24,9 @@ public class LoginServlet extends GmServlet {
             request.getSession(true).setAttribute(ServletUtils.USERNAME, name);
             response.setStatus(HttpServletResponse.SC_OK);
         } catch (DuplicateUserNameException e) {
-            fail(response, HttpServletResponse.SC_UNAUTHORIZED, e.getMessage());
+            fail(response, HttpServletResponse.SC_UNAUTHORIZED, e.getTitle(), e.getMessage());
         } catch (InvalidUserNameException e) {
-            fail(response, HttpServletResponse.SC_CONFLICT, e.getMessage());
+            fail(response, HttpServletResponse.SC_CONFLICT, e.getTitle(), e.getMessage());
         }
     }
 }

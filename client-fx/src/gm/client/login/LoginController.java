@@ -33,7 +33,7 @@ public class LoginController {
             String userName = engine.registerUser(userNameField.getText()).name();
             onLoggedIn.accept(userName);
         } catch (RuntimeException refused) {
-            Dialogs.showError("Login failed", refused);
+            Dialogs.showError(refused);
         }
     }
 }

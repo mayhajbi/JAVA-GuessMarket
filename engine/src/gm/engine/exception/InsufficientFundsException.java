@@ -15,7 +15,7 @@ public class InsufficientFundsException extends GuessMarketException {
      */
     public InsufficientFundsException(String eventName, String costName, double required,
                                       double available) {
-        super(String.format(Locale.ROOT, "You cannot open %s. Opening it costs %.2f for the %s, but your "
+        super("Insufficient funds", String.format(Locale.ROOT, "You cannot open %s. Opening it costs %.2f for the %s, but your "
                 + "balance is %.2f. Load funds and try again.", describeEvent(eventName), required, costName,
                 available));
     }

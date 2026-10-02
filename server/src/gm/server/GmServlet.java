@@ -9,7 +9,7 @@ import java.util.function.Function;
 
 /**
  * Base class of the servlets: runs every request under the engine lock and turns errors into
- * a status code with a plain text message, in one single place.
+ * a status code with a JSON object of the title and the message, in one single place.
  */
 public abstract class GmServlet extends HttpServlet {
 
@@ -39,17 +39,20 @@ public abstract class GmServlet extends HttpServlet {
 
     @Override
     protected void service(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        response.setContentType("text/plain;charset=UTF-8");
+        response.setContentType("application/json;charset=UTF-8");
         try {
             synchronized (ServletUtils.LOCK) {
                 handle(request, response);
             }
         } catch (NotLoggedInException e) {
-            fail(response, HttpServletResponse.SC_UNAUTHORIZED, e.getMessage());
-        } catch (BadRequestException | GuessMarketException e) {
-            fail(response, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+            fail(response, HttpServletResponse.SC_UNAUTHORIZED, "Not logged in", e.getMessage());
+        } catch (BadRequestException e) {
+            fail(response, HttpServletResponse.SC_BAD_REQUEST, "Invalid request", e.getMessage());
+        } catch (GuessMarketException e) {
+            fail(response, HttpServletResponse.SC_BAD_REQUEST, e.getTitle(), e.getMessage());
         } catch (RuntimeException e) {
-            fail(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "The server could not process the request. Try again.");
+            fail(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Server error",
+                    "The server could not process the request. Try again.");
         }
     }
 
@@ -99,8 +102,16 @@ public abstract class GmServlet extends HttpServlet {
         }
     }
 
-    protected static void fail(HttpServletResponse response, int status, String message) throws IOException {
+    /**
+     * Answers a refusal with a JSON object that has the title of the error dialog and its message.
+     */
+    protected static void fail(HttpServletResponse response, int status, String title, String message)
+            throws IOException {
         response.setStatus(status);
-        response.getWriter().print(message);
+        ServletUtils.writeJson(response, new ErrorBody(title, message));
+    }
+
+    /** What the client reads out of the answer to a refused request. */
+    private record ErrorBody(String title, String message) {
     }
 }

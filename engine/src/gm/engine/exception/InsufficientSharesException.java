@@ -9,7 +9,7 @@ public class InsufficientSharesException extends GuessMarketException {
 
     public InsufficientSharesException(String optionName, String eventName,
                                        long requested, long available) {
-        super("You cannot sell " + requested + " shares of '" + optionName + "' in " + describeEvent(eventName)
+        super("Insufficient shares", "You cannot sell " + requested + " shares of '" + optionName + "' in " + describeEvent(eventName)
                 + ". You have only " + available + " shares that are not already offered in other orders.");
     }
 }

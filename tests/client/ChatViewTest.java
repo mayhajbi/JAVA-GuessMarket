@@ -94,7 +94,7 @@ public class ChatViewTest extends Check {
 
     static boolean send(String userName, String text) {
         if (REFUSED.equals(text)) {
-            throw new ServerException(REFUSAL);
+            throw new ServerException("Message not sent", REFUSAL);
         }
         return sent.add(line(userName, text));
     }

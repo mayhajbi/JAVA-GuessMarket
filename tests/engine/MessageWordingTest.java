@@ -21,6 +21,9 @@ public class MessageWordingTest extends Check {
     /** Every message the check saw, to look for brackets in all of them at the end. */
     private static final List<String> messages = new ArrayList<>();
 
+    /** The title of every refusal the check saw: what went wrong, to head the dialog of the error. */
+    private static final List<String> titles = new ArrayList<>();
+
     public static void main(String[] args) {
         run("message-wording", MessageWordingTest::check);
     }
@@ -111,6 +114,11 @@ public class MessageWordingTest extends Check {
         messageOf(() -> upload(engine, "", Scenario.lmsrFile("Fine")));
         messageOf(() -> upload(engine, "same.xml", Scenario.lmsrFile("Twice", "twice")));
 
+        expectTrue(titles.stream().noneMatch(title -> title == null || title.isBlank()),
+                "every refusal has a title");
+        expectTrue(titles.contains("Invalid amount") && titles.contains("Insufficient funds")
+                && titles.contains("Account blocked") && titles.contains("Invalid price"),
+                "a refusal is titled by its reason");
         for (String message : messages) {
             expectTrue(message.chars().noneMatch(character -> BRACKETS.indexOf(character) >= 0),
                     "no brackets in: " + message);
@@ -123,6 +131,7 @@ public class MessageWordingTest extends Check {
             action.run();
         } catch (GuessMarketException refused) {
             messages.add(refused.getMessage());
+            titles.add(refused.getTitle());
             return refused.getMessage();
         }
         expectTrue(false, "the action was expected to be refused");

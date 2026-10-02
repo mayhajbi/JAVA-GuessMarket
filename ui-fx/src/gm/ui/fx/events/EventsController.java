@@ -183,7 +183,7 @@ public class EventsController extends EventDetailScreen {
         try {
             return engine.createEvent(request);
         } catch (RuntimeException refused) {
-            Dialogs.showError("Event not created", refused);
+            Dialogs.showError(refused);
             return null;
         }
     }

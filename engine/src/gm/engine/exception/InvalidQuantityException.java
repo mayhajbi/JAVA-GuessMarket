@@ -8,6 +8,6 @@ public class InvalidQuantityException extends GuessMarketException {
     private static final long serialVersionUID = 1L;
 
     public InvalidQuantityException(long quantity) {
-        super("Enter a whole number of shares greater than zero. " + quantity + " is not valid.");
+        super("Invalid quantity", "Enter a whole number of shares greater than zero. " + quantity + " is not valid.");
     }
 }

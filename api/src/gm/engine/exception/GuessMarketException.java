@@ -13,12 +13,24 @@ public abstract class GuessMarketException extends RuntimeException {
     /** What every message about a text that is not in English asks for. */
     protected static final String USE_ENGLISH = "Use English letters, digits and common punctuation only.";
 
-    protected GuessMarketException(String message) {
+    private final String title;
+
+    /**
+     * @param title   what went wrong, in a few words: the title of the dialog that shows the error
+     * @param message what the user can do about it
+     */
+    protected GuessMarketException(String title, String message) {
         super(message);
+        this.title = title;
     }
 
-    protected GuessMarketException(String message, Throwable cause) {
+    protected GuessMarketException(String title, String message, Throwable cause) {
         super(message, cause);
+        this.title = title;
+    }
+
+    public String getTitle() {
+        return title;
     }
 
     /**

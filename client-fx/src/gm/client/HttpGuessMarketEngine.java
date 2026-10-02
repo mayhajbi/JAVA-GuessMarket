@@ -117,7 +117,7 @@ public class HttpGuessMarketEngine implements GuessMarketEngine {
         try {
             return gson.fromJson(api.upload("/upload", fileName, content.readAllBytes()), UploadResultDTO.class);
         } catch (IOException e) {
-            throw new ServerException("The file could not be read: " + e.getMessage(), e);
+            throw new ServerException("File not readable", "The file could not be read: " + e.getMessage(), e);
         }
     }
 

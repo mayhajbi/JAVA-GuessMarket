@@ -1,6 +1,7 @@
 package gm.server;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
 import gm.engine.api.GuessMarketEngine;
 import gm.engine.impl.GuessMarketEngineImpl;
@@ -22,7 +23,8 @@ public class ServletUtils {
 
     private static final String ENGINE_ATTRIBUTE_NAME = "engine";
 
-    private static final Gson GSON = new Gson();
+    // Quotes inside a message stay as they are, instead of becoming ', so that the answers are readable.
+    private static final Gson GSON = new GsonBuilder().disableHtmlEscaping().create();
 
     // ponytail: one global lock, because the engine is not thread safe; a lock per event if throughput ever matters
     public static final Object LOCK = new Object();

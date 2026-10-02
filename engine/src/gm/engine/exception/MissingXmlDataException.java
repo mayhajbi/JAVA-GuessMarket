@@ -8,7 +8,7 @@ public class MissingXmlDataException extends GuessMarketException {
     private static final long serialVersionUID = 1L;
 
     private MissingXmlDataException(String missing, String location) {
-        super("The " + missing + " is missing or empty in " + location + ". Add it and upload the file again.");
+        super("Missing data in file", "The " + missing + " is missing or empty in " + location + ". Add it and upload the file again.");
     }
 
     /**

@@ -9,29 +9,29 @@ public class InvalidEventDetailsException extends GuessMarketException {
 
     private static final long serialVersionUID = 1L;
 
-    private InvalidEventDetailsException(String message) {
-        super(message);
+    private InvalidEventDetailsException(String title, String message) {
+        super(title, message);
     }
 
     public static InvalidEventDetailsException notEnglish() {
-        return new InvalidEventDetailsException("The name, description and options of an event must use "
+        return new InvalidEventDetailsException("English only", "The name, description and options of an event must use "
                 + "English letters, digits and common punctuation only.");
     }
 
     public static InvalidEventDetailsException missingName() {
-        return new InvalidEventDetailsException("Enter a name for the event.");
+        return new InvalidEventDetailsException("Name missing", "Enter a name for the event.");
     }
 
     public static InvalidEventDetailsException missingDescription(String eventName) {
-        return new InvalidEventDetailsException("Enter a description for " + describeEvent(eventName) + ".");
+        return new InvalidEventDetailsException("Description missing", "Enter a description for " + describeEvent(eventName) + ".");
     }
 
     public static InvalidEventDetailsException missingOptionName(String eventName) {
-        return new InvalidEventDetailsException("Enter a name for both options of " + describeEvent(eventName) + ".");
+        return new InvalidEventDetailsException("Option missing", "Enter a name for both options of " + describeEvent(eventName) + ".");
     }
 
     public static InvalidEventDetailsException sameOptionNames(String eventName, String optionName) {
-        return new InvalidEventDetailsException("Both options of " + describeEvent(eventName) + " are named '"
+        return new InvalidEventDetailsException("Duplicate options", "Both options of " + describeEvent(eventName) + " are named '"
                 + optionName + "'. Give the options different names. Names are not case-sensitive.");
     }
 }
