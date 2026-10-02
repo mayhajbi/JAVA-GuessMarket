@@ -5,21 +5,21 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox spacing="10" minWidth="480" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1"
+<VBox spacing="10" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="gm.ui.fx.eventdetail.EventDetailController">
     <padding>
         <Insets top="10" right="10" bottom="10" left="10"/>
     </padding>
     <Label fx:id="placeholderLabel" text="Select an event to see its details." styleClass="placeholder"/>
     <VBox fx:id="detailsBox" spacing="10">
-        <Label fx:id="eventNameLabel" styleClass="section-title" wrapText="true" minHeight="-Infinity"/>
-        <Label fx:id="descriptionLabel" wrapText="true" minHeight="-Infinity"/>
+        <Label fx:id="eventNameLabel" styleClass="section-title, wrapping" wrapText="true" minHeight="-Infinity"/>
+        <Label styleClass="wrapping" fx:id="descriptionLabel" wrapText="true" minHeight="-Infinity"/>
         <GridPane hgap="12" vgap="4">
             <columnConstraints>
                 <ColumnConstraints minWidth="-Infinity"/>
-                <ColumnConstraints hgrow="ALWAYS"/>
+                <ColumnConstraints hgrow="ALWAYS" minWidth="-Infinity"/>
                 <ColumnConstraints minWidth="-Infinity"/>
-                <ColumnConstraints hgrow="ALWAYS"/>
+                <ColumnConstraints hgrow="ALWAYS" minWidth="-Infinity"/>
             </columnConstraints>
             <Label text="Status" styleClass="field-name" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
             <Label fx:id="statusValue" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
@@ -55,14 +55,14 @@
         </VBox>
 
         <VBox fx:id="orderBookBox" spacing="10">
-            <FlowPane fx:id="optionBooksBox" hgap="12" vgap="12"/>
+            <HBox fx:id="optionBooksBox" spacing="12"/>
             <Label text="Participants" styleClass="section-title"/>
             <TableView fx:id="participantsTable" prefHeight="140" minHeight="100">
                 <columnResizePolicy>
                     <TableView fx:constant="CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS"/>
                 </columnResizePolicy>
                 <placeholder>
-                    <Label text="No participants yet." styleClass="placeholder"/>
+                    <Label text="No participants yet." styleClass="placeholder, wrapping" wrapText="true"/>
                 </placeholder>
             </TableView>
         </VBox>
@@ -77,15 +77,15 @@
             </HBox>
             <VBox fx:id="openBox" spacing="4">
                 <Button fx:id="openButton" text="Open event" onAction="#onOpen" minWidth="-Infinity"/>
-                <Label fx:id="openHintLabel" styleClass="field-name" wrapText="true" minHeight="-Infinity"/>
+                <Label fx:id="openHintLabel" styleClass="field-name, wrapping" wrapText="true" minHeight="-Infinity"/>
             </VBox>
-            <FlowPane fx:id="buyBox" hgap="8" vgap="6" alignment="CENTER_LEFT">
+            <HBox fx:id="buyBox" spacing="8" alignment="CENTER_LEFT">
                 <Label text="Buy" styleClass="field-name"/>
                 <TextField fx:id="quantityField" promptText="Quantity" prefWidth="80" onAction="#onBuy"/>
                 <Label text="shares of" styleClass="field-name"/>
                 <ComboBox fx:id="buyOptionComboBox" prefWidth="220" minWidth="-Infinity" promptText="Choose an option"/>
                 <Button fx:id="buyButton" text="Buy" onAction="#onBuy"/>
-            </FlowPane>
+            </HBox>
             <FlowPane fx:id="orderBox" hgap="8" vgap="6" alignment="CENTER_LEFT">
                 <fx:define>
                     <ToggleGroup fx:id="orderSideGroup"/>
@@ -99,12 +99,12 @@
                 <TextField fx:id="orderPriceField" promptText="Price" prefWidth="70" onAction="#onPlaceOrder"/>
                 <Button fx:id="placeOrderButton" text="Place order" onAction="#onPlaceOrder"/>
             </FlowPane>
-            <FlowPane fx:id="closeBox" hgap="8" vgap="6" alignment="CENTER_LEFT">
+            <HBox fx:id="closeBox" spacing="8" alignment="CENTER_LEFT">
                 <Label text="Winning option" styleClass="field-name"/>
                 <ComboBox fx:id="winnerComboBox" prefWidth="220" minWidth="-Infinity" promptText="Choose the winner"/>
                 <Button text="Close event" onAction="#onClose"/>
-            </FlowPane>
-            <Label fx:id="actionsHintLabel" styleClass="placeholder" wrapText="true" minHeight="-Infinity"/>
+            </HBox>
+            <Label fx:id="actionsHintLabel" styleClass="placeholder, wrapping" wrapText="true" minHeight="-Infinity"/>
             <VBox fx:id="positionBox" spacing="4">
                 <Label fx:id="positionTitleLabel" styleClass="section-title"/>
                 <GridPane fx:id="positionGrid" hgap="16" vgap="3"/>
@@ -118,7 +118,7 @@
                     <TableView fx:constant="CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS"/>
                 </columnResizePolicy>
                 <placeholder>
-                    <Label text="No trades yet." styleClass="placeholder"/>
+                    <Label text="No trades yet." styleClass="placeholder, wrapping" wrapText="true"/>
                 </placeholder>
                 <columns>
                     <TableColumn fx:id="buyerColumn" text="Buyer" prefWidth="80"/>
@@ -139,7 +139,7 @@
                     <TableView fx:constant="CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS"/>
                 </columnResizePolicy>
                 <placeholder>
-                    <Label text="No trades yet." styleClass="placeholder"/>
+                    <Label text="No trades yet." styleClass="placeholder, wrapping" wrapText="true"/>
                 </placeholder>
                 <columns>
                     <TableColumn fx:id="obBuyerColumn" text="Buyer" prefWidth="70"/>
@@ -151,12 +151,12 @@
                                  styleClass="numeric"/>
                 </columns>
             </TableView>
-            <Label fx:id="orderBookInfoLabel" styleClass="field-name" wrapText="true" minHeight="-Infinity"/>
+            <Label fx:id="orderBookInfoLabel" styleClass="field-name, wrapping" wrapText="true" minHeight="-Infinity"/>
         </VBox>
 
         <VBox spacing="4">
             <Label text="Price over time" styleClass="section-title"/>
-            <Label fx:id="priceChartPlaceholder" styleClass="placeholder" wrapText="true" minHeight="-Infinity"
+            <Label fx:id="priceChartPlaceholder" styleClass="placeholder, wrapping" wrapText="true" minHeight="-Infinity"
                    text="No prices yet. The graph starts when the event is opened and traded."/>
             <LineChart fx:id="priceChart" prefHeight="260" minHeight="240" animated="false"
                        legendSide="BOTTOM">

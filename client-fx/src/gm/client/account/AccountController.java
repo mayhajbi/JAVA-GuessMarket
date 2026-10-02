@@ -20,6 +20,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.SplitPane;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputDialog;
@@ -43,6 +44,7 @@ public class AccountController extends EventDetailScreen {
     @FXML private ProgressBar uploadProgress;
     @FXML private Label uploadMessageLabel;
 
+    @FXML private SplitPane splitPane;
     @FXML private TableView<UserInfoDTO> usersTable;
     @FXML private TableColumn<UserInfoDTO, String> userNameColumn;
     @FXML private TableColumn<UserInfoDTO, String> userBalanceColumn;
@@ -70,6 +72,8 @@ public class AccountController extends EventDetailScreen {
     private void initialize() {
         ViewUtils.show(uploadProgress, false);
 
+        ViewUtils.heightFollowsItems(splitPane);
+        ViewUtils.keepHeadersWhole(usersTable, accountEntriesTable, userEventsTable);
         ViewUtils.bindText(userNameColumn, UserInfoDTO::name);
         ViewUtils.bindText(userBalanceColumn, user -> Formats.decimal(user.balance()));
         ViewUtils.bindText(userMarketMakerColumn, user -> user.marketMaker() ? "Yes" : "No");

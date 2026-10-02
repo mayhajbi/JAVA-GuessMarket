@@ -21,6 +21,7 @@ import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.SplitPane;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.FlowPane;
 
@@ -45,6 +46,7 @@ public class EventsController extends EventDetailScreen {
     @FXML private FlowPane typeFilterPane;
     @FXML private FlowPane statusFilterPane;
     @FXML private FlowPane commissionFilterPane;
+    @FXML private SplitPane splitPane;
     @FXML private TableView<EventInfoDTO> eventsTable;
     @FXML private TableColumn<EventInfoDTO, String> idColumn;
     @FXML private TableColumn<EventInfoDTO, String> nameColumn;
@@ -71,6 +73,8 @@ public class EventsController extends EventDetailScreen {
         commissionFilter = new FilterGroup<>(commissionFilterPane, CommissionType.values(),
                 CommissionType::getDisplayName, this::applyFilters);
 
+        ViewUtils.keepHeadersWhole(eventsTable);
+        ViewUtils.heightFollowsItems(splitPane);
         ViewUtils.bindText(idColumn, event -> String.valueOf(event.id()));
         ViewUtils.bindText(nameColumn, EventInfoDTO::name);
         ViewUtils.bindText(statusColumn, event -> event.status().getDisplayName());
@@ -147,8 +151,6 @@ public class EventsController extends EventDetailScreen {
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.setDialogPane(dialogPane);
         dialog.setTitle("New event");
-        dialog.setHeaderText("The user who creates the event becomes its market maker, and opens it "
-                + "when it is ready.");
         dialog.setResizable(true);
         dialogPane.getButtonTypes().setAll(ButtonType.OK, ButtonType.CANCEL);
 

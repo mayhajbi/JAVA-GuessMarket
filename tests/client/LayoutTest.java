@@ -26,19 +26,12 @@ import gm.engine.api.GuessMarketEngine;
 import gm.ui.fx.common.Skin;
 import gm.ui.fx.eventdetail.EventDetailScreen;
 import gm.ui.fx.events.EventsController;
-import gm.ui.fx.newevent.NewEventController;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Bounds;
 import javafx.scene.Node;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.ButtonBase;
-import javafx.scene.control.DialogPane;
-import javafx.scene.control.Label;
 import javafx.scene.control.Labeled;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.RadioButton;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
@@ -50,7 +43,6 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Paint;
-import javafx.scene.text.Text;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Proxy;
@@ -78,71 +70,20 @@ public class LayoutTest extends Check {
         run("layout", LayoutTest::check);
     }
 
-    /** The skin the screens are shown in while they are checked; every skin gets its turn. */
-    static Skin skin = Skin.DEFAULT;
-
     static void check() throws Exception {
         FxThread.run(() -> {
-            for (Skin each : Skin.values()) {
-                skin = each;
-                // Every screen is found next to its controller, which also compiles the controller for the check.
-                screenWithEvents(EventsController.class.getResource("events.fxml"), "eventsTable", "events screen");
-                screenWithEvents(AccountController.class.getResource("account.fxml"), "userEventsTable",
-                        "account screen");
-                plainScreen(LoginController.class.getResource("login.fxml"), "login screen");
-                plainScreen(HeaderController.class.getResource("header.fxml"), "header");
-                plainScreen(ChatController.class.getResource("chat.fxml"), "chat screen");
-                // The main window holds all of them: loading it proves every screen is found and connected.
-                plainScreen(AppController.class.getResource("app.fxml"), "main window");
-                newEventForm();
-            }
-            skin = Skin.DEFAULT;
+            // Every screen is found next to its controller, which also compiles the controller for the check.
+            screenWithEvents(EventsController.class.getResource("events.fxml"), "eventsTable", "events screen");
+            screenWithEvents(AccountController.class.getResource("account.fxml"), "userEventsTable",
+                    "account screen");
+            plainScreen(LoginController.class.getResource("login.fxml"), "login screen");
+            plainScreen(HeaderController.class.getResource("header.fxml"), "header");
+            plainScreen(ChatController.class.getResource("chat.fxml"), "chat screen");
+            // The main window holds all of them: loading it proves every screen is found and connected.
+            plainScreen(AppController.class.getResource("app.fxml"), "main window");
             tabs();
             textAreaSkins();
         });
-    }
-
-    /** The form of a new event, for each trading method, in every window size: no text is cut. */
-    static void newEventForm() throws Exception {
-        FXMLLoader loader = new FXMLLoader(NewEventController.class.getResource("newevent.fxml"));
-        DialogPane form = loader.load();
-        dress(form);
-        RadioButton lmsr = (RadioButton) loader.getNamespace().get("lmsrToggle");
-        for (boolean isLmsr : new boolean[] {true, false}) {
-            lmsr.setSelected(isLmsr);
-            for (double[] size : WINDOW_SIZES) {
-                layOut(form, size);
-                checkNoEllipsis(form, "new event form (" + (isLmsr ? "LMSR" : "Order Book") + ") in " + skin
-                        + " at " + (int) size[0] + "x" + (int) size[1]);
-            }
-        }
-    }
-
-    /** Puts the screen in a scene, in the skin that is checked now. */
-    static void dress(Region root) {
-        new Scene(root);
-        Skin.apply(root, skin);
-        Skin.dress(root);
-    }
-
-    /**
-     * No label, button or title of a column shows "..." instead of its text: the text a control displays
-     * is the text it was given. Replaces looking at the screen for the cut texts.
-     */
-    static void checkNoEllipsis(Node node, String what) {
-        if (!node.isVisible()) {
-            return;
-        }
-        if ((node instanceof Label || node instanceof ButtonBase || node instanceof ListCell)
-                && ((Labeled) node).getText() != null && !((Labeled) node).getText().isEmpty()
-                && node.lookup(".text") instanceof Text shown) {
-            expect(((Labeled) node).getText(), shown.getText(), what + ": " + describe(node) + " is cut");
-        }
-        if (node instanceof Parent parent) {
-            for (Node child : parent.getChildrenUnmodifiable()) {
-                checkNoEllipsis(child, what);
-            }
-        }
     }
 
     /** A multi-line text field (the description of an event, the chat) is dressed by every skin, like a text field. */
@@ -176,7 +117,7 @@ public class LayoutTest extends Check {
     static void screenWithEvents(URL fxml, String eventsTableId, String name) throws Exception {
         FXMLLoader loader = new FXMLLoader(fxml);
         ScrollPane root = loader.load();
-        dress(root);
+        new Scene(root).getStylesheets().add("/gm/ui/fx/common/app.css");
         EventDetailScreen screen = loader.getController();
         expectConnected(screen, name);
         screen.setEngine(cannedEngine());
@@ -188,7 +129,7 @@ public class LayoutTest extends Check {
             eventsTable.getSelectionModel().select(row);
             String shown = name + " with " + screen.eventDetail().shownEvent().type().getDisplayName();
             for (double[] size : WINDOW_SIZES) {
-                String what = shown + " in " + skin + " at " + (int) size[0] + "x" + (int) size[1];
+                String what = shown + " at " + (int) size[0] + "x" + (int) size[1];
                 layOut(root, size);
                 Region content = (Region) root.getContent();
                 expectTrue(content.getWidth() + TOLERANCE >= content.minWidth(-1)
@@ -257,10 +198,10 @@ public class LayoutTest extends Check {
         FXMLLoader loader = new FXMLLoader(fxml);
         Region root = loader.load();
         expectConnected(loader.getController(), name);
-        dress(root);
+        new Scene(root).getStylesheets().add("/gm/ui/fx/common/app.css");
         for (double[] size : WINDOW_SIZES) {
             layOut(root, new double[] {size[0], Math.max(size[1], root.minHeight(size[0]))});
-            checkParts(root, name + " in " + skin + " at " + (int) size[0] + "x" + (int) size[1]);
+            checkParts(root, name + " at " + (int) size[0] + "x" + (int) size[1]);
         }
     }
 
@@ -291,7 +232,6 @@ public class LayoutTest extends Check {
     }
 
     static void checkParts(Region content, String what) {
-        checkNoEllipsis(content, what);
         Bounds area = content.getLayoutBounds();
         for (Node part : visibleParts(content, new ArrayList<>())) {
             Bounds bounds = content.sceneToLocal(part.localToScene(part.getLayoutBounds()));

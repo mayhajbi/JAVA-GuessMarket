@@ -7,6 +7,8 @@ import gm.ui.fx.common.ViewUtils;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
@@ -28,6 +30,7 @@ class OptionBookView extends VBox {
 
     OptionBookView() {
         setSpacing(6);
+        HBox.setHgrow(this, Priority.ALWAYS);
         titleLabel.getStyleClass().add("section-title");
 
         GridPane statistics = new GridPane();
@@ -60,10 +63,12 @@ class OptionBookView extends VBox {
     private static TableView<OrderDTO> createOrdersTable(String emptyText) {
         TableView<OrderDTO> table = new TableView<>();
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
+        ViewUtils.keepHeadersWhole(table);
         table.setPrefHeight(TABLE_HEIGHT);
         table.setMinHeight(TABLE_MIN_HEIGHT);
         Label placeholder = new Label(emptyText);
-        placeholder.getStyleClass().add("placeholder");
+        placeholder.getStyleClass().addAll("placeholder", "wrapping");
+        placeholder.setWrapText(true);
         table.setPlaceholder(placeholder);
 
         table.getColumns().setAll(List.of(

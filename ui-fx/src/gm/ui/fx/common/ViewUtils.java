@@ -1,8 +1,10 @@
 package gm.ui.fx.common;
 
 import javafx.beans.property.ReadOnlyStringWrapper;
+import javafx.collections.ListChangeListener;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
+import javafx.scene.control.SplitPane;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -27,7 +29,7 @@ public final class ViewUtils {
     private static final double SORT_ARROW_WIDTH = 20;
     /** The room a table keeps free for its vertical scroll bar, so that bar never squeezes a column. */
     private static final double SCROLL_BAR_WIDTH = 18;
-    private static final Duration TOOLTIP_DELAY = Duration.seconds(1);
+    private static final Duration TOOLTIP_DELAY = Duration.millis(500);
 
     private ViewUtils() {
     }
@@ -111,7 +113,7 @@ public final class ViewUtils {
      * @param isSameRow tells whether a new row (first) describes the same thing as the selected one
      */
     public static <S> void replaceItems(TableView<S> table, List<S> items, BiPredicate<S, S> isSameRow) {
-        keepHeadersWhole(table);
+        fitHeaders(table);
         if (table.getItems().equals(items)) {
             return;
         }
@@ -124,15 +126,51 @@ public final class ViewUtils {
     }
 
     /**
+     * A split pane is as tall as its tallest item at the width the item has now. The split pane alone
+     * measures its height at the preferred width of the items, so an item that wraps its texts in a
+     * narrower pane would be taller than the split pane and cut at the bottom.
+     */
+    public static void heightFollowsItems(SplitPane splitPane) {
+        for (Node item : splitPane.getItems()) {
+            item.layoutBoundsProperty().addListener((observable, previous, bounds) -> {
+                double height = 0;
+                for (Node each : splitPane.getItems()) {
+                    height = Math.max(height, each.prefHeight(each.getLayoutBounds().getWidth()));
+                }
+                splitPane.setMinHeight(height);
+                splitPane.setPrefHeight(height);
+            });
+        }
+    }
+
+    /**
+     * Keeps the headers of these tables whole from the moment they are shown, and again whenever the
+     * skin of their window changes, even when they have no rows to refresh yet. See {@link #fitHeaders}.
+     */
+    public static void keepHeadersWhole(TableView<?>... tables) {
+        for (TableView<?> table : tables) {
+            table.sceneProperty().addListener((observable, previous, scene) -> {
+                if (scene != null) {
+                    fitHeaders(table);
+                    scene.getRoot().getStylesheets().addListener(
+                            (ListChangeListener<String>) change -> fitHeaders(table));
+                }
+            });
+            fitHeaders(table);
+        }
+    }
+
+    /**
      * A column is never narrower than its title, and the table never narrower than all of its columns:
      * the screen around the table is the one that scrolls when the window is too small, so the table
      * has no scroll bar of its own to scroll sideways. The title is measured in the font of the skin
      * that is shown now, so this runs on every refresh.
      */
-    private static void keepHeadersWhole(TableView<?> table) {
+    private static void fitHeaders(TableView<?> table) {
         if (table.getScene() == null) {
             return;
         }
+        table.getScene().getRoot().applyCss();
         // Twice: the first pass creates the skin of the table, the second one its headers.
         for (int pass = 0; pass < 2; pass++) {
             table.applyCss();

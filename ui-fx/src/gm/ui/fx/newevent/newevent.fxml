@@ -20,23 +20,21 @@
                     <ColumnConstraints minWidth="-Infinity"/>
                     <ColumnConstraints hgrow="ALWAYS"/>
                 </columnConstraints>
-                <Label text="Created by" styleClass="field-name" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-                <Label fx:id="creatorLabel" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
-                <Label text="Name" styleClass="field-name" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-                <TextField fx:id="nameField" promptText="What is the event called"
-                           GridPane.rowIndex="1" GridPane.columnIndex="1"/>
-                <Label text="Description" styleClass="field-name" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                <Label text="Name" styleClass="field-name" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                <TextField fx:id="nameField" promptText="Enter a clear title, e.g. Who will win the 2026 World Cup?"
+                           GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                <Label text="Description" styleClass="field-name" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
                 <TextArea fx:id="descriptionArea" prefRowCount="2" wrapText="true"
-                          promptText="What the event is about and how it will be decided"
-                          GridPane.rowIndex="2" GridPane.columnIndex="1"/>
-                <Label text="Option 1" styleClass="field-name" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
-                <TextField fx:id="firstOptionField" promptText="First possible outcome"
+                          promptText="Describe the event for other users: what it is about, and how the winning option will be decided. For example: the winner is the team that wins the official final."
+                          GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                <Label text="Option 1" styleClass="field-name" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                <TextField fx:id="firstOptionField" promptText="Enter an option, e.g. Yes"
+                           GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                <Label text="Option 2" styleClass="field-name" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                <TextField fx:id="secondOptionField" promptText="Enter another option, e.g. No"
                            GridPane.rowIndex="3" GridPane.columnIndex="1"/>
-                <Label text="Option 2" styleClass="field-name" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
-                <TextField fx:id="secondOptionField" promptText="Second possible outcome"
-                           GridPane.rowIndex="4" GridPane.columnIndex="1"/>
-                <Label text="Commission" styleClass="field-name" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
-                <FlowPane hgap="8" vgap="4" alignment="CENTER_LEFT" GridPane.rowIndex="5"
+                <Label text="Commission" styleClass="field-name" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                <FlowPane hgap="8" vgap="4" alignment="CENTER_LEFT" GridPane.rowIndex="4"
                           GridPane.columnIndex="1">
                     <TextField fx:id="commissionField" prefWidth="70" promptText="0 - 90"/>
                     <Label text="\%" styleClass="field-name"/>
@@ -57,20 +55,20 @@
                 <Label text="LMSR" styleClass="section-title"/>
                 <Label text="Liquidity" styleClass="field-name"/>
                 <TextField fx:id="liquidityField" maxWidth="90" promptText="100"/>
-                <Label text="A positive whole number. The larger it is, the slower the prices move."
-                       styleClass="placeholder" wrapText="true" minHeight="-Infinity"/>
+                <Label text="Enter a positive whole number, e.g. 100. The higher it is, the more slowly prices change."
+                       styleClass="placeholder, wrapping" wrapText="true" minHeight="-Infinity"/>
             </VBox>
 
             <VBox fx:id="orderBookFields" spacing="6" styleClass="actions">
                 <Label text="Order Book" styleClass="section-title"/>
                 <Label text="Base value" styleClass="field-name"/>
                 <TextField fx:id="baseValueField" maxWidth="90" promptText="1"/>
-                <Label text="What one winning share pays, and the highest price allowed."
-                       styleClass="placeholder" wrapText="true" minHeight="-Infinity"/>
+                <Label text="Enter what a winning share pays, e.g. 1. It is also the highest price an order can have."
+                       styleClass="placeholder, wrapping" wrapText="true" minHeight="-Infinity"/>
                 <Label text="Initial investment" styleClass="field-name"/>
                 <TextField fx:id="initialInvestmentField" maxWidth="90" promptText="100"/>
-                <Label text="Paid on opening, for one pair of shares per base value. Must divide by the base value."
-                       styleClass="placeholder" wrapText="true" minHeight="-Infinity"/>
+                <Label text="Enter the amount you pay when the event opens, e.g. 100. It must be a multiple of the base value; each base value buys one pair of shares."
+                       styleClass="placeholder, wrapping" wrapText="true" minHeight="-Infinity"/>
                 <CheckBox fx:id="allowMintCheckBox" text="Allow minting new pairs of shares"/>
             </VBox>
         </VBox>

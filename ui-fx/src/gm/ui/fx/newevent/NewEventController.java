@@ -8,13 +8,13 @@ import gm.ui.fx.common.ViewUtils;
 import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.VBox;
+import javafx.util.StringConverter;
 
 
 /**
@@ -29,7 +29,7 @@ public class NewEventController {
 
     private static final String HEADER = "Creating an event";
 
-    @FXML private Label creatorLabel;
+    private String creatorName;
     @FXML private TextField nameField;
     @FXML private TextArea descriptionArea;
     @FXML private TextField firstOptionField;
@@ -48,6 +48,18 @@ public class NewEventController {
     private void initialize() {
         commissionTypeComboBox.getItems().setAll(CommissionType.values());
         commissionTypeComboBox.setValue(CommissionType.ON_PURCHASE);
+        // The list and the chosen item show the name the user sees everywhere else, not the name of the constant.
+        commissionTypeComboBox.setConverter(new StringConverter<>() {
+            @Override
+            public String toString(CommissionType type) {
+                return type == null ? "" : type.getDisplayName();
+            }
+
+            @Override
+            public CommissionType fromString(String text) {
+                throw new UnsupportedOperationException("The commission type is chosen from the list.");
+            }
+        });
         lmsrToggle.selectedProperty().addListener(
                 (observable, previous, chosen) -> showMethodFields(chosen));
         showMethodFields(true);
@@ -71,7 +83,7 @@ public class NewEventController {
      * Shows who creates the event: the user who is logged in, who becomes its market maker.
      */
     public void setCreatorName(String creatorName) {
-        creatorLabel.setText(creatorName);
+        this.creatorName = creatorName;
     }
 
     /**
@@ -81,7 +93,6 @@ public class NewEventController {
      *         in which case the user was already told what is missing
      */
     public NewEventRequestDTO toRequest() {
-        String userName = creatorLabel.getText();
         if (nameField.getText().isBlank()) {
             return missing("Please give the event a name.");
         }
@@ -120,7 +131,7 @@ public class NewEventController {
             initialInvestment = initial;
         }
 
-        return new NewEventRequestDTO(userName, nameField.getText(), descriptionArea.getText(),
+        return new NewEventRequestDTO(creatorName, nameField.getText(), descriptionArea.getText(),
                 commission, commissionTypeComboBox.getValue(), firstOptionField.getText(),
                 secondOptionField.getText(), isLmsr ? EventType.LMSR : EventType.ORDER_BOOK,
                 liquidity, baseValue, allowMint(isLmsr), initialInvestment);

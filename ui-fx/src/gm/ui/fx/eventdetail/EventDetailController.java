@@ -24,6 +24,7 @@ import gm.ui.fx.common.Formats;
 import gm.ui.fx.common.HistoryChart;
 import gm.ui.fx.common.ViewUtils;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.chart.LineChart;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -34,6 +35,8 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
 import java.util.ArrayList;
@@ -74,7 +77,7 @@ public class EventDetailController {
     @FXML private VBox openBox;
     @FXML private Button openButton;
     @FXML private Label openHintLabel;
-    @FXML private FlowPane buyBox;
+    @FXML private HBox buyBox;
     @FXML private TextField quantityField;
     @FXML private ComboBox<String> buyOptionComboBox;
     @FXML private Button buyButton;
@@ -84,7 +87,7 @@ public class EventDetailController {
     @FXML private ComboBox<String> orderOptionComboBox;
     @FXML private TextField orderPriceField;
     @FXML private Button placeOrderButton;
-    @FXML private FlowPane closeBox;
+    @FXML private HBox closeBox;
     @FXML private ComboBox<String> winnerComboBox;
     @FXML private Label actionsHintLabel;
 
@@ -108,7 +111,7 @@ public class EventDetailController {
     @FXML private VBox positionBox;
     @FXML private Label positionTitleLabel;
     @FXML private GridPane positionGrid;
-    @FXML private FlowPane optionBooksBox;
+    @FXML private HBox optionBooksBox;
     @FXML private TableView<OrderBookParticipantDTO> participantsTable;
     @FXML private TableView<OrderBookTradeDTO> orderBookTradesTable;
     @FXML private TableColumn<OrderBookTradeDTO, String> obBuyerColumn;
@@ -121,6 +124,7 @@ public class EventDetailController {
     @FXML private Label priceChartPlaceholder;
     @FXML private LineChart<Number, Number> priceChart;
 
+    private static final int ORDER_BOOK_OPTIONS = 2;
     private final List<OptionBookView> optionBookViews = new ArrayList<>();
     private GuessMarketEngine engine;
     private Runnable onDataChanged = () -> { };
@@ -140,6 +144,7 @@ public class EventDetailController {
 
     @FXML
     private void initialize() {
+        ViewUtils.keepHeadersWhole(optionsTable, historyTable, participantsTable, orderBookTradesTable);
         ViewUtils.bindText(optionNameColumn, OptionStateDTO::name);
         ViewUtils.bindText(optionValueColumn, option -> Formats.decimal(option.value()));
         ViewUtils.bindText(optionSharesColumn, option -> String.valueOf(option.shares()));
@@ -160,7 +165,40 @@ public class EventDetailController {
         ViewUtils.bindText(obPriceColumn, trade -> Formats.decimal(trade.price()));
         ViewUtils.bindText(obCommissionColumn, trade -> Formats.decimal(trade.commissionPaid()));
 
+        // An order book event shows the books of its two options: they exist from the start, so the width
+        // that is kept below counts them even before such an event is shown.
+        for (int book = 0; book < ORDER_BOOK_OPTIONS; book++) {
+            addOptionBookView();
+        }
+        keepWidthOfWidestState();
         clear();
+    }
+
+    private void addOptionBookView() {
+        OptionBookView view = new OptionBookView();
+        optionBookViews.add(view);
+        optionBooksBox.getChildren().add(view);
+    }
+
+    /**
+     * The details pane is never narrower than the widest thing it can show: the message that asks to
+     * select an event, or any part of the details of an event of either trading method - whichever of
+     * them is shown now. So the pane keeps one width, its texts are never cut, and a window that is
+     * smaller than that is scrolled by the screen. Recomputed after every layout, because the minimal
+     * widths of the tables are known only once their headers are laid out.
+     */
+    private void keepWidthOfWidestState() {
+        VBox pane = (VBox) detailsBox.getParent();
+        pane.needsLayoutProperty().addListener((observable, wasDirty, isDirty) -> {
+            if (isDirty) {
+                return;
+            }
+            double widest = placeholderLabel.minWidth(-1);
+            for (Node part : detailsBox.getChildren()) {
+                widest = Math.max(widest, part.minWidth(-1));
+            }
+            pane.setMinWidth(Math.ceil(widest + pane.snappedLeftInset() + pane.snappedRightInset()));
+        });
     }
 
     public void setEngine(GuessMarketEngine engine) {
@@ -542,9 +580,7 @@ public class EventDetailController {
                 + ". Initial investment of the market maker: " + Formats.decimal(state.initialInvestment()) + ".");
 
         while (optionBookViews.size() < state.options().size()) {
-            OptionBookView view = new OptionBookView();
-            optionBookViews.add(view);
-            optionBooksBox.getChildren().add(view);
+            addOptionBookView();
         }
         for (int index = 0; index < state.options().size(); index++) {
             optionBookViews.get(index).show(state.options().get(index));
@@ -613,8 +649,12 @@ public class EventDetailController {
     }
 
     private void addPositionRow(int row, String name, String value) {
-        positionGrid.add(ViewUtils.fieldName(name), 0, row);
-        positionGrid.add(new Label(value), 1, row);
+        Label nameLabel = ViewUtils.fieldName(name);
+        Label valueLabel = new Label(value);
+        nameLabel.setMinWidth(Region.USE_PREF_SIZE);
+        valueLabel.setMinWidth(Region.USE_PREF_SIZE);
+        positionGrid.add(nameLabel, 0, row);
+        positionGrid.add(valueLabel, 1, row);
     }
 
     private static OrderBookParticipantDTO findParticipant(OrderBookStateDTO state, String userName) {

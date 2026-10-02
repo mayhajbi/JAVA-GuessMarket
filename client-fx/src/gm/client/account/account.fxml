@@ -8,17 +8,17 @@
 
 <ScrollPane fitToWidth="true" hbarPolicy="AS_NEEDED" vbarPolicy="AS_NEEDED" xmlns="http://javafx.com/javafx/22"
             xmlns:fx="http://javafx.com/fxml/1" fx:controller="gm.client.account.AccountController">
-    <VBox spacing="8" minHeight="640">
+    <VBox spacing="8">
         <padding>
             <Insets top="10" right="10" bottom="10" left="10"/>
         </padding>
         <HBox spacing="10" alignment="CENTER_LEFT">
-            <Button fx:id="loadFileButton" text="Load file" onAction="#loadFile"/>
+            <Button fx:id="loadFileButton" text="Load file" onAction="#loadFile" minWidth="-Infinity"/>
             <TextField fx:id="filePathField" editable="false" promptText="File path" HBox.hgrow="ALWAYS"/>
             <ProgressBar fx:id="uploadProgress" prefWidth="140"/>
             <Label fx:id="uploadMessageLabel"/>
         </HBox>
-        <SplitPane dividerPositions="0.5" VBox.vgrow="ALWAYS">
+        <SplitPane fx:id="splitPane" dividerPositions="0.5" VBox.vgrow="ALWAYS">
             <VBox spacing="6">
                 <padding>
                     <Insets right="6"/>
@@ -29,7 +29,7 @@
                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS"/>
                     </columnResizePolicy>
                     <placeholder>
-                        <Label text="There are no other users yet." styleClass="placeholder"/>
+                        <Label text="There are no other users yet." styleClass="placeholder, wrapping" wrapText="true"/>
                     </placeholder>
                     <columns>
                         <TableColumn fx:id="userNameColumn" text="Name" prefWidth="160"/>
@@ -43,7 +43,7 @@
                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS"/>
                     </columnResizePolicy>
                     <placeholder>
-                        <Label text="Nothing changed your balance yet." styleClass="placeholder"/>
+                        <Label text="Nothing changed your balance yet." styleClass="placeholder, wrapping" wrapText="true"/>
                     </placeholder>
                     <columns>
                         <TableColumn fx:id="entryTypeColumn" text="Type" prefWidth="120"/>
@@ -52,12 +52,12 @@
                     </columns>
                 </TableView>
                 <HBox spacing="12" alignment="CENTER_LEFT">
-                    <Label fx:id="userNameLabel" styleClass="section-title"/>
-                    <Label fx:id="blockedLabel" styleClass="blocked" text="Blocked - the balance dropped below zero"/>
+                    <Label fx:id="userNameLabel" styleClass="section-title" minWidth="-Infinity"/>
+                    <Label fx:id="blockedLabel" styleClass="blocked" text="Blocked - the balance dropped below zero" minWidth="-Infinity"/>
                     <Region HBox.hgrow="ALWAYS"/>
-                    <Label text="Account balance" styleClass="field-name"/>
-                    <Label fx:id="balanceLabel" styleClass="section-title"/>
-                    <Button text="Load funds" onAction="#loadFunds"/>
+                    <Label text="Account balance" styleClass="field-name" minWidth="-Infinity"/>
+                    <Label fx:id="balanceLabel" styleClass="section-title" minWidth="-Infinity"/>
+                    <Button text="Load funds" onAction="#loadFunds" minWidth="-Infinity"/>
                 </HBox>
                 <LineChart fx:id="balanceChart" prefHeight="200" minHeight="160" animated="false" createSymbols="false">
                     <xAxis>
@@ -78,7 +78,7 @@
                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS"/>
                     </columnResizePolicy>
                     <placeholder>
-                        <Label text="You are not connected to any event yet." styleClass="placeholder"/>
+                        <Label text="You are not connected to any event yet." styleClass="placeholder, wrapping" wrapText="true"/>
                     </placeholder>
                     <columns>
                         <TableColumn fx:id="userEventNameColumn" text="Event" prefWidth="200"/>
