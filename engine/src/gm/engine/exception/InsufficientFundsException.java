@@ -13,10 +13,10 @@ public class InsufficientFundsException extends GuessMarketException {
     /**
      * @param costName what the market maker pays for when opening the event, for example "initial subsidy"
      */
-    public InsufficientFundsException(String userName, String eventName, String costName, double required,
+    public InsufficientFundsException(String eventName, String costName, double required,
                                       double available) {
-        super(String.format(Locale.ROOT, "The user '%s' cannot open the event %s. Opening it costs the %s of "
-                + "%.2f, but the balance of the user is only %.2f. Please load funds and try again.", userName,
-                describeEvent(eventName), costName, required, available));
+        super(String.format(Locale.ROOT, "You cannot open %s. Opening it costs %.2f for the %s, but your "
+                + "balance is %.2f. Load funds and try again.", describeEvent(eventName), required, costName,
+                available));
     }
 }

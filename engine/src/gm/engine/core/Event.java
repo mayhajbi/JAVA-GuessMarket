@@ -263,7 +263,7 @@ public class Event {
         double required = isLmsr ? getInitialSubsidy() : orderBook.getInitialInvestment();
         double balance = user.getAccount().getBalance();
         if (balance < required) {
-            throw new InsufficientFundsException(user.getName(), name,
+            throw new InsufficientFundsException(name,
                     isLmsr ? "initial subsidy" : "initial investment", required, balance);
         }
 
@@ -503,8 +503,7 @@ public class Event {
 
     private void requireMarketMaker(User user, String action) {
         if (user != marketMaker) {
-            throw new NotEventMarketMakerException(name, marketMaker.getName(), user.getName(),
-                    action);
+            throw new NotEventMarketMakerException(name, marketMaker.getName(), action);
         }
     }
 

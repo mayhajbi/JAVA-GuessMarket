@@ -56,7 +56,7 @@
                 <Label text="Liquidity" styleClass="field-name"/>
                 <TextField fx:id="liquidityField" maxWidth="90" promptText="100"/>
                 <Label text="Enter a positive whole number, e.g. 100. The higher it is, the more slowly prices change."
-                       styleClass="placeholder, wrapping" wrapText="true" minHeight="-Infinity"/>
+                       styleClass="placeholder" wrapText="true" minHeight="-Infinity"/>
             </VBox>
 
             <VBox fx:id="orderBookFields" spacing="6" styleClass="actions">
@@ -64,11 +64,11 @@
                 <Label text="Base value" styleClass="field-name"/>
                 <TextField fx:id="baseValueField" maxWidth="90" promptText="1"/>
                 <Label text="Enter what a winning share pays, e.g. 1. It is also the highest price an order can have."
-                       styleClass="placeholder, wrapping" wrapText="true" minHeight="-Infinity"/>
+                       styleClass="placeholder" wrapText="true" minHeight="-Infinity"/>
                 <Label text="Initial investment" styleClass="field-name"/>
                 <TextField fx:id="initialInvestmentField" maxWidth="90" promptText="100"/>
                 <Label text="Enter the amount you pay when the event opens, e.g. 100. It must be a multiple of the base value; each base value buys one pair of shares."
-                       styleClass="placeholder, wrapping" wrapText="true" minHeight="-Infinity"/>
+                       styleClass="placeholder" wrapText="true" minHeight="-Infinity"/>
                 <CheckBox fx:id="allowMintCheckBox" text="Allow minting new pairs of shares"/>
             </VBox>
         </VBox>

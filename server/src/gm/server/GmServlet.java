@@ -21,7 +21,7 @@ public abstract class GmServlet extends HttpServlet {
         private static final long serialVersionUID = 1L;
 
         NotLoggedInException() {
-            super("You are not logged in. Please log in first.");
+            super("You are not logged in. Log in and try again.");
         }
     }
 
@@ -49,7 +49,7 @@ public abstract class GmServlet extends HttpServlet {
         } catch (BadRequestException | GuessMarketException e) {
             fail(response, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
         } catch (RuntimeException e) {
-            fail(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "The server failed to handle the request.");
+            fail(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "The server could not process the request. Try again.");
         }
     }
 

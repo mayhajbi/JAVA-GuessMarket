@@ -8,6 +8,6 @@ public class UserNotFoundException extends GuessMarketException {
     private static final long serialVersionUID = 1L;
 
     public UserNotFoundException(String name) {
-        super("There is no user named '" + name + "' in the system.");
+        super("No user named '" + name + "' was found.");
     }
 }

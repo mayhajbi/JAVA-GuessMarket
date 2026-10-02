@@ -56,9 +56,9 @@ import java.util.Map;
  */
 public class EventDetailController {
 
-    private static final String CHOOSE_USER = "No user is logged in.";
-    private static final String BUYING_HEADER = "Buying shares";
-    private static final String ORDER_HEADER = "Placing an order";
+    private static final String CHOOSE_USER = "You are not logged in.";
+    private static final String BUYING_HEADER = "Buy shares";
+    private static final String ORDER_HEADER = "Place an order";
 
     @FXML private Label placeholderLabel;
     @FXML private VBox detailsBox;
@@ -72,7 +72,6 @@ public class EventDetailController {
     @FXML private Label commissionCollectedValue;
     @FXML private Label winnerValue;
 
-    @FXML private Label actingUserLabel;
     @FXML private Label actingUserBlockedLabel;
     @FXML private VBox openBox;
     @FXML private Button openButton;
@@ -221,7 +220,6 @@ public class EventDetailController {
             return;
         }
         actingUser = user;
-        actingUserLabel.setText(user.name());
         updateActions();
     }
 
@@ -347,22 +345,22 @@ public class EventDetailController {
         String paid = Formats.decimal(openedEvent.accountBalance());
         String message;
         if (isLmsr) {
-            message = marketMakerName + " opened '" + eventName + "' and paid the initial subsidy of "
-                    + paid + ". Trading in the event is now allowed.";
+            message = "'" + eventName + "' is now open. You paid the initial subsidy of " + paid
+                    + ", and trading has started.";
         } else {
             long pairs = findParticipant(engine.getOrderBookState(eventId), marketMakerName)
                     .sharesPerOption().get(0);
-            message = marketMakerName + " opened '" + eventName + "', paid the initial investment of "
-                    + paid + " and received " + pairs + " shares of every option, which may now be "
-                    + "offered for sale. Trading in the event is now allowed.";
+            message = "'" + eventName + "' is now open. You paid the initial investment of " + paid
+                    + " and received " + pairs + " shares of each option, which you can now offer for sale. "
+                    + "Trading has started.";
         }
-        reportStatusChange("The event was opened", message);
+        reportStatusChange("Event opened", message);
     }
 
     @FXML
     private void onBuy() {
         TradeInput input = readTradeInput(BUYING_HEADER, buyOptionComboBox,
-                "Please choose the option you would like to buy.", quantityField);
+                "Select an option to buy.", quantityField);
         if (input == null) {
             return;
         }
@@ -373,24 +371,23 @@ public class EventDetailController {
         quantityField.clear();
         onDataChanged.run();
 
-        String details = buyerName + " bought " + result.shares() + " shares of '" + result.optionName() + "'.\n"
+        String details = "You bought " + result.shares() + " shares of '" + result.optionName() + "'.\n"
                 + "Shares cost: " + Formats.decimal(result.sharesCost()) + "\n"
                 + "Commission: " + Formats.decimal(result.commissionPaid()) + "\n"
                 + "Total paid: " + Formats.decimal(result.totalPaid()) + "\n"
-                + "Balance of " + buyerName + ": " + Formats.decimal(result.buyerBalance());
-        showActionResult("The purchase was completed", buyerName, details, result.buyerBlocked());
+                + "Your balance: " + Formats.decimal(result.buyerBalance());
+        showActionResult("Purchase completed", details, result.buyerBlocked());
     }
 
     @FXML
     private void onPlaceOrder() {
         TradeInput input = readTradeInput(ORDER_HEADER, orderOptionComboBox,
-                "Please choose the option whose shares you would like to trade.", orderQuantityField);
+                "Select an option to trade.", orderQuantityField);
         if (input == null) {
             return;
         }
         Double price = ViewUtils.readNumber(orderPriceField, Double::valueOf, ORDER_HEADER,
-                text -> "The price '" + text + "' is not a number. Please enter the price per share, for "
-                        + "example 0.45.");
+                text -> "'" + text + "' is not a valid price. Enter the price per share, for example 0.45.");
         if (price == null) {
             return;
         }
@@ -404,7 +401,7 @@ public class EventDetailController {
         orderPriceField.clear();
         onDataChanged.run();
 
-        showActionResult("The order was placed", userName,
+        showActionResult("Order placed",
                 describeOrderResult(userName, side, optionName, input.quantity(), price, result),
                 result.userBlocked());
     }
@@ -413,24 +410,22 @@ public class EventDetailController {
     private void onClose() {
         int winnerIndex = winnerComboBox.getSelectionModel().getSelectedIndex();
         if (winnerIndex < 0) {
-            Dialogs.showWarning("Closing the event",
-                    "Please choose the winning option before closing the event.");
+            Dialogs.showWarning("Close the event", "Select the winning option to close the event.");
             return;
         }
         String eventName = currentEvent.name();
         String winnerName = currentEvent.optionNames().get(winnerIndex);
-        if (!Dialogs.confirm("Closing the event '" + eventName + "'", "Close the event with '" + winnerName + "' as the winning option? The winners will be paid, and the event "
-                + "cannot be traded or opened again.")) {
+        if (!Dialogs.confirm("Close '" + eventName + "'", "Close '" + eventName + "' with '" + winnerName
+                + "' as the winning option? Winners are paid, and the event can no longer be traded or "
+                + "reopened.")) {
             return;
         }
 
         String marketMakerName = actingUser.name();
         engine.closeEvent(currentEvent.id(), marketMakerName, winnerIndex);
         onDataChanged.run();
-        reportStatusChange("The event was closed", "'" + eventName + "' was closed by "
-                + marketMakerName + " with '" + winnerName + "' as the winning option. The winners "
-                + "were paid, and the commission and what was left in the event account went to "
-                + "the market maker.");
+        reportStatusChange("Event closed", "'" + eventName + "' is closed. '" + winnerName + "' won, and the "
+                + "winners were paid. You received the commission and the remaining event balance.");
     }
 
     /**
@@ -452,8 +447,7 @@ public class EventDetailController {
             Dialogs.showWarning(header, chooseOption);
             return null;
         }
-        Long quantity = ViewUtils.readNumber(quantityInput, Long::valueOf, header, text -> "The quantity '" + text + "' is not a whole number. Please enter the amount of shares as a positive whole "
-                + "number, for example 10.");
+        Long quantity = ViewUtils.readNumber(quantityInput, Long::valueOf, header, text -> "'" + text + "' is not a valid quantity. Enter a whole number of shares, for example 10.");
         return quantity == null ? null : new TradeInput(user.name(), optionIndex, quantity);
     }
 
@@ -469,11 +463,10 @@ public class EventDetailController {
      * Reports a completed purchase or order. When it brought the balance of the user below zero, the
      * report is a warning that the user is now blocked.
      */
-    private void showActionResult(String header, String userName, String details, boolean isUserBlocked) {
+    private void showActionResult(String header, String details, boolean isUserBlocked) {
         if (isUserBlocked) {
-            Dialogs.showWarning(header + " - " + userName + " is now blocked", details
-                    + "\n\nThe balance dropped below zero, so " + userName + " is blocked from opening "
-                    + "and creating events, buying shares and placing orders from now on.");
+            Dialogs.showWarning(header + " - you are blocked", details
+                    + "\n\nYou are blocked because your balance is below zero. Load funds to trade again.");
         } else {
             Dialogs.showInformation(header, details);
         }
@@ -484,7 +477,7 @@ public class EventDetailController {
      */
     private String describeOrderResult(String userName, OrderSide side, String optionName, long quantity,
                                        double price, OrderResultDTO result) {
-        StringBuilder text = new StringBuilder(userName + " placed an order to "
+        StringBuilder text = new StringBuilder("You placed an order to "
                 + side.getDisplayName().toLowerCase(Locale.ROOT) + " " + quantity + " shares of '" + optionName + "' at " + Formats.decimal(price) + ".\n");
 
         List<String> tradeLines = new ArrayList<>();
@@ -495,7 +488,7 @@ public class EventDetailController {
             if (side == OrderSide.BUY && trade.buyerName().equals(userName)) {
                 tradeLines.add(trade.minted()
                         ? "  " + trade.quantity() + " new shares minted at " + Formats.decimal(trade.price())
-                                + ", paired with the order of " + trade.counterpartyName() + commission
+                                + ", matched with " + trade.counterpartyName() + "'s order" + commission
                         : "  " + trade.quantity() + " shares bought from " + trade.counterpartyName() + " at "
                                 + Formats.decimal(trade.price()) + commission);
             } else if (side == OrderSide.SELL && trade.counterpartyName().equals(userName) && !trade.minted()) {
@@ -504,13 +497,14 @@ public class EventDetailController {
             }
         }
         if (tradeLines.isEmpty()) {
-            text.append("No matching order was found yet.\n");
+            text.append("No matching order yet.\n");
         } else {
             text.append("Trades:\n").append(String.join("\n", tradeLines)).append("\n");
         }
-        text.append("Matched ").append(result.filledQuantity()).append(" of ").append(quantity)
-                .append(" shares; ").append(result.restingQuantity()).append(" wait in the order book.\n")
-                .append("Balance of ").append(userName).append(": ")
+        text.append(result.filledQuantity()).append(" of ").append(quantity)
+                .append(" shares matched; ").append(result.restingQuantity())
+                .append(" are waiting in the order book.\n")
+                .append("Your balance: ")
                 .append(Formats.decimal(result.userBalance()));
         return text.toString();
     }
@@ -556,28 +550,29 @@ public class EventDetailController {
     private String describeAvailableActions(UserDetailsDTO user, EventStatus status, boolean isMarketMaker,
                                             boolean isBlocked) {
         if (status == EventStatus.CLOSED) {
-            return "This event is closed - no further actions are possible.";
+            return "This event is closed. No further actions are possible.";
         }
         if (user == null) {
             return CHOOSE_USER;
         }
         if (isBlocked) {
-            return user.name() + " is blocked, because the balance is below zero, and cannot open or create "
-                    + "events, buy shares or place orders until funds are loaded." + (isMarketMaker && status == EventStatus.ACTIVE
-                    ? " As the market maker, " + user.name() + " may still close this event."
+            return "You are blocked because your balance is below zero. Load funds to open or create events, "
+                    + "buy shares or place orders." + (isMarketMaker && status == EventStatus.ACTIVE
+                    ? " As the market maker, you can still close this event."
                     : "");
         }
         if (status == EventStatus.INACTIVE && !isMarketMaker) {
-            return "This event is not open yet. Only its market maker '" + currentEvent.marketMakerName() + "' can open it.";
+            return "This event is not open yet. Only its market maker, '" + currentEvent.marketMakerName()
+                    + "', can open it.";
         }
         return "";
     }
 
     private void showOrderBook(OrderBookStateDTO state) {
-        orderBookInfoLabel.setText("Every winning share pays " + Formats.decimal(state.baseValue())
-                + ". Order prices from 0.01 to " + Formats.decimal(state.baseValue() - 0.01)
+        orderBookInfoLabel.setText("A winning share pays " + Formats.decimal(state.baseValue())
+                + ". Order prices range from 0.01 to " + Formats.decimal(state.baseValue() - 0.01)
                 + ". Minting is " + (state.mintAllowed() ? "allowed" : "not allowed")
-                + ". Initial investment of the market maker: " + Formats.decimal(state.initialInvestment()) + ".");
+                + ". The market maker's initial investment is " + Formats.decimal(state.initialInvestment()) + ".");
 
         while (optionBookViews.size() < state.options().size()) {
             addOptionBookView();
@@ -628,7 +623,7 @@ public class EventDetailController {
             return;
         }
 
-        positionTitleLabel.setText("Position of " + user.name());
+        positionTitleLabel.setText("Your position");
         positionGrid.getChildren().clear();
         List<String> optionNames = currentEvent.optionNames();
         int row = 0;
@@ -645,7 +640,7 @@ public class EventDetailController {
         addPositionRow(row++, "Received from sales and payout", Formats.decimal(position.received()));
         addPositionRow(row, "Profit / loss", currentEvent.status() == EventStatus.CLOSED
                 ? Formats.decimal(position.profitOrLoss())
-                : "known when the event is closed");
+                : "Shown when the event is closed");
     }
 
     private void addPositionRow(int row, String name, String value) {

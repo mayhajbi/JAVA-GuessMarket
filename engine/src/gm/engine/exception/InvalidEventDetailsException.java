@@ -14,27 +14,24 @@ public class InvalidEventDetailsException extends GuessMarketException {
     }
 
     public static InvalidEventDetailsException notEnglish() {
-        return new InvalidEventDetailsException("An event has to be written in English. Please write its name, "
-                + "its description and its options using English letters, digits and common punctuation marks "
-                + "only.");
+        return new InvalidEventDetailsException("The name, description and options of an event must use "
+                + "English letters, digits and common punctuation only.");
     }
 
     public static InvalidEventDetailsException missingName() {
-        return new InvalidEventDetailsException("The new event has no name. "
-                + "Please give the event a name.");
+        return new InvalidEventDetailsException("Enter a name for the event.");
     }
 
     public static InvalidEventDetailsException missingDescription(String eventName) {
-        return new InvalidEventDetailsException("The new event '" + eventName + "' has no description. Please describe what the event is about.");
+        return new InvalidEventDetailsException("Enter a description for " + describeEvent(eventName) + ".");
     }
 
     public static InvalidEventDetailsException missingOptionName(String eventName) {
-        return new InvalidEventDetailsException("The new event '" + eventName + "' is missing one of its options. Please name both possible outcomes.");
+        return new InvalidEventDetailsException("Enter a name for both options of " + describeEvent(eventName) + ".");
     }
 
     public static InvalidEventDetailsException sameOptionNames(String eventName, String optionName) {
-        return new InvalidEventDetailsException("Both options of the event " + describeEvent(eventName)
-                + " are named '" + optionName + "'. The two options of an event must have different names, "
-                + "and names that differ only in upper and lower case letters count as the same name.");
+        return new InvalidEventDetailsException("Both options of " + describeEvent(eventName) + " are named '"
+                + optionName + "'. Give the options different names. Names are not case-sensitive.");
     }
 }

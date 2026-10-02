@@ -12,10 +12,11 @@ public class InvalidChatLineException extends GuessMarketException {
     }
 
     public static InvalidChatLineException empty() {
-        return new InvalidChatLineException("The chat line is empty. Please write a message before sending it.");
+        return new InvalidChatLineException("Write a message before sending.");
     }
 
     public static InvalidChatLineException notEnglish() {
-        return new InvalidChatLineException("A chat line has to be written in English. " + USE_ENGLISH);
+        return new InvalidChatLineException("Messages must use English letters, digits and common "
+                + "punctuation only.");
     }
 }

@@ -39,7 +39,7 @@ public class NewEventViewTest extends Check {
 
         expectTrue(lmsrFields.isVisible() && !orderBookFields.isVisible(), "a new form shows the LMSR fields only");
         expect(null, form.toRequest(), "a form without a name cannot be read");
-        expect("[Creating an event: Please give the event a name.]", Screens.closeDialogs().toString(),
+        expect("[New event: Enter a name for the event.]", Screens.closeDialogs().toString(),
                 "the user is told what is missing");
 
         ((ToggleGroup) parts.get("methodGroup")).getToggles().get(1).setSelected(true);

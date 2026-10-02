@@ -9,8 +9,8 @@ public class NotEventMarketMakerException extends GuessMarketException {
     private static final long serialVersionUID = 1L;
 
     public NotEventMarketMakerException(String eventName, String marketMakerName,
-                                        String userName, String action) {
-        super("The user '" + userName + "' cannot " + action + " the event "
-                + describeEvent(eventName) + ". Only its market maker '" + marketMakerName + "' may do that.");
+                                        String action) {
+        super("You cannot " + action + " " + describeEvent(eventName) + ". Only its market maker, '"
+                + marketMakerName + "', can do that.");
     }
 }

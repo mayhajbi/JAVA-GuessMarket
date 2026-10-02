@@ -84,7 +84,7 @@ public class ChatViewTest extends Check {
         field.setText(REFUSED);
         Screens.fire(field);
         expect(REFUSED, field.getText(), "a line the engine refuses stays in the field");
-        expect("[The line was not sent: " + REFUSAL + "]", Screens.closeDialogs().toString(),
+        expect("[Message not sent: " + REFUSAL + "]", Screens.closeDialogs().toString(),
                 "a refused line is reported with its reason");
     }
 

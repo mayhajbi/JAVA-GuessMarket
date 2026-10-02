@@ -167,7 +167,7 @@ public class LayoutTest extends Check {
             expectTrue(texts.contains(title), what + ": shows '" + title + "'");
         }
         if (type == EventType.ORDER_BOOK) {
-            expectTrue(texts.stream().anyMatch(text -> text.startsWith("Every winning share pays 1.00.")),
+            expectTrue(texts.stream().anyMatch(text -> text.startsWith("A winning share pays 1.00.")),
                     what + ": says what a winning share pays");
         }
         expect("[]", texts.stream().filter(text -> text.chars().anyMatch(character -> "()[]<>{}".indexOf(character) >= 0)).toList().toString(),
@@ -224,8 +224,10 @@ public class LayoutTest extends Check {
     /** Gives the screen the size of the window and lays it out, the way a shown window does. */
     static void layOut(Region root, double[] size) {
         root.resize(size[0], size[1]);
-        // Twice: the first pass creates the skins of the controls, the second one lays out their content.
-        for (int pass = 0; pass < 2; pass++) {
+        // The first pass creates the skins of the controls, the second one lays out their content, and the
+        // next ones let a part that follows the size of another part (a split pane that is as tall as its
+        // items at their width) settle, as the pulses of a shown window do.
+        for (int pass = 0; pass < 6; pass++) {
             root.applyCss();
             root.layout();
         }

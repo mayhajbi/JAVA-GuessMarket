@@ -8,7 +8,7 @@ public class InvalidUserNameException extends GuessMarketException {
     private static final long serialVersionUID = 1L;
 
     public InvalidUserNameException() {
-        super("No user name was given. Please enter a name to log in.");
+        super("Enter a user name to log in.");
     }
 
     private InvalidUserNameException(String message) {
@@ -16,6 +16,7 @@ public class InvalidUserNameException extends GuessMarketException {
     }
 
     public static InvalidUserNameException notEnglish() {
-        return new InvalidUserNameException("The user name has to be written in English. " + USE_ENGLISH);
+        return new InvalidUserNameException("The user name must use English letters, digits and common "
+                + "punctuation only.");
     }
 }

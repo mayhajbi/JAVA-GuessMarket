@@ -32,29 +32,27 @@ public class MessageWordingTest extends Check {
         UsersAndUploadsTest.upload(engine, "Avi", DATA + "ex3/multiple.xml");
 
         // money
-        expect("The amount to deposit is -5.00. A deposit must be a positive number.",
+        expect("Enter an amount greater than zero. -5.00 cannot be loaded.",
                 messageOf(() -> engine.deposit("Avi", -5)), "a negative deposit");
         engine.deposit("Avi", 50);
-        expect("The user 'Avi' cannot open the event 'Will it rain tomorrow ?'. Opening it costs the initial "
-                        + "subsidy of 138.63, but the balance of the user is only 50.00. Please load funds and "
-                        + "try again.",
+        expect("You cannot open 'Will it rain tomorrow ?'. Opening it costs 138.63 for the initial subsidy, "
+                        + "but your balance is 50.00. Load funds and try again.",
                 messageOf(() -> engine.openEvent(LMSR_ID, "Avi")), "opening without enough money");
-        expectTrue(messageOf(() -> engine.openEvent(ORDER_BOOK_ID, "Avi")).contains("initial investment of 1000.00"),
+        expectTrue(messageOf(() -> engine.openEvent(ORDER_BOOK_ID, "Avi")).contains("costs 1000.00 for the initial investment"),
                 "opening an order book event without enough money names the initial investment");
 
         // trading
         engine.deposit("Avi", 2000);
         engine.openEvent(ORDER_BOOK_ID, "Avi");
         engine.openEvent(LMSR_ID, "Avi");
-        expect("The price 10.00 is too high for the event '" + EARTH_QUAKE + "'. A winning share in this event "
-                        + "pays 1.00, so the price per share must be between 0.01 and 0.99.",
+        expect("A price of 10.00 is too high for '" + EARTH_QUAKE + "'. A winning share pays 1.00, so the "
+                        + "price must be between 0.01 and 0.99.",
                 messageOf(() -> order(engine, 10)), "a price above the range");
-        expectTrue(messageOf(() -> order(engine, 0)).startsWith("The price 0.00 is too low for the event"),
+        expectTrue(messageOf(() -> order(engine, 0)).startsWith("A price of 0.00 is too low for"),
                 "a price below the range");
-        expectTrue(messageOf(() -> order(engine, 0.555)).startsWith("The price 0.555 for the event"),
+        expectTrue(messageOf(() -> order(engine, 0.555)).startsWith("The price 0.555 has more than two decimal places"),
                 "a price with a fraction of a cent is shown as it was given");
-        expect("The option number 6 does not exist in the event 'Will it rain tomorrow ?'. Please choose a "
-                        + "number between 1 and 2.",
+        expect("'Will it rain tomorrow ?' has no option number 6. Choose an option from 1 to 2.",
                 messageOf(() -> engine.buyShares(LMSR_ID, "Ben", 5, 1)), "an option that does not exist");
         messageOf(() -> engine.buyShares(LMSR_ID, "Ben", 0, 0));
         messageOf(() -> engine.buyShares(999, "Ben", 0, 1));
@@ -64,43 +62,41 @@ public class MessageWordingTest extends Check {
         messageOf(() -> engine.submitOrder(null));
         messageOf(() -> engine.submitOrder(new OrderRequestDTO(ORDER_BOOK_ID, "Ben", OrderSide.SELL, 0, 5, 0.5)));
         engine.buyShares(LMSR_ID, "Ben", 0, 10);
-        expect("The user 'Ben' cannot buy shares, because the balance of the user is below zero and the user is "
-                        + "blocked. Please load funds until the balance is zero or more.",
+        expect("You cannot buy shares, because your balance is below zero and you are blocked. Load funds "
+                        + "until your balance is zero or more.",
                 messageOf(() -> engine.buyShares(LMSR_ID, "Ben", 0, 1)), "a blocked user");
 
         // uploaded files
         expectTrue(messageOf(() -> UsersAndUploadsTest.upload(engine, "Ben", DATA + "ex3/multiple.xml"))
-                .endsWith("Please give the event a different name."), "an event name that is in use");
-        expect("The attribute 'd' of the element 'GM-order-book' is missing or empty in the event 'No d'. Please "
-                        + "add it to the file and upload the file again.",
+                .endsWith("Names are not case-sensitive. Choose a different name."), "an event name that is in use");
+        expect("The attribute 'd' of the element 'GM-order-book' is missing or empty in the event 'No d'. Add "
+                        + "it and upload the file again.",
                 messageOf(() -> uploadOrderBook(engine, "No d", "allow-mint=\"true\" initial=\"10\"")),
                 "a missing attribute");
         expectTrue(messageOf(() -> uploadOrderBook(engine, "Zero d", "allow-mint=\"true\" initial=\"10\" d=\"0\""))
-                .endsWith("In a file it is the attribute 'd'."), "a base value of zero names the attribute");
+                .endsWith("In a file, it is the attribute 'd'."), "a base value of zero names the attribute");
         expectTrue(messageOf(() -> uploadOrderBook(engine, "Odd", "allow-mint=\"true\" initial=\"10\" d=\"3\""))
-                .contains("not a multiple of its base value 3."), "an initial investment that does not divide");
+                .contains("must be a multiple of the base value 3."), "an initial investment that does not divide");
         expectTrue(messageOf(() -> uploadOrderBook(engine, "Minus", "allow-mint=\"true\" initial=\"-3\" d=\"1\""))
-                .endsWith("In a file it is the attribute 'initial'."), "a negative initial investment");
+                .endsWith("In a file, it is the attribute 'initial'."), "a negative initial investment");
         expectTrue(messageOf(() -> uploadOrderBook(engine, "Mint", "allow-mint=\"maybe\" initial=\"10\" d=\"1\""))
-                .startsWith("The attribute 'allow-mint' of the order book event 'Mint' is 'maybe'."),
+                .startsWith("'maybe' is not valid for the attribute 'allow-mint' of 'Mint'."),
                 "an allow-mint value that is not a boolean");
         expectTrue(messageOf(() -> upload(engine, "flat.xml", lmsr("Flat", "on-close", 5, 0, "Yes", "No")))
-                .endsWith("In a file it is the element 'b'."), "a liquidity of zero names the element");
+                .endsWith("In a file, it is the element 'b'."), "a liquidity of zero names the element");
         expectTrue(messageOf(() -> upload(engine, "weekly.xml", lmsr("Weekly", "weekly", 5, 100, "Yes", "No")))
-                .endsWith("Please use 'on-purchase' or 'on-close'."), "an unknown commission type");
+                .endsWith("use 'on-purchase' or 'on-close'."), "an unknown commission type");
         expectTrue(messageOf(() -> upload(engine, "costly.xml", lmsr("Costly", "on-close", 95, 100, "Yes", "No")))
-                .endsWith("The commission must be a whole number from 0 to 90."), "a commission above the limit");
-        expect("The number of options of the event 'Lonely' is 1. Every event must have exactly 2 options, each "
-                        + "in a 'GM-option' element.",
+                .endsWith("It must be a whole number from 0 to 90."), "a commission above the limit");
+        expect("'Lonely' has 1 options. An event must have exactly 2, each in a 'GM-option' element.",
                 messageOf(() -> upload(engine, "lonely.xml", lmsr("Lonely", "on-close", 5, 100, "Yes"))),
                 "an event with one option");
         expectTrue(messageOf(() -> upload(engine, "users.xml",
                         "<Guess-Market><GM-events/><GM-users/></Guess-Market>"))
-                .startsWith("The format of the file is not supported, because the file has the element 'GM-users'."),
+                .startsWith("The file cannot be used, because the file has the element 'GM-users'."),
                 "a file with users");
-        expect("The format of the file is not supported, because one of the events of the file has the element "
-                        + "'id'. Events are identified by their names. Please remove the element and upload the "
-                        + "file again.",
+        expect("The file cannot be used, because one of the events of the file has the element 'id'. Events "
+                        + "are identified by their names. Remove it and upload the file again.",
                 messageOf(() -> upload(engine, "ids.xml", "<Guess-Market><GM-events><GM-event><id>7</id>"
                         + "</GM-event></GM-events></Guess-Market>")), "an event with an id and without a name");
         expectTrue(messageOf(() -> upload(engine, "empty.xml", "<Guess-Market><GM-events/></Guess-Market>"))

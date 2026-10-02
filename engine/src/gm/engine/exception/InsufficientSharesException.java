@@ -7,9 +7,9 @@ public class InsufficientSharesException extends GuessMarketException {
 
     private static final long serialVersionUID = 1L;
 
-    public InsufficientSharesException(String userName, String optionName, String eventName,
+    public InsufficientSharesException(String optionName, String eventName,
                                        long requested, long available) {
-        super("The user '" + userName + "' cannot sell " + requested + " shares of '" + optionName + "' in the event '" + eventName + "': the user has only " + available + " shares of "
-                + "it that are not already offered for sale in other orders.");
+        super("You cannot sell " + requested + " shares of '" + optionName + "' in " + describeEvent(eventName)
+                + ". You have only " + available + " shares that are not already offered in other orders.");
     }
 }

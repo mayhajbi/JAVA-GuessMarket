@@ -58,9 +58,9 @@ if "!BEFORE!"=="skip" (
 )
 
 rem --- every wrong upload gets 400 and a message ---
-call :expect "upload-same-file-again" 400 "already in use" -b "%COOKIES%" -F "file=@%GOOD_XML%"
+call :expect "upload-same-file-again" 400 "already exists" -b "%COOKIES%" -F "file=@%GOOD_XML%"
 call :expect "upload-broken-file" 400 "Reason:" -b "%COOKIES%" -F "file=@%BROKEN_XML%"
-call :expect "upload-too-big" 400 "too big" -b "%COOKIES%" -F "file=@%BIG_XML%"
+call :expect "upload-too-big" 400 "too large" -b "%COOKIES%" -F "file=@%BIG_XML%"
 call :expect "upload-no-file" 400 "no file" -b "%COOKIES%" -F "note=hello"
 call :expect "upload-not-multipart" 400 "multipart" -b "%COOKIES%" -d "hello"
 

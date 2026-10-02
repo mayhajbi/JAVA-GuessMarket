@@ -67,7 +67,7 @@ class OptionBookView extends VBox {
         table.setPrefHeight(TABLE_HEIGHT);
         table.setMinHeight(TABLE_MIN_HEIGHT);
         Label placeholder = new Label(emptyText);
-        placeholder.getStyleClass().addAll("placeholder", "wrapping");
+        placeholder.getStyleClass().add("placeholder");
         placeholder.setWrapText(true);
         table.setPlaceholder(placeholder);
 

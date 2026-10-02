@@ -41,7 +41,7 @@ public class UploadServlet extends GmServlet {
         } catch (ServletException e) {
             throw new BadRequestException("The request must be a multipart upload with one file.");
         } catch (IllegalStateException e) {
-            throw new BadRequestException("The file is too big. The maximal size is 1MB.");
+            throw new BadRequestException("The file is too large. The maximum size is 1MB.");
         }
         throw new BadRequestException("The request has no file. Send the file in a form field.");
     }

@@ -29,7 +29,7 @@
                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS"/>
                     </columnResizePolicy>
                     <placeholder>
-                        <Label text="There are no other users yet." styleClass="placeholder, wrapping" wrapText="true"/>
+                        <Label text="No other users yet." styleClass="placeholder" wrapText="true"/>
                     </placeholder>
                     <columns>
                         <TableColumn fx:id="userNameColumn" text="Name" prefWidth="160"/>
@@ -43,7 +43,7 @@
                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS"/>
                     </columnResizePolicy>
                     <placeholder>
-                        <Label text="Nothing changed your balance yet." styleClass="placeholder, wrapping" wrapText="true"/>
+                        <Label text="No account activity yet." styleClass="placeholder" wrapText="true"/>
                     </placeholder>
                     <columns>
                         <TableColumn fx:id="entryTypeColumn" text="Type" prefWidth="120"/>
@@ -53,7 +53,7 @@
                 </TableView>
                 <HBox spacing="12" alignment="CENTER_LEFT">
                     <Label fx:id="userNameLabel" styleClass="section-title" minWidth="-Infinity"/>
-                    <Label fx:id="blockedLabel" styleClass="blocked" text="Blocked - the balance dropped below zero" minWidth="-Infinity"/>
+                    <Label fx:id="blockedLabel" styleClass="blocked" text="Blocked - balance below zero" minWidth="-Infinity"/>
                     <Region HBox.hgrow="ALWAYS"/>
                     <Label text="Account balance" styleClass="field-name" minWidth="-Infinity"/>
                     <Label fx:id="balanceLabel" styleClass="section-title" minWidth="-Infinity"/>
@@ -72,13 +72,13 @@
                 <padding>
                     <Insets left="6"/>
                 </padding>
-                <Label text="Events - market maker / participant" styleClass="section-title"/>
+                <Label text="Your events" styleClass="section-title"/>
                 <TableView fx:id="userEventsTable" prefHeight="150" minHeight="110">
                     <columnResizePolicy>
                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS"/>
                     </columnResizePolicy>
                     <placeholder>
-                        <Label text="You are not connected to any event yet." styleClass="placeholder, wrapping" wrapText="true"/>
+                        <Label text="You are not part of any event yet." styleClass="placeholder" wrapText="true"/>
                     </placeholder>
                     <columns>
                         <TableColumn fx:id="userEventNameColumn" text="Event" prefWidth="200"/>

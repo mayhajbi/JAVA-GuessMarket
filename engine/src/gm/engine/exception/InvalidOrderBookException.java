@@ -13,30 +13,27 @@ public class InvalidOrderBookException extends GuessMarketException {
     }
 
     public static InvalidOrderBookException baseValueNotPositive(String eventName, int d) {
-        return new InvalidOrderBookException("The base value of the order book event "
-                + describeEvent(eventName) + " is " + d
-                + ". It must be a positive whole number. In a file it is the attribute 'd'.");
+        return new InvalidOrderBookException("The base value of " + describeEvent(eventName) + " is " + d
+                + ". It must be a positive whole number. In a file, it is the attribute 'd'.");
     }
 
     public static InvalidOrderBookException initialInvestmentNegative(String eventName,
                                                                      int initial) {
-        return new InvalidOrderBookException("The initial investment of the order book event "
-                + describeEvent(eventName) + " is " + initial + ". It cannot be negative. In a file it "
-                + "is the attribute 'initial'.");
+        return new InvalidOrderBookException("The initial investment of " + describeEvent(eventName) + " is "
+                + initial + ". It cannot be negative. In a file, it is the attribute 'initial'.");
     }
 
     public static InvalidOrderBookException initialNotDivisible(String eventName, int initial,
                                                                int d) {
-        return new InvalidOrderBookException("The initial investment of the order book event "
-                + describeEvent(eventName) + " is " + initial + ", which is not a multiple of its base "
-                + "value " + d + ". The market maker receives one pair of shares for every " + d
-                + ", so the initial investment must divide by " + d + " without a remainder. In a file these "
-                + "are the attributes 'initial' and 'd'.");
+        return new InvalidOrderBookException("The initial investment of " + describeEvent(eventName) + " is "
+                + initial + ", but it must be a multiple of the base value " + d + ". The market maker "
+                + "receives one pair of shares for every " + d + ". In a file, these are the attributes "
+                + "'initial' and 'd'.");
     }
 
     public static InvalidOrderBookException allowMintNotBoolean(String eventName,
                                                                String value) {
-        return new InvalidOrderBookException("The attribute 'allow-mint' of the order book event "
-                + describeEvent(eventName) + " is '" + value + "'. It must be either 'true' or 'false'.");
+        return new InvalidOrderBookException("'" + value + "' is not valid for the attribute 'allow-mint' of "
+                + describeEvent(eventName) + ". Use 'true' or 'false'.");
     }
 }

@@ -165,8 +165,8 @@ public class ViewRefreshTest extends Check {
 
         screen.showActingUser(new UserDetailsDTO("Dana", -5, true, List.of()));
         Label hint = Screens.part(detail, "actionsHintLabel");
-        expectTrue(hint.getText().startsWith("Dana is blocked, because the balance is below zero")
-                && hint.getText().endsWith("until funds are loaded."), "a blocked user is told why and until when");
+        expectTrue(hint.getText().startsWith("You are blocked because your balance is below zero")
+                && hint.getText().endsWith("buy shares or place orders."), "a blocked user is told why and until when");
         Button placeOrder = Screens.part(detail, "placeOrderButton");
         expectTrue(placeOrder.isDisabled(), "a blocked user cannot place an order");
     }

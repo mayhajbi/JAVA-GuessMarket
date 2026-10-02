@@ -47,7 +47,7 @@ public class LoginViewTest extends Check {
         Screens.fire(field);
         expect("[Dana, Avi]", loggedIn.toString(), "a refused name does not log in");
         expect(TAKEN, field.getText(), "a refused name stays in the field");
-        expect("[The login failed: " + REFUSAL + "]", Screens.closeDialogs().toString(),
+        expect("[Login failed: " + REFUSAL + "]", Screens.closeDialogs().toString(),
                 "a refused name is reported with the reason of the server");
     }
 

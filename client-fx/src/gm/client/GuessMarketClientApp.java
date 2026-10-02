@@ -36,7 +36,7 @@ public class GuessMarketClientApp extends Application {
         // The single central point that reports failures: any exception that escapes an action
         // handler is shown to the user with its message, whatever its specific type is.
         Thread.currentThread().setUncaughtExceptionHandler(
-                (thread, failure) -> Dialogs.showError("The action could not be completed", failure));
+                (thread, failure) -> Dialogs.showError("Action failed", failure));
 
         showLogin(stage);
         stage.show();
@@ -69,8 +69,8 @@ public class GuessMarketClientApp extends Application {
     private void loggedOut(Stage stage) {
         appController = null;
         showLogin(stage);
-        Dialogs.showWarning("You were logged out", "The server was restarted and no longer has any users or "
-                + "events. Please log in again.");
+        Dialogs.showWarning("You were logged out", "The server was restarted, and its users and events were "
+                + "cleared. Log in again.");
     }
 
     private FXMLLoader load(String fxml) {

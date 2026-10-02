@@ -16,9 +16,9 @@
         <ToggleButton fx:id="autoScrollButton" text="Auto scroll" selected="true" minWidth="-Infinity"/>
     </HBox>
     <TextArea fx:id="chatLinesArea" editable="false" wrapText="true" VBox.vgrow="ALWAYS"
-              promptText="Nothing was written yet."/>
+              promptText="No messages yet."/>
     <HBox spacing="8" alignment="CENTER_LEFT">
-        <TextField fx:id="lineField" promptText="Say something..." onAction="#onSend" HBox.hgrow="ALWAYS"/>
+        <TextField fx:id="lineField" promptText="Type a message..." onAction="#onSend" HBox.hgrow="ALWAYS"/>
         <Button text="Send" onAction="#onSend" minWidth="-Infinity"/>
     </HBox>
 </VBox>

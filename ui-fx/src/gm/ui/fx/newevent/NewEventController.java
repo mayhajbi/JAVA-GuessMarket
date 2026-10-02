@@ -27,7 +27,7 @@ import javafx.util.StringConverter;
  */
 public class NewEventController {
 
-    private static final String HEADER = "Creating an event";
+    private static final String HEADER = "New event";
 
     private String creatorName;
     @FXML private TextField nameField;
@@ -94,13 +94,13 @@ public class NewEventController {
      */
     public NewEventRequestDTO toRequest() {
         if (nameField.getText().isBlank()) {
-            return missing("Please give the event a name.");
+            return missing("Enter a name for the event.");
         }
         if (descriptionArea.getText().isBlank()) {
-            return missing("Please describe what the event is about.");
+            return missing("Enter a description for the event.");
         }
         if (firstOptionField.getText().isBlank() || secondOptionField.getText().isBlank()) {
-            return missing("Please name both possible outcomes of the event.");
+            return missing("Enter a name for both options.");
         }
 
         Integer commission = readNumber(commissionField, "the commission");
@@ -154,7 +154,7 @@ public class NewEventController {
      * @return the whole number in the field, or {@code null} after telling the user it is not one
      */
     private Integer readNumber(TextField field, String what) {
-        return ViewUtils.readNumber(field, Integer::valueOf, HEADER, text -> "The value of " + what + " is '" + text + "', which is not a whole number. Please enter a whole number, for example 100.");
+        return ViewUtils.readNumber(field, Integer::valueOf, HEADER, text -> "'" + text + "' is not a valid value for " + what + ". Enter a whole number, for example 10.");
     }
 
     private NewEventRequestDTO missing(String message) {

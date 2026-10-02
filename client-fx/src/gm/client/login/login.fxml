@@ -10,7 +10,7 @@
         <Insets top="30" right="40" bottom="30" left="40"/>
     </padding>
     <Label text="Guess Market" styleClass="app-title"/>
-    <Label styleClass="wrapping" text="Please enter your user name." wrapText="true"/>
+    <Label text="Enter your user name to log in." wrapText="true"/>
     <TextField fx:id="userNameField" promptText="User name" maxWidth="260" onAction="#onLogin"/>
     <Button text="Log in" defaultButton="true" onAction="#onLogin"/>
 </VBox>

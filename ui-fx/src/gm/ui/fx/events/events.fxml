@@ -35,7 +35,7 @@
                     <TableView fx:constant="CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS"/>
                 </columnResizePolicy>
                 <placeholder>
-                    <Label text="No events to show. Upload a file, or change the filters." styleClass="placeholder, wrapping" wrapText="true"/>
+                    <Label text="No events to show. Upload a file or change the filters." styleClass="placeholder" wrapText="true"/>
                 </placeholder>
                 <columns>
                     <TableColumn fx:id="idColumn" text="#" prefWidth="35" styleClass="numeric"/>

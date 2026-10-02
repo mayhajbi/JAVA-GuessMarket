@@ -34,7 +34,7 @@
     </center>
     <bottom>
         <Label fx:id="serverStatusLabel" styleClass="blocked"
-               text="Server not reachable. Start Tomcat, and the application continues by itself.">
+               text="Server not reachable. The application reconnects once the server is running.">
             <padding>
                 <Insets top="6" right="12" bottom="6" left="12"/>
             </padding>

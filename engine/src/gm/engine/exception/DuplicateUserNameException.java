@@ -8,6 +8,6 @@ public class DuplicateUserNameException extends GuessMarketException {
     private static final long serialVersionUID = 1L;
 
     public DuplicateUserNameException(String name) {
-        super("A user named '" + name + "' is already defined. Please choose another user name.");
+        super("The user name '" + name + "' is already taken. Choose a different name.");
     }
 }

@@ -18,28 +18,25 @@ public class InvalidOrderException extends GuessMarketException {
     }
 
     public static InvalidOrderException missingRequest() {
-        return new InvalidOrderException("No order details were given. An order needs an event, a user, "
-                + "a side, an option, a quantity and a price.");
+        return new InvalidOrderException("The order is incomplete. It needs an event, a side, an option, a "
+                + "quantity and a price.");
     }
 
     public static InvalidOrderException missingSide(String eventName) {
-        return new InvalidOrderException("The order for the event " + describeEvent(eventName)
-                + " does not say whether to buy or to sell. Please choose Buy or Sell.");
+        return new InvalidOrderException("Choose Buy or Sell for the order in " + describeEvent(eventName) + ".");
     }
 
     public static InvalidOrderException priceOutOfRange(String eventName, double price,
                                                         int baseValue) {
-        String problem = Double.isNaN(price) ? "not legal" : price < MIN_PRICE ? "too low" : "too high";
-        return new InvalidOrderException(String.format(Locale.ROOT, "The price %.2f is %s for the event %s. "
-                + "A winning share in this event pays %.2f, so the price per share must be between %.2f and "
-                + "%.2f.", price, problem, describeEvent(eventName), (double) baseValue, MIN_PRICE,
-                baseValue - MIN_PRICE));
+        String problem = Double.isNaN(price) ? "not valid" : price < MIN_PRICE ? "too low" : "too high";
+        return new InvalidOrderException(String.format(Locale.ROOT, "A price of %.2f is %s for %s. A winning "
+                + "share pays %.2f, so the price must be between %.2f and %.2f.", price, problem,
+                describeEvent(eventName), (double) baseValue, MIN_PRICE, baseValue - MIN_PRICE));
     }
 
     public static InvalidOrderException priceNotWholeCents(String eventName, double price) {
         // The price is shown as it was given: rounded to two digits it would hide what is wrong with it.
         return new InvalidOrderException("The price " + new BigDecimal(String.valueOf(price)).toPlainString()
-                + " for the event " + describeEvent(eventName) + " has more than two digits after the decimal "
-                + "point. Please enter a price in whole cents, for example 0.45.");
+                + " has more than two decimal places. Enter it in whole cents, for example 0.45.");
     }
 }

@@ -129,16 +129,18 @@ public final class ViewUtils {
      * A split pane is as tall as its tallest item at the width the item has now. The split pane alone
      * measures its height at the preferred width of the items, so an item that wraps its texts in a
      * narrower pane would be taller than the split pane and cut at the bottom.
+     *
+     * @param spaceBelow room kept free under the items, so that the last line is not cut at the end of the scroll
      */
-    public static void heightFollowsItems(SplitPane splitPane) {
+    public static void heightFollowsItems(SplitPane splitPane, double spaceBelow) {
         for (Node item : splitPane.getItems()) {
             item.layoutBoundsProperty().addListener((observable, previous, bounds) -> {
                 double height = 0;
                 for (Node each : splitPane.getItems()) {
                     height = Math.max(height, each.prefHeight(each.getLayoutBounds().getWidth()));
                 }
-                splitPane.setMinHeight(height);
-                splitPane.setPrefHeight(height);
+                splitPane.setMinHeight(height + spaceBelow);
+                splitPane.setPrefHeight(height + spaceBelow);
             });
         }
     }

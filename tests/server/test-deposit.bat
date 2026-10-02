@@ -28,9 +28,9 @@ rem --- a wrong request ---
 call "%~dp0expect.bat" "deposit-as-get" GET 400 "account/deposit?amount=10" cookie "must be sent as POST" ""
 call "%~dp0expect.bat" "deposit-no-amount" POST 400 "account/deposit" cookie "is missing" ""
 call "%~dp0expect.bat" "deposit-not-a-number" POST 400 "account/deposit?amount=abc" cookie "must be a number" ""
-call "%~dp0expect.bat" "deposit-zero" POST 400 "account/deposit?amount=0" cookie "positive number" ""
-call "%~dp0expect.bat" "deposit-negative" POST 400 "account/deposit?amount=-5" cookie "positive number" ""
-call "%~dp0expect.bat" "deposit-infinity" POST 400 "account/deposit?amount=Infinity" cookie "positive number" ""
+call "%~dp0expect.bat" "deposit-zero" POST 400 "account/deposit?amount=0" cookie "greater than zero" ""
+call "%~dp0expect.bat" "deposit-negative" POST 400 "account/deposit?amount=-5" cookie "greater than zero" ""
+call "%~dp0expect.bat" "deposit-infinity" POST 400 "account/deposit?amount=Infinity" cookie "greater than zero" ""
 
 rem --- a valid deposit: a new user starts with 0, the answer has the new balance, and the log has the movement ---
 call "%~dp0expect.bat" "deposit-valid" POST 200 "account/deposit?amount=100.5" cookie ":100.5," ""

@@ -44,6 +44,9 @@ public class AccountController extends EventDetailScreen {
     @FXML private ProgressBar uploadProgress;
     @FXML private Label uploadMessageLabel;
 
+    /** The room under the details of an event, so that the last line of its graph is not cut at the end of the scroll. */
+    private static final double SPACE_BELOW_DETAILS = 30;
+
     @FXML private SplitPane splitPane;
     @FXML private TableView<UserInfoDTO> usersTable;
     @FXML private TableColumn<UserInfoDTO, String> userNameColumn;
@@ -72,7 +75,7 @@ public class AccountController extends EventDetailScreen {
     private void initialize() {
         ViewUtils.show(uploadProgress, false);
 
-        ViewUtils.heightFollowsItems(splitPane);
+        ViewUtils.heightFollowsItems(splitPane, SPACE_BELOW_DETAILS);
         ViewUtils.keepHeadersWhole(usersTable, accountEntriesTable, userEventsTable);
         ViewUtils.bindText(userNameColumn, UserInfoDTO::name);
         ViewUtils.bindText(userBalanceColumn, user -> Formats.decimal(user.balance()));
@@ -155,7 +158,7 @@ public class AccountController extends EventDetailScreen {
         uploadMessageLabel.textProperty().bind(
                 Bindings.when(task.runningProperty()).then(task.messageProperty()).otherwise(""));
         task.setOnSucceeded(done -> uploadSucceeded(task.getValue()));
-        task.setOnFailed(failed -> Dialogs.showError("The upload failed", task.getException()));
+        task.setOnFailed(failed -> Dialogs.showError("Upload failed", task.getException()));
 
         Thread uploader = new Thread(task, "upload-events");
         uploader.setDaemon(true);
@@ -165,8 +168,9 @@ public class AccountController extends EventDetailScreen {
     private void uploadSucceeded(UploadResultDTO result) {
         onDataChanged.run();
         Animations.fadeIn(loadFileButton.getScene().getRoot());
-        Dialogs.showInformation("The file was uploaded",
-                result.eventNames().size() + " events added from " + result.fileName() + ".");
+        int added = result.eventNames().size();
+        Dialogs.showInformation("Upload completed", added + (added == 1 ? " event was" : " events were")
+                + " added from " + result.fileName() + ".");
     }
 
     /**
@@ -180,7 +184,7 @@ public class AccountController extends EventDetailScreen {
         dialog.setContentText("Amount:");
         dialog.showAndWait().ifPresent(text -> {
             Double amount = ViewUtils.readNumber(dialog.getEditor(), Double::parseDouble, "Load funds",
-                    invalid -> "'" + invalid + "' is not a number.");
+                    invalid -> "'" + invalid + "' is not a valid amount. Enter a number, for example 100.");
             if (amount == null) {
                 return;
             }
@@ -188,7 +192,7 @@ public class AccountController extends EventDetailScreen {
                 engine.deposit(userName, amount);
                 onDataChanged.run();
             } catch (RuntimeException refused) {
-                Dialogs.showError("Load funds", refused);
+                Dialogs.showError("Funds not loaded", refused);
             }
         });
     }

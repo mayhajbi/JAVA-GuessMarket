@@ -84,7 +84,7 @@ public class ChatController {
         try {
             engine.sendChatLine(userName, lineField.getText());
         } catch (RuntimeException refused) {
-            Dialogs.showError("The line was not sent", refused);
+            Dialogs.showError("Message not sent", refused);
             return;
         }
         lineField.clear();

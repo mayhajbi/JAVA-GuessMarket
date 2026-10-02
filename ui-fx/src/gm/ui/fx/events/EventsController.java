@@ -74,7 +74,7 @@ public class EventsController extends EventDetailScreen {
                 CommissionType::getDisplayName, this::applyFilters);
 
         ViewUtils.keepHeadersWhole(eventsTable);
-        ViewUtils.heightFollowsItems(splitPane);
+        ViewUtils.heightFollowsItems(splitPane, 0);
         ViewUtils.bindText(idColumn, event -> String.valueOf(event.id()));
         ViewUtils.bindText(nameColumn, EventInfoDTO::name);
         ViewUtils.bindText(statusColumn, event -> event.status().getDisplayName());
@@ -166,9 +166,8 @@ public class EventsController extends EventDetailScreen {
         if (answer.isPresent() && answer.get() == ButtonType.OK && created[0] != null) {
             refresh();
             ViewUtils.selectFirst(eventsTable, event -> event.id() == created[0].id());
-            Dialogs.showInformation("Event created", "Your event '" + created[0].name()
-                    + "' has been created.\nIt is not live yet. As its market maker, you can open it when you "
-                    + "are ready, and trading will begin.");
+            Dialogs.showInformation("Event created", "'" + created[0].name()
+                    + "' was created. It is inactive until you open it, and then trading begins.");
         }
     }
 
@@ -184,7 +183,7 @@ public class EventsController extends EventDetailScreen {
         try {
             return engine.createEvent(request);
         } catch (RuntimeException refused) {
-            Dialogs.showError("The event could not be created", refused);
+            Dialogs.showError("Event not created", refused);
             return null;
         }
     }

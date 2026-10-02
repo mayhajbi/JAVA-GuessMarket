@@ -34,7 +34,7 @@ public class User {
      */
     public void requireNotBlocked(String action) {
         if (account.isBlocked()) {
-            throw new UserBlockedException(name, action);
+            throw new UserBlockedException(action);
         }
     }
 }

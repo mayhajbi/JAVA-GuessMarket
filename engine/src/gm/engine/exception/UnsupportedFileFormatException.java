@@ -12,7 +12,6 @@ public class UnsupportedFileFormatException extends GuessMarketException {
      * @param rule   the rule the file breaks, as a full sentence
      */
     public UnsupportedFileFormatException(String reason, String rule) {
-        super("The format of the file is not supported, because " + reason + ". " + rule
-                + " Please remove the element and upload the file again.");
+        super("The file cannot be used, because " + reason + ". " + rule + " Remove it and upload the file again.");
     }
 }

@@ -374,7 +374,7 @@ public class OrderBookMarket {
         }
         long available = held - offered;
         if (quantity > available) {
-            throw new InsufficientSharesException(user.getName(), event.getOptionName(optionIndex),
+            throw new InsufficientSharesException(event.getOptionName(optionIndex),
                     event.getName(), quantity, Math.max(0, available));
         }
     }
