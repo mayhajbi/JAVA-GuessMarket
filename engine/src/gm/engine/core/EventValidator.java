@@ -44,9 +44,9 @@ public final class EventValidator {
         requireEnglish(description);
     }
 
-    public static void requireCommissionInRange(String eventName, int commissionPercent) {
+    public static void requireCommissionInRange(int commissionPercent) {
         if (commissionPercent < MIN_COMMISSION || commissionPercent > MAX_COMMISSION) {
-            throw EventException.commissionOutOfRange(eventName, commissionPercent);
+            throw UserInputException.outOfRange("commission", MIN_COMMISSION, MAX_COMMISSION);
         }
     }
 
@@ -68,19 +68,19 @@ public final class EventValidator {
         requireEnglish(firstOption);
         requireEnglish(secondOption);
         if (firstOption.trim().equalsIgnoreCase(secondOption.trim())) {
-            throw EventException.sameOptionNames(eventName, firstOption.trim());
+            throw EventException.sameOptionNames();
         }
     }
 
-    public static void requireLiquidityPositive(String eventName, int liquidity) {
+    public static void requireLiquidityPositive(int liquidity) {
         if (liquidity <= 0) {
-            throw EventException.invalidLiquidity(eventName, liquidity);
+            throw UserInputException.notPositive("liquidity");
         }
     }
 
-    public static void requireBaseValuePositive(String eventName, int baseValue) {
+    public static void requireBaseValuePositive(int baseValue) {
         if (baseValue <= 0) {
-            throw EventException.baseValueNotPositive(eventName, baseValue);
+            throw UserInputException.notPositive("base value");
         }
     }
 

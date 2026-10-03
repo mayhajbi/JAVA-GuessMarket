@@ -8,7 +8,6 @@ import gm.engine.impl.GuessMarketEngineImpl;
 import gm.dto.EventInfoDTO;
 import gm.dto.UploadResultDTO;
 import gm.engine.exception.FileLoadException;
-import gm.engine.exception.EventException;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -125,12 +124,12 @@ public class UsersAndUploadsTest extends Check {
         expect(4, engine.getAllEvents().size(), "the refused files added nothing");
 
         String badCommission = Scenario.lmsrFile("Costly").replace(">5</commission>", ">95</commission>");
-        expectThrows(EventException.class,
+        expectThrows(UserInputException.class,
                 () -> Scenario.upload(engine, "Bella", "costly.xml", badCommission), "a commission above the limit");
 
         // The input checks of exercise 1 apply to an uploaded file too: a liquidity of zero, and one option.
         String zeroLiquidity = Scenario.lmsrFile("Flat").replace("<b>100</b>", "<b>0</b>");
-        expectThrows(EventException.class,
+        expectThrows(UserInputException.class,
                 () -> Scenario.upload(engine, "Bella", "flat.xml", zeroLiquidity), "a liquidity of zero");
         String singleOption = Scenario.lmsrFile("Lonely").replace("<GM-option>No</GM-option>", "");
         expectThrows(FileLoadException.class,

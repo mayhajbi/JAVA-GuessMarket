@@ -16,19 +16,14 @@ public class EventException extends GuessMarketException {
         super(title, message);
     }
 
-    public static EventException sameOptionNames(String eventName, String optionName) {
-        return new EventException("Duplicate options", "Both options of " + describeEvent(eventName) + " are named '"
-                + optionName + "'. Give the options different names. Names are not case-sensitive.");
+    public static EventException sameOptionNames() {
+        return new EventException("Duplicate options", "An event cannot have two options with the same name. "
+                + "Choose a different name for each option.");
     }
 
-    public static EventException invalidLiquidity(String eventName, int b) {
-        return new EventException("Invalid liquidity", "The liquidity of " + describeEvent(eventName) + " is " + b
-                + ". It must be a positive whole number. In a file, it is the element 'b'.");
-    }
-
-    public static EventException baseValueNotPositive(String eventName, int d) {
-        return new EventException("Invalid base value", "The base value of " + describeEvent(eventName) + " is " + d
-                + ". It must be a positive whole number. In a file, it is the attribute 'd'.");
+    public static EventException insufficientShares(long available) {
+        return new EventException("Insufficient shares", "The action cannot be completed because you do not have "
+                + "enough shares to sell. You have only " + available + " available to sell.");
     }
 
     public static EventException initialInvestmentNegative(String eventName, int initial) {
@@ -41,11 +36,6 @@ public class EventException extends GuessMarketException {
                 + " is " + initial + ", but it must be a multiple of the base value " + d + ". The market maker "
                 + "receives one pair of shares for every " + d + ". In a file, these are the attributes "
                 + "'initial' and 'd'.");
-    }
-
-    public static EventException commissionOutOfRange(String eventName, int value) {
-        return new EventException("Invalid commission", "The commission of " + describeEvent(eventName) + " is " + value
-                + "%. It must be a whole number from 0 to 90.");
     }
 
     public static EventException notActive(String eventName, EventStatus status, String marketMakerName) {

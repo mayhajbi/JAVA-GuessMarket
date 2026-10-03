@@ -35,25 +35,24 @@ public class MessageWordingTest extends Check {
         UsersAndUploadsTest.upload(engine, "Avi", DATA + "ex3/multiple.xml");
 
         // money
-        expect("Enter an amount greater than zero. -5.00 cannot be loaded.",
+        expect("The amount must be greater than 0.",
                 messageOf(() -> engine.deposit("Avi", -5)), "a negative deposit");
         engine.deposit("Avi", 50);
-        expect("You cannot open 'Will it rain tomorrow ?'. Opening it costs 138.63 for the initial subsidy, "
-                        + "but your balance is 50.00. Load funds and try again.",
+        expect("The action cannot be completed because your account balance is too low. You are short by 88.63. "
+                        + "Try again when you have enough funds.",
                 messageOf(() -> engine.openEvent(LMSR_ID, "Avi")), "opening without enough money");
-        expectTrue(messageOf(() -> engine.openEvent(ORDER_BOOK_ID, "Avi")).contains("costs 1000.00 for the initial investment"),
-                "opening an order book event without enough money names the initial investment");
+        expectTrue(messageOf(() -> engine.openEvent(ORDER_BOOK_ID, "Avi")).contains("You are short by 950.00."),
+                "opening an order book event without enough money names the missing amount");
 
         // trading
         engine.deposit("Avi", 2000);
         engine.openEvent(ORDER_BOOK_ID, "Avi");
         engine.openEvent(LMSR_ID, "Avi");
-        expect("A price of 10.00 is too high for '" + EARTH_QUAKE + "'. A winning share pays 1.00, so the "
-                        + "price must be between 0.01 and 0.99.",
+        expect("The number entered in price is out of range. Choose a number between 0.01 and 0.99.",
                 messageOf(() -> order(engine, 10)), "a price above the range");
-        expectTrue(messageOf(() -> order(engine, 0)).startsWith("A price of 0.00 is too low for"),
+        expectTrue(messageOf(() -> order(engine, 0)).startsWith("The number entered in price is out of range."),
                 "a price below the range");
-        expectTrue(messageOf(() -> order(engine, 0.555)).startsWith("The price 0.555 has more than two decimal places"),
+        expectTrue(messageOf(() -> order(engine, 0.555)).startsWith("The price 0.555 cannot be accepted."),
                 "a price with a fraction of a cent is shown as it was given");
         expectThrows(IllegalArgumentException.class, () -> engine.buyShares(LMSR_ID, "Ben", 5, 1),
                 "an option that does not exist");
@@ -63,11 +62,11 @@ public class MessageWordingTest extends Check {
         messageOf(() -> engine.buyShares(ORDER_BOOK_ID, "Ben", 0, 1));
         messageOf(() -> engine.openEvent(LMSR_ID, "Ben"));
         messageOf(() -> engine.openEvent(LMSR_ID, "Avi"));
-        messageOf(() -> engine.submitOrder(null));
+        expectThrows(IllegalArgumentException.class, () -> engine.submitOrder(null), "no order request");
         messageOf(() -> engine.submitOrder(new OrderRequestDTO(ORDER_BOOK_ID, "Ben", OrderSide.SELL, 0, 5, 0.5)));
         engine.buyShares(LMSR_ID, "Ben", 0, 10);
-        expect("You cannot buy shares, because your balance is below zero and you are blocked. Load funds "
-                        + "until your balance is zero or more.",
+        expect("Your account is blocked. While your account balance is below 0, you cannot perform actions that "
+                        + "require a payment.",
                 messageOf(() -> engine.buyShares(LMSR_ID, "Ben", 0, 1)), "a blocked user");
 
         // uploaded files
@@ -78,7 +77,7 @@ public class MessageWordingTest extends Check {
                 messageOf(() -> uploadOrderBook(engine, "No d", "allow-mint=\"true\" initial=\"10\"")),
                 "a missing attribute");
         expectTrue(messageOf(() -> uploadOrderBook(engine, "Zero d", "allow-mint=\"true\" initial=\"10\" d=\"0\""))
-                .endsWith("In a file, it is the attribute 'd'."), "a base value of zero names the attribute");
+                .endsWith("The base value must be greater than 0."), "a base value of zero");
         expectTrue(messageOf(() -> uploadOrderBook(engine, "Odd", "allow-mint=\"true\" initial=\"10\" d=\"3\""))
                 .contains("must be a multiple of the base value 3."), "an initial investment that does not divide");
         expectTrue(messageOf(() -> uploadOrderBook(engine, "Minus", "allow-mint=\"true\" initial=\"-3\" d=\"1\""))
@@ -87,11 +86,11 @@ public class MessageWordingTest extends Check {
                 .startsWith("'maybe' is not valid for the attribute 'allow-mint' of 'Mint'."),
                 "an allow-mint value that is not a boolean");
         expectTrue(messageOf(() -> upload(engine, "flat.xml", lmsr("Flat", "on-close", 5, 0, "Yes", "No")))
-                .endsWith("In a file, it is the element 'b'."), "a liquidity of zero names the element");
+                .endsWith("The liquidity must be greater than 0."), "a liquidity of zero");
         expectTrue(messageOf(() -> upload(engine, "weekly.xml", lmsr("Weekly", "weekly", 5, 100, "Yes", "No")))
                 .endsWith("use 'on-purchase' or 'on-close'."), "an unknown commission type");
         expectTrue(messageOf(() -> upload(engine, "costly.xml", lmsr("Costly", "on-close", 95, 100, "Yes", "No")))
-                .endsWith("It must be a whole number from 0 to 90."), "a commission above the limit");
+                .endsWith("Choose a number between 0 and 90."), "a commission above the limit");
         expect("An event must have exactly 2 options, no more and no fewer.",
                 messageOf(() -> upload(engine, "lonely.xml", lmsr("Lonely", "on-close", 5, 100, "Yes"))),
                 "an event with one option");
@@ -117,7 +116,7 @@ public class MessageWordingTest extends Check {
 
         expectTrue(titles.stream().noneMatch(title -> title == null || title.isBlank()),
                 "every refusal has a title");
-        expectTrue(titles.contains("Invalid amount") && titles.contains("Insufficient funds")
+        expectTrue(titles.contains("Invalid number") && titles.contains("Insufficient funds")
                 && titles.contains("Account blocked") && titles.contains("Invalid price"),
                 "a refusal is titled by its reason");
         for (String message : messages) {

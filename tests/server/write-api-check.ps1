@@ -98,10 +98,10 @@ Expect 'b-deposit' (Send $b POST 'account/deposit?amount=500') 200 'balance'
 Expect 'buy-missing-quantity' (Send $b POST 'event/buy' @{ eventId = $lmsr.id; optionIndex = 0 }) 400 "'quantity' is missing"
 Expect 'buy-missing-option' (Send $b POST 'event/buy' @{ eventId = $lmsr.id; quantity = 5 }) 400 "'optionIndex' is missing"
 Expect 'buy-option-out-of-range' (Send $b POST 'event/buy' @{ eventId = $lmsr.id; optionIndex = 5; quantity = 5 }) 400 'option'
-Expect 'buy-zero-quantity' (Send $b POST 'event/buy' @{ eventId = $lmsr.id; optionIndex = 0; quantity = 0 }) 400 'greater than zero'
-Expect 'buy-zero-quantity-title' (Send $b POST 'event/buy' @{ eventId = $lmsr.id; optionIndex = 0; quantity = 0 }) 400 '"title":"Invalid quantity"'
+Expect 'buy-zero-quantity' (Send $b POST 'event/buy' @{ eventId = $lmsr.id; optionIndex = 0; quantity = 0 }) 400 'greater than 0'
+Expect 'buy-zero-quantity-title' (Send $b POST 'event/buy' @{ eventId = $lmsr.id; optionIndex = 0; quantity = 0 }) 400 '"title":"Invalid number"'
 Expect 'buy-unknown-event' (Send $b POST 'event/buy' @{ eventId = 999999; optionIndex = 0; quantity = 5 }) 400 '999999'
-Expect 'quote-zero-quantity' (Send $b GET "event/quote?id=$($lmsr.id)&option=0&quantity=0") 400 'greater than zero'
+Expect 'quote-zero-quantity' (Send $b GET "event/quote?id=$($lmsr.id)&option=0&quantity=0") 400 'greater than 0'
 $quoteReply = Send $b GET "event/quote?id=$($lmsr.id)&option=0&quantity=10"
 Expect 'quote-ok' $quoteReply 200 'buyerBalance'
 $quote = $quoteReply.Text | ConvertFrom-Json

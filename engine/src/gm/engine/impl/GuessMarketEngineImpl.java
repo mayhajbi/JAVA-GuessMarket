@@ -110,7 +110,7 @@ public class GuessMarketEngineImpl implements GuessMarketEngine {
     public UserInfoDTO deposit(String userName, double amount) {
         User user = requireUser(userName);
         if (!(amount > 0) || Double.isInfinite(amount)) {
-            throw UserInputException.invalidDeposit(amount);
+            throw UserInputException.notPositive("amount");
         }
         user.getAccount().deposit(amount, AccountEntryType.DEPOSIT);
         return dtoFactory.toUserInfo(user, market.getAllEvents());
@@ -137,14 +137,14 @@ public class GuessMarketEngineImpl implements GuessMarketEngine {
             throw UserInputException.emptyField("event name");
         }
         User marketMaker = requireUser(request.userName());
-        marketMaker.requireNotBlocked("create events");
+        marketMaker.requireNotBlocked();
 
         int id = market.nextEventId();
         String name = InputText.normalize(request.name());
         EventValidator.requireName(name);
         EventValidator.requireDescription(name, request.description());
         EventValidator.requireOptionNames(name, request.firstOption(), request.secondOption());
-        EventValidator.requireCommissionInRange(name, request.commissionPercent());
+        EventValidator.requireCommissionInRange(request.commissionPercent());
         Event event = buildEvent(request, id, name);
         event.setMarketMaker(marketMaker);
         market.addEvent(event);
@@ -162,11 +162,11 @@ public class GuessMarketEngineImpl implements GuessMarketEngine {
                 new EventOption(InputText.normalize(request.secondOption())));
 
         if (request.type() == EventType.LMSR) {
-            EventValidator.requireLiquidityPositive(name, request.liquidity());
+            EventValidator.requireLiquidityPositive(request.liquidity());
             return Event.lmsr(id, name, description, request.commissionPercent(),
                     request.commissionType(), options, new LmsrTradingMethod(request.liquidity()));
         }
-        EventValidator.requireBaseValuePositive(name, request.baseValue());
+        EventValidator.requireBaseValuePositive(request.baseValue());
         EventValidator.requireInitialInvestment(name, request.initialInvestment(),
                 request.baseValue());
         return Event.orderBook(id, name, description, request.commissionPercent(),
@@ -206,7 +206,7 @@ public class GuessMarketEngineImpl implements GuessMarketEngine {
     @Override
     public OrderResultDTO submitOrder(OrderRequestDTO request) {
         if (request == null) {
-            throw UserInputException.incompleteOrder();
+            throw new IllegalArgumentException("The order request is missing");
         }
         Event event = requireEvent(request.eventId());
         User user = requireUser(request.userName());

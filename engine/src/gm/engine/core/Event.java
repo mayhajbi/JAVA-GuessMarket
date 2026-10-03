@@ -252,14 +252,13 @@ public class Event {
         if (status != EventStatus.INACTIVE) {
             throw EventException.alreadyOpened(name);
         }
-        user.requireNotBlocked("open the event '" + name + "'");
+        user.requireNotBlocked();
 
         boolean isLmsr = type == EventType.LMSR;
         double required = isLmsr ? getInitialSubsidy() : orderBook.getInitialInvestment();
         double balance = user.getAccount().getBalance();
         if (balance < required) {
-            throw UserAccountException.insufficientFunds(name,
-                    isLmsr ? "initial subsidy" : "initial investment", required, balance);
+            throw UserAccountException.insufficientFunds(required, balance);
         }
 
         user.getAccount().withdraw(required, AccountEntryType.EVENT);
@@ -307,10 +306,10 @@ public class Event {
     public Trade quote(User buyer, int optionIndex, long quantity) {
         requireType(EventType.LMSR, "buy shares directly");
         requireActive();
-        buyer.requireNotBlocked("buy shares");
+        buyer.requireNotBlocked();
         validateOptionIndex(optionIndex);
         if (quantity <= 0) {
-            throw UserInputException.invalidQuantity(quantity);
+            throw UserInputException.notPositive("quantity");
         }
 
         double sharesCost = tradingMethod.buyCost(sharesPerOption(), optionIndex, quantity);
@@ -332,15 +331,15 @@ public class Event {
     public OrderOutcome placeOrder(User user, OrderSide side, int optionIndex, long quantity, double price) {
         requireType(EventType.ORDER_BOOK, "place orders");
         requireActive();
-        user.requireNotBlocked("place orders");
+        user.requireNotBlocked();
         validateOptionIndex(optionIndex);
         if (side == null) {
-            throw UserInputException.missingSide(name);
+            throw new IllegalArgumentException("The order has no side");
         }
         if (quantity <= 0) {
-            throw UserInputException.invalidQuantity(quantity);
+            throw UserInputException.notPositive("quantity");
         }
-        long priceCents = orderBook.toPriceCents(this, price);
+        long priceCents = orderBook.toPriceCents(price);
         OrderOutcome outcome = orderBook.placeOrder(this, user, side, optionIndex, quantity, priceCents);
         recordPrices();
         return outcome;

@@ -101,7 +101,7 @@ public class EventsMapper {
         if (value == null) {
             throw FileLoadException.missingElement("commission", location);
         }
-        EventValidator.requireCommissionInRange(name, value);
+        EventValidator.requireCommissionInRange(value);
         return value;
     }
 
@@ -179,7 +179,7 @@ public class EventsMapper {
         if (liquidity == null) {
             throw FileLoadException.missingElement("b", location);
         }
-        EventValidator.requireLiquidityPositive(name, liquidity);
+        EventValidator.requireLiquidityPositive(liquidity);
         return new LmsrTradingMethod(liquidity);
     }
 
@@ -188,7 +188,7 @@ public class EventsMapper {
         if (d == null) {
             throw FileLoadException.missingAttribute("d", ORDER_BOOK_ELEMENT, location);
         }
-        EventValidator.requireBaseValuePositive(name, d);
+        EventValidator.requireBaseValuePositive(d);
         return d;
     }
 

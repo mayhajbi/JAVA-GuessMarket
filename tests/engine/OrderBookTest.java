@@ -165,12 +165,12 @@ public class OrderBookTest extends Check {
         expectThrows(UserInputException.class, () -> order(a, 1, "Bob", BUY, YES, 10, 0.555), "fraction of cent");
         expectThrows(UserInputException.class, () -> order(a, 1, "Bob", BUY, YES, 10, 0), "price 0");
         expectThrows(UserInputException.class, () -> order(a, 1, "Bob", BUY, YES, 0, 0.5), "quantity 0");
-        expectThrows(UserInputException.class,
+        expectThrows(IllegalArgumentException.class,
                 () -> a.submitOrder(new OrderRequestDTO(1, "Bob", null, YES, 1, 0.5)), "missing side");
-        expectThrows(UserAccountException.class, () -> order(a, 1, "Carol", SELL, YES, 1, 0.5),
+        expectThrows(EventException.class, () -> order(a, 1, "Carol", SELL, YES, 1, 0.5),
                 "sell without shares");
         order(a, 1, "Zoe", SELL, YES, 60, 0.90);
-        expectThrows(UserAccountException.class, () -> order(a, 1, "Zoe", SELL, YES, 50, 0.95),
+        expectThrows(EventException.class, () -> order(a, 1, "Zoe", SELL, YES, 50, 0.95),
                 "sell more than held minus offered");
         order(a, 1, "Bob", BUY, NO, 5, 0.30);
         expectTrue(a.getUserDetails("Bob").events().stream().anyMatch(e -> e.event().id() == 1 && e.participant()),

@@ -11,8 +11,6 @@ public class UserInputException extends GuessMarketException {
 
     private static final long serialVersionUID = 1L;
 
-    private static final double MIN_PRICE = 0.01;
-
     /** What went wrong, for a caller that reacts differently to a name that is taken. */
     public enum Kind {
         UNAVAILABLE_NAME,
@@ -47,35 +45,27 @@ public class UserInputException extends GuessMarketException {
         return new UserInputException("Empty field", "The " + fieldName + " cannot be empty. Fill it in and try again.");
     }
 
-    public static UserInputException invalidDeposit(double amount) {
-        return new UserInputException("Invalid amount",
-                String.format(Locale.ROOT, "Enter an amount greater than zero. %.2f cannot be loaded.", amount));
+    public static UserInputException notPositive(String fieldName) {
+        return new UserInputException("Invalid number", "The " + fieldName + " must be greater than 0.");
     }
 
-    public static UserInputException invalidQuantity(long quantity) {
-        return new UserInputException("Invalid quantity",
-                "Enter a whole number of shares greater than zero. " + quantity + " is not valid.");
+    public static UserInputException outOfRange(String fieldName, int min, int max) {
+        return outOfRange(fieldName, String.valueOf(min), String.valueOf(max));
     }
 
-    public static UserInputException incompleteOrder() {
-        return new UserInputException("Incomplete order",
-                "The order is incomplete. It needs an event, a side, an option, a quantity and a price.");
-    }
-
-    public static UserInputException missingSide(String eventName) {
-        return new UserInputException("Incomplete order", "Choose Buy or Sell for the order in " + describeEvent(eventName) + ".");
-    }
-
-    public static UserInputException priceOutOfRange(String eventName, double price, int baseValue) {
-        String problem = Double.isNaN(price) ? "not valid" : price < MIN_PRICE ? "too low" : "too high";
-        return new UserInputException("Invalid price", String.format(Locale.ROOT, "A price of %.2f is %s for %s. A winning "
-                + "share pays %.2f, so the price must be between %.2f and %.2f.", price, problem,
-                describeEvent(eventName), (double) baseValue, MIN_PRICE, baseValue - MIN_PRICE));
+    public static UserInputException outOfRange(String fieldName, double min, double max) {
+        return outOfRange(fieldName, String.format(Locale.ROOT, "%.2f", min), String.format(Locale.ROOT, "%.2f", max));
     }
 
     public static UserInputException priceNotWholeCents(double price) {
         // The price is shown as it was given: rounded to two digits it would hide what is wrong with it.
         return new UserInputException("Invalid price", "The price " + new BigDecimal(String.valueOf(price)).toPlainString()
-                + " has more than two decimal places. Enter it in whole cents, for example 0.45.");
+                + " cannot be accepted. A price must be a whole number of cents, and can have at most two decimal "
+                + "places, for example 0.45.");
+    }
+
+    private static UserInputException outOfRange(String fieldName, String min, String max) {
+        return new UserInputException("Number out of range", "The number entered in " + fieldName
+                + " is out of range. Choose a number between " + min + " and " + max + ".");
     }
 }

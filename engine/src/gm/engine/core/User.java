@@ -29,12 +29,11 @@ public class User {
     /**
      * Makes sure the user may start a new action: a blocked user may not.
      *
-     * @param action what the user tried to do, for the message (for example "buy shares")
      * @throws UserAccountException when the balance of the user dropped below zero at some point
      */
-    public void requireNotBlocked(String action) {
+    public void requireNotBlocked() {
         if (account.isBlocked()) {
-            throw UserAccountException.blocked(action);
+            throw UserAccountException.blocked();
         }
     }
 }

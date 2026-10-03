@@ -5,7 +5,7 @@ import gm.dto.CommissionType;
 import gm.dto.OrderSide;
 import gm.engine.core.Event;
 import gm.engine.core.User;
-import gm.engine.exception.UserAccountException;
+import gm.engine.exception.EventException;
 import gm.engine.exception.UserInputException;
 
 import java.util.ArrayList;
@@ -165,11 +165,11 @@ public class OrderBookMarket {
      * Converts the price of an order into whole cents, making sure it is legal: at least 0.01, at most
      * the base value minus 0.01, and without fractions of a cent.
      */
-    public long toPriceCents(Event event, double price) {
+    public long toPriceCents(double price) {
         long maxPriceCents = (long) baseValue * CENTS_PER_UNIT - 1;
         long priceCents = Math.round(price * CENTS_PER_UNIT);
         if (Double.isNaN(price) || priceCents < 1 || priceCents > maxPriceCents) {
-            throw UserInputException.priceOutOfRange(event.getName(), price, baseValue);
+            throw UserInputException.outOfRange("price", 1.0 / CENTS_PER_UNIT, (double) maxPriceCents / CENTS_PER_UNIT);
         }
         if (Math.abs(price * CENTS_PER_UNIT - priceCents) > WHOLE_CENTS_TOLERANCE) {
             throw UserInputException.priceNotWholeCents(price);
@@ -374,8 +374,7 @@ public class OrderBookMarket {
         }
         long available = held - offered;
         if (quantity > available) {
-            throw UserAccountException.insufficientShares(event.getOptionName(optionIndex),
-                    event.getName(), quantity, Math.max(0, available));
+            throw EventException.insufficientShares(Math.max(0, available));
         }
     }
 
