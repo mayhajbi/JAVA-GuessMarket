@@ -7,12 +7,9 @@ import gm.engine.impl.GuessMarketEngineImpl;
 
 import gm.dto.EventInfoDTO;
 import gm.dto.UploadResultDTO;
-import gm.engine.exception.InvalidFilePathException;
+import gm.engine.exception.FileLoadException;
 import gm.engine.exception.EventException;
-import gm.engine.exception.InvalidOptionsException;
-import gm.engine.exception.UnsupportedFileFormatException;
 import gm.engine.exception.UserNotFoundException;
-import gm.engine.exception.XmlParsingException;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -113,16 +110,16 @@ public class UsersAndUploadsTest extends Check {
         expect(4, engine.getAllEvents().size(), "a refused file adds no event at all");
 
         // A file that is not acceptable says why, and changes nothing.
-        expectThrows(UnsupportedFileFormatException.class,
+        expectThrows(FileLoadException.class,
                 () -> Scenario.upload(engine, "Bella", "users.xml",
                         "<Guess-Market><GM-events/><GM-users/></Guess-Market>"), "a file with users");
-        expectThrows(UnsupportedFileFormatException.class,
+        expectThrows(FileLoadException.class,
                 () -> Scenario.upload(engine, "Bella", "ids.xml",
                         Scenario.lmsrFile("Numbered").replace("<description>", "<id>7</id><description>")),
                 "a file with event ids");
-        expectThrows(InvalidFilePathException.class,
+        expectThrows(FileLoadException.class,
                 () -> Scenario.upload(engine, "Bella", "events.txt", Scenario.lmsrFile("Fine")), "a file that is not xml");
-        expectThrows(XmlParsingException.class,
+        expectThrows(FileLoadException.class,
                 () -> Scenario.upload(engine, "Bella", "broken.xml", "<Guess-Market><GM-events>"), "a broken file");
         expectThrows(UserNotFoundException.class,
                 () -> Scenario.upload(engine, "Nobody", "fine.xml", Scenario.lmsrFile("Fine")), "an unknown uploader");
@@ -137,7 +134,7 @@ public class UsersAndUploadsTest extends Check {
         expectThrows(EventException.class,
                 () -> Scenario.upload(engine, "Bella", "flat.xml", zeroLiquidity), "a liquidity of zero");
         String singleOption = Scenario.lmsrFile("Lonely").replace("<GM-option>No</GM-option>", "");
-        expectThrows(InvalidOptionsException.class,
+        expectThrows(FileLoadException.class,
                 () -> Scenario.upload(engine, "Bella", "lonely.xml", singleOption), "an event with one option");
         expect(4, engine.getAllEvents().size(), "the refused files added nothing, again");
 

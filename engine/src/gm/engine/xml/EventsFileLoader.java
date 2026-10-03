@@ -1,8 +1,7 @@
 package gm.engine.xml;
 
 import gm.engine.core.Event;
-import gm.engine.exception.InvalidFilePathException;
-import gm.engine.exception.XmlParsingException;
+import gm.engine.exception.FileLoadException;
 import gm.engine.util.InputText;
 import gm.engine.xml.generated.XmlGuessMarket;
 import jakarta.xml.bind.JAXBContext;
@@ -39,10 +38,10 @@ public class EventsFileLoader {
 
     private void requireXmlName(String name) {
         if (name.isEmpty()) {
-            throw new InvalidFilePathException("No file was selected. Choose an XML file to upload.");
+            throw FileLoadException.invalidPath("No file was selected. Choose an XML file to upload.");
         }
         if (!InputText.hasExtension(name, XML_EXTENSION)) {
-            throw new InvalidFilePathException("The file '" + name + "' is not an XML file. The file name "
+            throw FileLoadException.invalidPath("The file '" + name + "' is not an XML file. The file name "
                     + "must end with the .xml extension.");
         }
     }
@@ -53,12 +52,12 @@ public class EventsFileLoader {
             Unmarshaller unmarshaller = context.createUnmarshaller();
             Object content = unmarshaller.unmarshal(stream);
             if (!(content instanceof XmlGuessMarket)) {
-                throw new XmlParsingException(fileName,
+                throw FileLoadException.unreadable(fileName,
                         "the root element of the file is not 'Guess-Market'.", null);
             }
             return (XmlGuessMarket) content;
         } catch (JAXBException exception) {
-            throw new XmlParsingException(fileName, describe(exception), exception);
+            throw FileLoadException.unreadable(fileName, describe(exception), exception);
         }
     }
 

@@ -26,6 +26,23 @@ public class EventException extends GuessMarketException {
                 + ". It must be a positive whole number. In a file, it is the element 'b'.");
     }
 
+    public static EventException baseValueNotPositive(String eventName, int d) {
+        return new EventException("Invalid base value", "The base value of " + describeEvent(eventName) + " is " + d
+                + ". It must be a positive whole number. In a file, it is the attribute 'd'.");
+    }
+
+    public static EventException initialInvestmentNegative(String eventName, int initial) {
+        return new EventException("Invalid initial investment", "The initial investment of " + describeEvent(eventName)
+                + " is " + initial + ". It cannot be negative. In a file, it is the attribute 'initial'.");
+    }
+
+    public static EventException initialNotDivisible(String eventName, int initial, int d) {
+        return new EventException("Invalid initial investment", "The initial investment of " + describeEvent(eventName)
+                + " is " + initial + ", but it must be a multiple of the base value " + d + ". The market maker "
+                + "receives one pair of shares for every " + d + ". In a file, these are the attributes "
+                + "'initial' and 'd'.");
+    }
+
     public static EventException commissionOutOfRange(String eventName, int value) {
         return new EventException("Invalid commission", "The commission of " + describeEvent(eventName) + " is " + value
                 + "%. It must be a whole number from 0 to 90.");

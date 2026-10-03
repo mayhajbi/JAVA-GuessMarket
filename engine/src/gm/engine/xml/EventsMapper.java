@@ -7,10 +7,7 @@ import gm.engine.core.EventValidator;
 import gm.engine.core.method.LmsrTradingMethod;
 import gm.engine.core.method.TradingMethod;
 import gm.engine.exception.GuessMarketException;
-import gm.engine.exception.InvalidCommissionException;
-import gm.engine.exception.InvalidOrderBookException;
-import gm.engine.exception.MissingXmlDataException;
-import gm.engine.exception.UnsupportedFileFormatException;
+import gm.engine.exception.FileLoadException;
 import gm.engine.util.InputText;
 import gm.engine.xml.generated.XmlCommission;
 import gm.engine.xml.generated.XmlEvent;
@@ -46,18 +43,18 @@ public class EventsMapper {
      * so the events have no id yet (0). Nothing is added to any system here.
      *
      * @return the events, in the order of the file, without a market maker and without an id
-     * @throws UnsupportedFileFormatException when the file has users or event ids
+     * @throws FileLoadException when the file has users or event ids
      */
     public List<Event> toEvents(XmlGuessMarket xmlSystem) {
         if (xmlSystem.getUsers() != null) {
-            throw new UnsupportedFileFormatException("the file has the element 'GM-users'",
+            throw FileLoadException.unsupportedFormat("the file has the element 'GM-users'",
                     "Users register by logging in, so a file may describe events only.");
         }
         List<Event> events = new ArrayList<>();
         for (XmlEvent xmlEvent : requireEventList(xmlSystem.getEvents())) {
             if (xmlEvent.getId() != null) {
                 String name = InputText.normalize(xmlEvent.getName());
-                throw new UnsupportedFileFormatException((name.isEmpty() ? UNNAMED_EVENT
+                throw FileLoadException.unsupportedFormat((name.isEmpty() ? UNNAMED_EVENT
                         : "the event " + GuessMarketException.describeEvent(name)) + " has the element 'id'",
                         "Events are identified by their names.");
             }
@@ -68,11 +65,11 @@ public class EventsMapper {
 
     private List<XmlEvent> requireEventList(XmlEvents xmlEvents) {
         if (xmlEvents == null) {
-            throw MissingXmlDataException.element("GM-events", "the root element 'Guess-Market'");
+            throw FileLoadException.missingElement("GM-events", "the root element 'Guess-Market'");
         }
         List<XmlEvent> xmlEventList = xmlEvents.getEventList();
         if (xmlEventList.isEmpty()) {
-            throw MissingXmlDataException.element("GM-event", "the element 'GM-events'");
+            throw FileLoadException.missingElement("GM-event", "the element 'GM-events'");
         }
         return xmlEventList;
     }
@@ -80,14 +77,14 @@ public class EventsMapper {
     private Event toEvent(XmlEvent xmlEvent) {
         String name = InputText.normalize(xmlEvent.getName());
         if (name.isEmpty()) {
-            throw MissingXmlDataException.attribute("name", "GM-event", UNNAMED_EVENT);
+            throw FileLoadException.missingAttribute("name", "GM-event", UNNAMED_EVENT);
         }
         EventValidator.requireEnglish(name);
         String location = "the event " + GuessMarketException.describeEvent(name);
 
         String description = InputText.normalize(xmlEvent.getDescription());
         if (description.isEmpty()) {
-            throw MissingXmlDataException.element("description", location);
+            throw FileLoadException.missingElement("description", location);
         }
         EventValidator.requireEnglish(description);
 
@@ -102,7 +99,7 @@ public class EventsMapper {
         XmlCommission commission = requireCommission(xmlEvent, location);
         Integer value = commission.getValue();
         if (value == null) {
-            throw MissingXmlDataException.element("commission", location);
+            throw FileLoadException.missingElement("commission", location);
         }
         EventValidator.requireCommissionInRange(name, value);
         return value;
@@ -113,20 +110,20 @@ public class EventsMapper {
         XmlCommission commission = requireCommission(xmlEvent, location);
         String type = InputText.normalize(commission.getType());
         if (type.isEmpty()) {
-            throw MissingXmlDataException.attribute("type", "commission", location);
+            throw FileLoadException.missingAttribute("type", "commission", location);
         }
         for (CommissionType commissionType : CommissionType.values()) {
             if (commissionType.getDisplayName().equalsIgnoreCase(type)) {
                 return commissionType;
             }
         }
-        throw InvalidCommissionException.unknownType(name, type);
+        throw FileLoadException.unknownCommissionType(name, type);
     }
 
     private XmlCommission requireCommission(XmlEvent xmlEvent, String location) {
         XmlCommission commission = xmlEvent.getCommission();
         if (commission == null) {
-            throw MissingXmlDataException.element("commission", location);
+            throw FileLoadException.missingElement("commission", location);
         }
         return commission;
     }
@@ -134,7 +131,7 @@ public class EventsMapper {
     private List<EventOption> readOptions(XmlEvent xmlEvent, String name, String location) {
         XmlOptions xmlOptions = xmlEvent.getOptions();
         if (xmlOptions == null) {
-            throw MissingXmlDataException.element("GM-options", location);
+            throw FileLoadException.missingElement("GM-options", location);
         }
         List<String> optionNames = xmlOptions.getOptionList();
         EventValidator.requireTwoOptions(optionNames.size());
@@ -143,7 +140,7 @@ public class EventsMapper {
         for (String optionName : optionNames) {
             String trimmedName = InputText.normalize(optionName);
             if (trimmedName.isEmpty()) {
-                throw MissingXmlDataException.element("GM-option", location);
+                throw FileLoadException.missingElement("GM-option", location);
             }
             options.add(new EventOption(trimmedName));
         }
@@ -156,7 +153,7 @@ public class EventsMapper {
                              List<EventOption> options, String location) {
         XmlMethod method = xmlEvent.getMethod();
         if (method == null) {
-            throw MissingXmlDataException.element("GM-method", location);
+            throw FileLoadException.missingElement("GM-method", location);
         }
 
         XmlLmsr lmsr = method.getLmsr();
@@ -174,13 +171,13 @@ public class EventsMapper {
             return Event.orderBook(NO_ID, name, description, commissionPercent, commissionType, options,
                     baseValue, allowMint, initialInvestment);
         }
-        throw MissingXmlDataException.eitherElement("GM-LMSR", ORDER_BOOK_ELEMENT, location);
+        throw FileLoadException.missingEitherElement("GM-LMSR", ORDER_BOOK_ELEMENT, location);
     }
 
     private TradingMethod readLmsr(XmlLmsr lmsr, String name, String location) {
         Integer liquidity = lmsr.getB();
         if (liquidity == null) {
-            throw MissingXmlDataException.element("b", location);
+            throw FileLoadException.missingElement("b", location);
         }
         EventValidator.requireLiquidityPositive(name, liquidity);
         return new LmsrTradingMethod(liquidity);
@@ -189,7 +186,7 @@ public class EventsMapper {
     private int readOrderBookBaseValue(XmlOrderBook orderBook, String name, String location) {
         Integer d = orderBook.getD();
         if (d == null) {
-            throw MissingXmlDataException.attribute("d", ORDER_BOOK_ELEMENT, location);
+            throw FileLoadException.missingAttribute("d", ORDER_BOOK_ELEMENT, location);
         }
         EventValidator.requireBaseValuePositive(name, d);
         return d;
@@ -198,7 +195,7 @@ public class EventsMapper {
     private int readOrderBookInitialInvestment(XmlOrderBook orderBook, String location) {
         Integer initial = orderBook.getInitial();
         if (initial == null) {
-            throw MissingXmlDataException.attribute("initial", ORDER_BOOK_ELEMENT, location);
+            throw FileLoadException.missingAttribute("initial", ORDER_BOOK_ELEMENT, location);
         }
         return initial;
     }
@@ -207,7 +204,7 @@ public class EventsMapper {
                                            String location) {
         String value = InputText.normalize(orderBook.getAllowMint());
         if (value.isEmpty()) {
-            throw MissingXmlDataException.attribute("allow-mint", ORDER_BOOK_ELEMENT, location);
+            throw FileLoadException.missingAttribute("allow-mint", ORDER_BOOK_ELEMENT, location);
         }
         if (value.equalsIgnoreCase(ALLOW_MINT_TRUE)) {
             return true;
@@ -215,6 +212,6 @@ public class EventsMapper {
         if (value.equalsIgnoreCase(ALLOW_MINT_FALSE)) {
             return false;
         }
-        throw InvalidOrderBookException.allowMintNotBoolean(name, value);
+        throw FileLoadException.allowMintNotBoolean(name, value);
     }
 }

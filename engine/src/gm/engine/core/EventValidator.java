@@ -1,8 +1,7 @@
 package gm.engine.core;
 
 import gm.engine.exception.EventException;
-import gm.engine.exception.InvalidOptionsException;
-import gm.engine.exception.InvalidOrderBookException;
+import gm.engine.exception.FileLoadException;
 import gm.engine.exception.UserInputException;
 import gm.engine.util.InputText;
 
@@ -53,7 +52,7 @@ public final class EventValidator {
 
     public static void requireTwoOptions(int optionCount) {
         if (optionCount != REQUIRED_OPTIONS) {
-            throw new InvalidOptionsException();
+            throw FileLoadException.wrongOptionCount();
         }
     }
 
@@ -81,7 +80,7 @@ public final class EventValidator {
 
     public static void requireBaseValuePositive(String eventName, int baseValue) {
         if (baseValue <= 0) {
-            throw InvalidOrderBookException.baseValueNotPositive(eventName, baseValue);
+            throw EventException.baseValueNotPositive(eventName, baseValue);
         }
     }
 
@@ -92,10 +91,10 @@ public final class EventValidator {
     public static void requireInitialInvestment(String eventName, int initialInvestment,
                                                 int baseValue) {
         if (initialInvestment < 0) {
-            throw InvalidOrderBookException.initialInvestmentNegative(eventName, initialInvestment);
+            throw EventException.initialInvestmentNegative(eventName, initialInvestment);
         }
         if (initialInvestment % baseValue != 0) {
-            throw InvalidOrderBookException.initialNotDivisible(eventName, initialInvestment,
+            throw EventException.initialNotDivisible(eventName, initialInvestment,
                     baseValue);
         }
     }

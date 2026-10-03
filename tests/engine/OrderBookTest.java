@@ -12,7 +12,6 @@ import gm.engine.api.GuessMarketEngine;
 import gm.engine.exception.EventException;
 import gm.engine.exception.InsufficientFundsException;
 import gm.engine.exception.InsufficientSharesException;
-import gm.engine.exception.InvalidOrderBookException;
 import gm.engine.exception.UserInputException;
 import gm.engine.exception.UserBlockedException;
 
@@ -216,7 +215,7 @@ public class OrderBookTest extends Check {
         GuessMarketEngine f = Scenario.clobOnPurchase();
         expectThrows(InsufficientFundsException.class, () -> f.openEvent(4, "Dan"), "OB open without enough money");
 
-        expectThrows(InvalidOrderBookException.class, () -> Scenario.upload(Scenario.clobOnClose(), "Zoe",
+        expectThrows(EventException.class, () -> Scenario.upload(Scenario.clobOnClose(), "Zoe",
                 "odd.xml", Scenario.file(Scenario.orderBook("Odd Investment", "on-close", 1, true, 100, 3,
                         "YES", "NO"))), "initial not divisible by d");
     }
