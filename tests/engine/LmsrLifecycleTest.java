@@ -2,10 +2,8 @@ import gm.dto.EventStatus;
 import gm.dto.MarketStateDTO;
 import gm.dto.PurchaseResultDTO;
 import gm.dto.UserInfoDTO;
-import gm.engine.exception.EventAlreadyOpenedException;
-import gm.engine.exception.EventNotActiveException;
+import gm.engine.exception.EventException;
 import gm.engine.exception.InsufficientFundsException;
-import gm.engine.exception.NotEventMarketMakerException;
 import gm.engine.exception.UserBlockedException;
 import gm.engine.exception.UserNotFoundException;
 import gm.engine.impl.GuessMarketEngineImpl;
@@ -32,10 +30,10 @@ public class LmsrLifecycleTest extends Check {
         expect("Tikva", engine.getAllEvents().get(0).marketMakerName(), "MM name in DTO");
 
         // buy before open -> explaining exception
-        expectThrows(EventNotActiveException.class, () -> engine.buyShares(1, "Menash", 0, 10),
+        expectThrows(EventException.class, () -> engine.buyShares(1, "Menash", 0, 10),
                 "buy before open");
         // non-MM cannot open
-        expectThrows(NotEventMarketMakerException.class, () -> engine.openEvent(1, "Menash"),
+        expectThrows(EventException.class, () -> engine.openEvent(1, "Menash"),
                 "non-MM open");
         expectThrows(UserNotFoundException.class, () -> engine.openEvent(1, "  nobody "), "unknown user");
 
@@ -45,7 +43,7 @@ public class LmsrLifecycleTest extends Check {
         near(10000 - subsidy, balanceOf(engine, "Tikva"), "Tikva paid subsidy");
         near(subsidy, engine.getMarketState(1).accountBalance(), "event holds subsidy");
         expectTrue(engine.getAllEvents().get(0).status() == EventStatus.ACTIVE, "ACTIVE after open");
-        expectThrows(EventAlreadyOpenedException.class, () -> engine.openEvent(1, "Tikva"), "open twice");
+        expectThrows(EventException.class, () -> engine.openEvent(1, "Tikva"), "open twice");
 
         // on-purchase: Menash (100) buys 10 YES -> pays cost + 5% to Tikva
         double tikvaBefore = balanceOf(engine, "Tikva");
@@ -64,7 +62,7 @@ public class LmsrLifecycleTest extends Check {
                 "blocked user cannot buy");
 
         // close by non-MM refused; close by MM: NO (index 1) wins
-        expectThrows(NotEventMarketMakerException.class, () -> engine.closeEvent(1, "Avrum", 1),
+        expectThrows(EventException.class, () -> engine.closeEvent(1, "Avrum", 1),
                 "non-MM close");
         double menashBefore = balanceOf(engine, "Menash");
         double tikvaBeforeClose = balanceOf(engine, "Tikva");
@@ -78,8 +76,8 @@ public class LmsrLifecycleTest extends Check {
         near(0, closed.accountBalance(), "event account emptied");
         expectTrue(accountBeforeClose - 500 >= 0, "LMSR leftover is non-negative");
         expect("No way !", closed.winningOptionName(), "winner recorded");
-        expectThrows(EventNotActiveException.class, () -> engine.closeEvent(1, "Tikva", 0), "close twice");
-        expectThrows(EventAlreadyOpenedException.class, () -> engine.openEvent(1, "Tikva"), "reopen closed");
+        expectThrows(EventException.class, () -> engine.closeEvent(1, "Tikva", 0), "close twice");
+        expectThrows(EventException.class, () -> engine.openEvent(1, "Tikva"), "reopen closed");
 
         // money is conserved across users + event account (commission and leftover only move)
         double total = 0;

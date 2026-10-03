@@ -27,7 +27,6 @@ import gm.engine.core.Trade;
 import gm.engine.core.User;
 import gm.engine.core.method.LmsrTradingMethod;
 import gm.engine.core.orderbook.OrderOutcome;
-import gm.engine.exception.InvalidEventDetailsException;
 import gm.engine.exception.UserInputException;
 import gm.engine.util.InputText;
 import gm.engine.xml.EventsFileLoader;
@@ -97,7 +96,7 @@ public class GuessMarketEngineImpl implements GuessMarketEngine {
     public UserInfoDTO registerUser(String userName) {
         String name = InputText.normalize(userName);
         if (name.isEmpty()) {
-            throw UserInputException.missingUserName();
+            throw UserInputException.emptyField("user name");
         }
         if (!InputText.isEnglish(name)) {
             throw UserInputException.notEnglish();
@@ -135,7 +134,7 @@ public class GuessMarketEngineImpl implements GuessMarketEngine {
     @Override
     public EventInfoDTO createEvent(NewEventRequestDTO request) {
         if (request == null) {
-            throw InvalidEventDetailsException.missingName();
+            throw UserInputException.emptyField("event name");
         }
         User marketMaker = requireUser(request.userName());
         marketMaker.requireNotBlocked("create events");

@@ -8,12 +8,9 @@ import gm.dto.OrderSide;
 import gm.engine.core.method.TradingMethod;
 import gm.engine.core.orderbook.OrderBookMarket;
 import gm.engine.core.orderbook.OrderOutcome;
-import gm.engine.exception.EventAlreadyOpenedException;
-import gm.engine.exception.EventNotActiveException;
+import gm.engine.exception.EventException;
 import gm.engine.exception.InsufficientFundsException;
-import gm.engine.exception.NotEventMarketMakerException;
 import gm.engine.exception.UserInputException;
-import gm.engine.exception.WrongTradingMethodException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -253,7 +250,7 @@ public class Event {
     public void open(User user) {
         requireMarketMaker(user, "open");
         if (status != EventStatus.INACTIVE) {
-            throw new EventAlreadyOpenedException(name);
+            throw EventException.alreadyOpened(name);
         }
         user.requireNotBlocked("open the event '" + name + "'");
 
@@ -506,19 +503,19 @@ public class Event {
 
     private void requireActive() {
         if (!isActive()) {
-            throw new EventNotActiveException(name, status, marketMaker.getName());
+            throw EventException.notActive(name, status, marketMaker.getName());
         }
     }
 
     private void requireMarketMaker(User user, String action) {
         if (user != marketMaker) {
-            throw new NotEventMarketMakerException(name, marketMaker.getName(), action);
+            throw EventException.notMarketMaker(name, marketMaker.getName(), action);
         }
     }
 
     private void requireType(EventType requiredType, String action) {
         if (type != requiredType) {
-            throw new WrongTradingMethodException(name, type, action);
+            throw EventException.wrongTradingMethod(name, type, action);
         }
     }
 

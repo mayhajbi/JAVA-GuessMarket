@@ -26,7 +26,7 @@ public class ChatManager {
     public void addLine(String userName, String text) {
         String line = InputText.normalize(text);
         if (line.isEmpty()) {
-            throw UserInputException.emptyChatLine();
+            throw UserInputException.emptyField("message");
         }
         if (!InputText.isEnglish(line)) {
             throw UserInputException.notEnglish();

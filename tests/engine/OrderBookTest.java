@@ -9,13 +9,12 @@ import gm.dto.OrderResultDTO;
 import gm.dto.OrderSide;
 import gm.dto.UserInfoDTO;
 import gm.engine.api.GuessMarketEngine;
-import gm.engine.exception.EventNotActiveException;
+import gm.engine.exception.EventException;
 import gm.engine.exception.InsufficientFundsException;
 import gm.engine.exception.InsufficientSharesException;
 import gm.engine.exception.InvalidOrderBookException;
 import gm.engine.exception.UserInputException;
 import gm.engine.exception.UserBlockedException;
-import gm.engine.exception.WrongTradingMethodException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -152,19 +151,19 @@ public class OrderBookTest extends Check {
         near(1100, total, mode + "money conserved");
         near(60, participant(s, "Alice").holdingValuePerOption().get(YES), mode + "winning holding value");
         near(0, participant(s, "Bob").holdingValuePerOption().get(NO), mode + "losing holding value");
-        expectThrows(EventNotActiveException.class, () -> order(engine, 1, "Bob", BUY, YES, 1, 0.5),
+        expectThrows(EventException.class, () -> order(engine, 1, "Bob", BUY, YES, 1, 0.5),
                 mode + "no orders after close");
     }
 
     static void edgeCases() {
         GuessMarketEngine a = Scenario.clobOnPurchase();
-        expectThrows(EventNotActiveException.class, () -> order(a, 1, "Bob", BUY, YES, 10, 0.5),
+        expectThrows(EventException.class, () -> order(a, 1, "Bob", BUY, YES, 10, 0.5),
                 "order before open");
         a.openEvent(1, "Zoe");
-        expectThrows(WrongTradingMethodException.class, () -> a.buyShares(1, "Bob", 0, 10), "LMSR buy on OB");
-        expectThrows(WrongTradingMethodException.class, () -> a.getMarketState(1), "LMSR state of OB");
+        expectThrows(EventException.class, () -> a.buyShares(1, "Bob", 0, 10), "LMSR buy on OB");
+        expectThrows(EventException.class, () -> a.getMarketState(1), "LMSR state of OB");
         a.openEvent(3, "Zoe");
-        expectThrows(WrongTradingMethodException.class, () -> order(a, 3, "Bob", BUY, YES, 10, 0.5),
+        expectThrows(EventException.class, () -> order(a, 3, "Bob", BUY, YES, 10, 0.5),
                 "order on LMSR");
         expectThrows(UserInputException.class, () -> order(a, 1, "Bob", BUY, YES, 10, 0.555), "fraction of cent");
         expectThrows(UserInputException.class, () -> order(a, 1, "Bob", BUY, YES, 10, 0), "price 0");

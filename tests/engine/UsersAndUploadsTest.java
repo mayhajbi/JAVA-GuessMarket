@@ -3,13 +3,12 @@ import gm.dto.AccountEntryType;
 import gm.dto.UserInfoDTO;
 import gm.engine.core.Account;
 import gm.engine.exception.UserInputException;
-import gm.engine.exception.InvalidCommissionException;
 import gm.engine.impl.GuessMarketEngineImpl;
 
 import gm.dto.EventInfoDTO;
 import gm.dto.UploadResultDTO;
 import gm.engine.exception.InvalidFilePathException;
-import gm.engine.exception.InvalidLiquidityException;
+import gm.engine.exception.EventException;
 import gm.engine.exception.InvalidOptionsException;
 import gm.engine.exception.UnsupportedFileFormatException;
 import gm.engine.exception.UserNotFoundException;
@@ -130,12 +129,12 @@ public class UsersAndUploadsTest extends Check {
         expect(4, engine.getAllEvents().size(), "the refused files added nothing");
 
         String badCommission = Scenario.lmsrFile("Costly").replace(">5</commission>", ">95</commission>");
-        expectThrows(InvalidCommissionException.class,
+        expectThrows(EventException.class,
                 () -> Scenario.upload(engine, "Bella", "costly.xml", badCommission), "a commission above the limit");
 
         // The input checks of exercise 1 apply to an uploaded file too: a liquidity of zero, and one option.
         String zeroLiquidity = Scenario.lmsrFile("Flat").replace("<b>100</b>", "<b>0</b>");
-        expectThrows(InvalidLiquidityException.class,
+        expectThrows(EventException.class,
                 () -> Scenario.upload(engine, "Bella", "flat.xml", zeroLiquidity), "a liquidity of zero");
         String singleOption = Scenario.lmsrFile("Lonely").replace("<GM-option>No</GM-option>", "");
         expectThrows(InvalidOptionsException.class,

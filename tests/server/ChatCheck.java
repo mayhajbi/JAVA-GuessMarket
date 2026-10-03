@@ -45,7 +45,7 @@ public class ChatCheck extends Check {
             expect(text, delta.lines().get(0).text(), "the text arrives clean");
             expect(0, second.getChatLines(delta.version()).lines().size(), "a client that is up to date gets nothing");
 
-            expectTrue(refusal(() -> first.sendChatLine(firstName, "   ")).contains("Write a message"), "an empty line is refused");
+            expectTrue(refusal(() -> first.sendChatLine(firstName, "   ")).contains("message cannot be empty"), "an empty line is refused");
             expectTrue(refusal(() -> first.sendChatLine(firstName, "שלום")).contains("English"),
                     "a line that is not in English is refused");
             expectTrue(refusal(() -> firstApi.get("/chat/send", Map.of())).contains("must be sent as POST"),

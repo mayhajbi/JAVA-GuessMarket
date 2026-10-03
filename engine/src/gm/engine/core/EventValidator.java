@@ -1,8 +1,6 @@
 package gm.engine.core;
 
-import gm.engine.exception.InvalidCommissionException;
-import gm.engine.exception.InvalidEventDetailsException;
-import gm.engine.exception.InvalidLiquidityException;
+import gm.engine.exception.EventException;
 import gm.engine.exception.InvalidOptionsException;
 import gm.engine.exception.InvalidOrderBookException;
 import gm.engine.exception.UserInputException;
@@ -26,7 +24,7 @@ public final class EventValidator {
 
     public static void requireName(String name) {
         if (name == null || name.isBlank()) {
-            throw InvalidEventDetailsException.missingName();
+            throw UserInputException.emptyField("event name");
         }
         requireEnglish(name);
     }
@@ -42,14 +40,14 @@ public final class EventValidator {
 
     public static void requireDescription(String eventName, String description) {
         if (description == null || description.isBlank()) {
-            throw InvalidEventDetailsException.missingDescription(eventName);
+            throw UserInputException.emptyField("event description");
         }
         requireEnglish(description);
     }
 
     public static void requireCommissionInRange(String eventName, int commissionPercent) {
         if (commissionPercent < MIN_COMMISSION || commissionPercent > MAX_COMMISSION) {
-            throw InvalidCommissionException.outOfRange(eventName, commissionPercent);
+            throw EventException.commissionOutOfRange(eventName, commissionPercent);
         }
     }
 
@@ -66,18 +64,18 @@ public final class EventValidator {
                                           String secondOption) {
         if (firstOption == null || firstOption.isBlank() || secondOption == null
                 || secondOption.isBlank()) {
-            throw InvalidEventDetailsException.missingOptionName(eventName);
+            throw UserInputException.emptyField("names of both options");
         }
         requireEnglish(firstOption);
         requireEnglish(secondOption);
         if (firstOption.trim().equalsIgnoreCase(secondOption.trim())) {
-            throw InvalidEventDetailsException.sameOptionNames(eventName, firstOption.trim());
+            throw EventException.sameOptionNames(eventName, firstOption.trim());
         }
     }
 
     public static void requireLiquidityPositive(String eventName, int liquidity) {
         if (liquidity <= 0) {
-            throw new InvalidLiquidityException(eventName, liquidity);
+            throw EventException.invalidLiquidity(eventName, liquidity);
         }
     }
 

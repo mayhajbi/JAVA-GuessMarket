@@ -43,12 +43,8 @@ public class UserInputException extends GuessMarketException {
                 "'" + name + "' is already taken. Please choose another.");
     }
 
-    public static UserInputException missingUserName() {
-        return new UserInputException("User name missing", "Enter a user name to log in.");
-    }
-
-    public static UserInputException emptyChatLine() {
-        return new UserInputException("Empty message", "Write a message before sending.");
+    public static UserInputException emptyField(String fieldName) {
+        return new UserInputException("Empty field", "The " + fieldName + " cannot be empty. Fill it in and try again.");
     }
 
     public static UserInputException invalidDeposit(double amount) {
@@ -62,8 +58,8 @@ public class UserInputException extends GuessMarketException {
     }
 
     public static UserInputException incompleteOrder() {
-        return new UserInputException("Incomplete order", "The order is incomplete. It needs an event, a side, an option, a "
-                + "quantity and a price.");
+        return new UserInputException("Incomplete order",
+                "The order is incomplete. It needs an event, a side, an option, a quantity and a price.");
     }
 
     public static UserInputException missingSide(String eventName) {

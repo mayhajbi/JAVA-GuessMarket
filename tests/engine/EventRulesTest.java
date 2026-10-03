@@ -4,7 +4,7 @@ import gm.dto.EventInfoDTO;
 import gm.dto.EventStatus;
 import gm.dto.EventType;
 import gm.dto.NewEventRequestDTO;
-import gm.engine.exception.InvalidEventDetailsException;
+import gm.engine.exception.EventException;
 import gm.engine.exception.UserBlockedException;
 import gm.engine.impl.GuessMarketEngineImpl;
 
@@ -46,7 +46,7 @@ public class EventRulesTest extends Check {
                 false, 0)), "a blocked user cannot create an event");
 
         // A data file whose two options have the same name (ignoring case) is rejected.
-        expectThrows(InvalidEventDetailsException.class, () -> Scenario.upload(engine, "Avrum", "twins.xml",
+        expectThrows(EventException.class, () -> Scenario.upload(engine, "Avrum", "twins.xml",
                 Scenario.file(Scenario.lmsr("Twins", "on-close", 5, 100, "Yes", "YES"))),
                 "same option names in a file");
     }

@@ -11,11 +11,6 @@ public class InvalidCommissionException extends GuessMarketException {
         super(title, message);
     }
 
-    public static InvalidCommissionException outOfRange(String eventName, int value) {
-        return new InvalidCommissionException("Invalid commission", "The commission of " + describeEvent(eventName) + " is " + value
-                + "%. It must be a whole number from 0 to 90.");
-    }
-
     public static InvalidCommissionException unknownType(String eventName, String type) {
         return new InvalidCommissionException("Invalid commission type", "'" + type + "' is not a valid commission type in "
                 + describeEvent(eventName) + ". In the attribute 'type' of the element 'commission', use "

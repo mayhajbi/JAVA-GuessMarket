@@ -50,7 +50,7 @@ rem --- a missing name is rejected ---
 for /f %%s in ('curl.exe -s -o "%TMP_BODY%" -w "%%{http_code}" -X POST "%BASE_URL%/login"') do set STATUS=%%s
 set /p BODY=<"%TMP_BODY%"
 if "!STATUS!"=="409" (
-    echo !BODY! | findstr /c:"Enter a user name" >nul
+    echo !BODY! | findstr /c:"user name cannot be empty" >nul
     if !errorlevel! equ 0 (
         echo [PASS] login-missing-name: 409 with the expected message
     ) else (

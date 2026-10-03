@@ -1,5 +1,5 @@
 import gm.dto.PurchaseResultDTO;
-import gm.engine.exception.EventNotActiveException;
+import gm.engine.exception.EventException;
 import gm.engine.exception.UserBlockedException;
 import gm.engine.impl.GuessMarketEngineImpl;
 
@@ -16,7 +16,7 @@ public class QuoteTest extends Check {
 
     static void check() {
         GuessMarketEngineImpl engine = Scenario.small();
-        expectThrows(EventNotActiveException.class, () -> engine.quoteShares(1, "Menash", 0, 10),
+        expectThrows(EventException.class, () -> engine.quoteShares(1, "Menash", 0, 10),
                 "no quote for an event that is not open");
         engine.openEvent(1, "Tikva");
 
