@@ -50,6 +50,8 @@ public abstract class GmServlet extends HttpServlet {
             fail(response, HttpServletResponse.SC_BAD_REQUEST, "Invalid request", e.getMessage());
         } catch (GuessMarketException e) {
             fail(response, HttpServletResponse.SC_BAD_REQUEST, e.getTitle(), e.getMessage());
+        } catch (IllegalArgumentException e) {
+            fail(response, HttpServletResponse.SC_BAD_REQUEST, "Invalid request", e.getMessage());
         } catch (RuntimeException e) {
             fail(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Server error",
                     "The server could not process the request. Try again.");

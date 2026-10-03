@@ -27,10 +27,8 @@ import gm.engine.core.Trade;
 import gm.engine.core.User;
 import gm.engine.core.method.LmsrTradingMethod;
 import gm.engine.core.orderbook.OrderOutcome;
-import gm.engine.exception.InvalidDepositException;
 import gm.engine.exception.InvalidEventDetailsException;
-import gm.engine.exception.InvalidOrderException;
-import gm.engine.exception.InvalidUserNameException;
+import gm.engine.exception.UserInputException;
 import gm.engine.util.InputText;
 import gm.engine.xml.EventsFileLoader;
 
@@ -99,10 +97,10 @@ public class GuessMarketEngineImpl implements GuessMarketEngine {
     public UserInfoDTO registerUser(String userName) {
         String name = InputText.normalize(userName);
         if (name.isEmpty()) {
-            throw new InvalidUserNameException();
+            throw UserInputException.missingUserName();
         }
         if (!InputText.isEnglish(name)) {
-            throw InvalidUserNameException.notEnglish();
+            throw UserInputException.notEnglish();
         }
         User user = new User(name, NEW_USER_BALANCE);
         market.addUser(user);
@@ -113,7 +111,7 @@ public class GuessMarketEngineImpl implements GuessMarketEngine {
     public UserInfoDTO deposit(String userName, double amount) {
         User user = requireUser(userName);
         if (!(amount > 0) || Double.isInfinite(amount)) {
-            throw new InvalidDepositException(amount);
+            throw UserInputException.invalidDeposit(amount);
         }
         user.getAccount().deposit(amount, AccountEntryType.DEPOSIT);
         return dtoFactory.toUserInfo(user, market.getAllEvents());
@@ -209,7 +207,7 @@ public class GuessMarketEngineImpl implements GuessMarketEngine {
     @Override
     public OrderResultDTO submitOrder(OrderRequestDTO request) {
         if (request == null) {
-            throw InvalidOrderException.missingRequest();
+            throw UserInputException.incompleteOrder();
         }
         Event event = requireEvent(request.eventId());
         User user = requireUser(request.userName());

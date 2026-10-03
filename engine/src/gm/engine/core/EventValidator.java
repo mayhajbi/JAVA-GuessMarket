@@ -5,6 +5,7 @@ import gm.engine.exception.InvalidEventDetailsException;
 import gm.engine.exception.InvalidLiquidityException;
 import gm.engine.exception.InvalidOptionsException;
 import gm.engine.exception.InvalidOrderBookException;
+import gm.engine.exception.UserInputException;
 import gm.engine.util.InputText;
 
 /**
@@ -35,7 +36,7 @@ public final class EventValidator {
      */
     public static void requireEnglish(String text) {
         if (!InputText.isEnglish(text)) {
-            throw InvalidEventDetailsException.notEnglish();
+            throw UserInputException.notEnglish();
         }
     }
 

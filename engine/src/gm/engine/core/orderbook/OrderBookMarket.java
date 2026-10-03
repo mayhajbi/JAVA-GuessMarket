@@ -6,7 +6,7 @@ import gm.dto.OrderSide;
 import gm.engine.core.Event;
 import gm.engine.core.User;
 import gm.engine.exception.InsufficientSharesException;
-import gm.engine.exception.InvalidOrderException;
+import gm.engine.exception.UserInputException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -169,10 +169,10 @@ public class OrderBookMarket {
         long maxPriceCents = (long) baseValue * CENTS_PER_UNIT - 1;
         long priceCents = Math.round(price * CENTS_PER_UNIT);
         if (Double.isNaN(price) || priceCents < 1 || priceCents > maxPriceCents) {
-            throw InvalidOrderException.priceOutOfRange(event.getName(), price, baseValue);
+            throw UserInputException.priceOutOfRange(event.getName(), price, baseValue);
         }
         if (Math.abs(price * CENTS_PER_UNIT - priceCents) > WHOLE_CENTS_TOLERANCE) {
-            throw InvalidOrderException.priceNotWholeCents(event.getName(), price);
+            throw UserInputException.priceNotWholeCents(price);
         }
         return priceCents;
     }

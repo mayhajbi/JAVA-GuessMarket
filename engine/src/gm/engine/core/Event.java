@@ -11,9 +11,8 @@ import gm.engine.core.orderbook.OrderOutcome;
 import gm.engine.exception.EventAlreadyOpenedException;
 import gm.engine.exception.EventNotActiveException;
 import gm.engine.exception.InsufficientFundsException;
-import gm.engine.exception.InvalidOrderException;
-import gm.engine.exception.InvalidQuantityException;
 import gm.engine.exception.NotEventMarketMakerException;
+import gm.engine.exception.UserInputException;
 import gm.engine.exception.WrongTradingMethodException;
 
 import java.util.ArrayList;
@@ -314,7 +313,7 @@ public class Event {
         buyer.requireNotBlocked("buy shares");
         validateOptionIndex(optionIndex);
         if (quantity <= 0) {
-            throw new InvalidQuantityException(quantity);
+            throw UserInputException.invalidQuantity(quantity);
         }
 
         double sharesCost = tradingMethod.buyCost(sharesPerOption(), optionIndex, quantity);
@@ -339,10 +338,10 @@ public class Event {
         user.requireNotBlocked("place orders");
         validateOptionIndex(optionIndex);
         if (side == null) {
-            throw InvalidOrderException.missingSide(name);
+            throw UserInputException.missingSide(name);
         }
         if (quantity <= 0) {
-            throw new InvalidQuantityException(quantity);
+            throw UserInputException.invalidQuantity(quantity);
         }
         long priceCents = orderBook.toPriceCents(this, price);
         OrderOutcome outcome = orderBook.placeOrder(this, user, side, optionIndex, quantity, priceCents);

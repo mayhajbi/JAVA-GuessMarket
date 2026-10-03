@@ -13,11 +13,6 @@ public class InvalidEventDetailsException extends GuessMarketException {
         super(title, message);
     }
 
-    public static InvalidEventDetailsException notEnglish() {
-        return new InvalidEventDetailsException("English only", "The name, description and options of an event must use "
-                + "English letters, digits and common punctuation only.");
-    }
-
     public static InvalidEventDetailsException missingName() {
         return new InvalidEventDetailsException("Name missing", "Enter a name for the event.");
     }

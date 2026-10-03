@@ -13,8 +13,7 @@ import gm.engine.exception.EventNotActiveException;
 import gm.engine.exception.InsufficientFundsException;
 import gm.engine.exception.InsufficientSharesException;
 import gm.engine.exception.InvalidOrderBookException;
-import gm.engine.exception.InvalidOrderException;
-import gm.engine.exception.InvalidQuantityException;
+import gm.engine.exception.UserInputException;
 import gm.engine.exception.UserBlockedException;
 import gm.engine.exception.WrongTradingMethodException;
 
@@ -111,7 +110,7 @@ public class OrderBookTest extends Check {
         stats(s, NO, 0.42, null, 0.45, null, null, mode + "NO after the mint");
 
         // step 16: rejected price
-        expectThrows(InvalidOrderException.class, () -> order(engine, 1, "Bob", BUY, YES, 10, 1.05),
+        expectThrows(UserInputException.class, () -> order(engine, 1, "Bob", BUY, YES, 10, 1.05),
                 mode + "price above d - 0.01");
 
         // step 17: Bob's NO ask finds no buyer
@@ -167,10 +166,10 @@ public class OrderBookTest extends Check {
         a.openEvent(3, "Zoe");
         expectThrows(WrongTradingMethodException.class, () -> order(a, 3, "Bob", BUY, YES, 10, 0.5),
                 "order on LMSR");
-        expectThrows(InvalidOrderException.class, () -> order(a, 1, "Bob", BUY, YES, 10, 0.555), "fraction of cent");
-        expectThrows(InvalidOrderException.class, () -> order(a, 1, "Bob", BUY, YES, 10, 0), "price 0");
-        expectThrows(InvalidQuantityException.class, () -> order(a, 1, "Bob", BUY, YES, 0, 0.5), "quantity 0");
-        expectThrows(InvalidOrderException.class,
+        expectThrows(UserInputException.class, () -> order(a, 1, "Bob", BUY, YES, 10, 0.555), "fraction of cent");
+        expectThrows(UserInputException.class, () -> order(a, 1, "Bob", BUY, YES, 10, 0), "price 0");
+        expectThrows(UserInputException.class, () -> order(a, 1, "Bob", BUY, YES, 0, 0.5), "quantity 0");
+        expectThrows(UserInputException.class,
                 () -> a.submitOrder(new OrderRequestDTO(1, "Bob", null, YES, 1, 0.5)), "missing side");
         expectThrows(InsufficientSharesException.class, () -> order(a, 1, "Carol", SELL, YES, 1, 0.5),
                 "sell without shares");

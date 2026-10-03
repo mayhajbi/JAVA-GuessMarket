@@ -1,7 +1,6 @@
 package gm.server;
 
-import gm.engine.exception.DuplicateUserNameException;
-import gm.engine.exception.InvalidUserNameException;
+import gm.engine.exception.UserInputException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -23,10 +22,10 @@ public class LoginServlet extends GmServlet {
             String name = ServletUtils.getEngine(getServletContext()).registerUser(request.getParameter(ServletUtils.USERNAME)).name();
             request.getSession(true).setAttribute(ServletUtils.USERNAME, name);
             response.setStatus(HttpServletResponse.SC_OK);
-        } catch (DuplicateUserNameException e) {
-            fail(response, HttpServletResponse.SC_UNAUTHORIZED, e.getTitle(), e.getMessage());
-        } catch (InvalidUserNameException e) {
-            fail(response, HttpServletResponse.SC_CONFLICT, e.getTitle(), e.getMessage());
+        } catch (UserInputException e) {
+            int status = e.getKind() == UserInputException.Kind.UNAVAILABLE_NAME
+                    ? HttpServletResponse.SC_UNAUTHORIZED : HttpServletResponse.SC_CONFLICT;
+            fail(response, status, e.getTitle(), e.getMessage());
         }
     }
 }

@@ -55,10 +55,11 @@ public class MessageWordingTest extends Check {
                 "a price below the range");
         expectTrue(messageOf(() -> order(engine, 0.555)).startsWith("The price 0.555 has more than two decimal places"),
                 "a price with a fraction of a cent is shown as it was given");
-        expect("'Will it rain tomorrow ?' has no option number 6. Choose an option from 1 to 2.",
-                messageOf(() -> engine.buyShares(LMSR_ID, "Ben", 5, 1)), "an option that does not exist");
+        expectThrows(IllegalArgumentException.class, () -> engine.buyShares(LMSR_ID, "Ben", 5, 1),
+                "an option that does not exist");
         messageOf(() -> engine.buyShares(LMSR_ID, "Ben", 0, 0));
-        messageOf(() -> engine.buyShares(999, "Ben", 0, 1));
+        expectThrows(IllegalArgumentException.class, () -> engine.buyShares(999, "Ben", 0, 1),
+                "an event that does not exist");
         messageOf(() -> engine.buyShares(ORDER_BOOK_ID, "Ben", 0, 1));
         messageOf(() -> engine.openEvent(LMSR_ID, "Ben"));
         messageOf(() -> engine.openEvent(LMSR_ID, "Avi"));
@@ -71,7 +72,7 @@ public class MessageWordingTest extends Check {
 
         // uploaded files
         expectTrue(messageOf(() -> UsersAndUploadsTest.upload(engine, "Ben", DATA + "ex3/multiple.xml"))
-                .endsWith("Names are not case-sensitive. Choose a different name."), "an event name that is in use");
+                .endsWith("is already taken. Please choose another."), "an event name that is in use");
         expect("The attribute 'd' of the element 'GM-order-book' is missing or empty in the event 'No d'. Add "
                         + "it and upload the file again.",
                 messageOf(() -> uploadOrderBook(engine, "No d", "allow-mint=\"true\" initial=\"10\"")),

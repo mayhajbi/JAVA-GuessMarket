@@ -3,8 +3,7 @@ package gm.engine.core;
 import gm.dto.CommissionType;
 import gm.dto.EventStatus;
 import gm.dto.EventType;
-import gm.engine.exception.DuplicateEventNameException;
-import gm.engine.exception.DuplicateUserNameException;
+import gm.engine.exception.UserInputException;
 import gm.engine.exception.UserNotFoundException;
 
 import java.util.ArrayList;
@@ -36,8 +35,8 @@ public class GuessMarket {
     /**
      * Adds an event to the system. Its id is one the system gave it ({@link #nextEventId()}).
      *
-     * @throws DuplicateEventNameException when an event with the same name (ignoring case) already
-     *                                     exists
+     * @throws UserInputException when an event with the same name (ignoring case) already
+     *                            exists
      */
     public void addEvent(Event event) {
         requireNameNotInUse(event.getName());
@@ -50,14 +49,14 @@ public class GuessMarket {
      * the system and against each other before the first event is added, and the events get the next
      * ids of the system, in the order of the list.
      *
-     * @throws DuplicateEventNameException when a name is already in use, or appears twice in the list
+     * @throws UserInputException when a name is already in use, or appears twice in the list
      */
     public void addEvents(List<Event> events) {
         Set<String> namesInList = new HashSet<>();
         for (Event event : events) {
             requireNameNotInUse(event.getName());
             if (!namesInList.add(nameKey(event.getName()))) {
-                throw new DuplicateEventNameException(event.getName());
+                throw UserInputException.unavailableName(event.getName());
             }
         }
         int nextId = nextEventId();
@@ -69,7 +68,7 @@ public class GuessMarket {
 
     private void requireNameNotInUse(String name) {
         if (eventsByName.containsKey(nameKey(name))) {
-            throw new DuplicateEventNameException(name);
+            throw UserInputException.unavailableName(name);
         }
     }
 
@@ -122,13 +121,13 @@ public class GuessMarket {
     /**
      * Adds a user to the system.
      *
-     * @throws DuplicateUserNameException when a user with the same name (ignoring case) already
-     *                                    exists
+     * @throws UserInputException when a user with the same name (ignoring case) already
+     *                            exists
      */
     public void addUser(User user) {
         String key = user.getName().toLowerCase(Locale.ROOT);
         if (usersByName.containsKey(key)) {
-            throw new DuplicateUserNameException(user.getName());
+            throw UserInputException.unavailableName(user.getName());
         }
         usersByName.put(key, user);
     }

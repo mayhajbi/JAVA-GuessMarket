@@ -2,17 +2,13 @@ import gm.dto.AccountEntryDTO;
 import gm.dto.AccountEntryType;
 import gm.dto.UserInfoDTO;
 import gm.engine.core.Account;
-import gm.engine.exception.DuplicateUserNameException;
+import gm.engine.exception.UserInputException;
 import gm.engine.exception.InvalidCommissionException;
-import gm.engine.exception.InvalidDepositException;
-import gm.engine.exception.InvalidUserNameException;
 import gm.engine.impl.GuessMarketEngineImpl;
 
 import gm.dto.EventInfoDTO;
 import gm.dto.UploadResultDTO;
-import gm.engine.exception.DuplicateEventNameException;
 import gm.engine.exception.InvalidFilePathException;
-import gm.engine.exception.InvalidEventDetailsException;
 import gm.engine.exception.InvalidLiquidityException;
 import gm.engine.exception.InvalidOptionsException;
 import gm.engine.exception.UnsupportedFileFormatException;
@@ -48,20 +44,20 @@ public class UsersAndUploadsTest extends Check {
         money(0, dana.balance(), "a new user starts with an empty account");
         expectFalse(dana.blocked(), "an empty account is not blocked");
         expectFalse(dana.marketMaker(), "a new user is not a market maker");
-        expectThrows(DuplicateUserNameException.class, () -> engine.registerUser("dana levi"),
+        expectThrows(UserInputException.class, () -> engine.registerUser("dana levi"),
                 "the same name in another case");
-        expectThrows(InvalidUserNameException.class, () -> engine.registerUser("   "), "a blank name");
-        expectThrows(InvalidUserNameException.class, () -> engine.registerUser("\u05E9\u05DC\u05D5\u05DD"),
+        expectThrows(UserInputException.class, () -> engine.registerUser("   "), "a blank name");
+        expectThrows(UserInputException.class, () -> engine.registerUser("\u05E9\u05DC\u05D5\u05DD"),
                 "a name that is not in English");
         expect(1, engine.getAllUsers().size(), "failed registrations add nobody");
 
         // Depositing: positive amounts only, and every one is an entry, latest first.
         money(100, engine.deposit("Dana Levi", 100).balance(), "the balance after a deposit");
         money(150.5, engine.deposit("dana levi", 50.5).balance(), "the name is found without case");
-        expectThrows(InvalidDepositException.class, () -> engine.deposit("Dana Levi", 0), "a zero deposit");
-        expectThrows(InvalidDepositException.class, () -> engine.deposit("Dana Levi", -5),
+        expectThrows(UserInputException.class, () -> engine.deposit("Dana Levi", 0), "a zero deposit");
+        expectThrows(UserInputException.class, () -> engine.deposit("Dana Levi", -5),
                 "a negative deposit");
-        expectThrows(InvalidDepositException.class, () -> engine.deposit("Dana Levi", Double.NaN),
+        expectThrows(UserInputException.class, () -> engine.deposit("Dana Levi", Double.NaN),
                 "a deposit that is not a number");
         List<AccountEntryDTO> entries = engine.getAccountEntries("Dana Levi");
         expect(2, entries.size(), "only the accepted deposits are entries");
@@ -107,12 +103,12 @@ public class UsersAndUploadsTest extends Check {
         expectFalse(user(engine, "Bella").marketMaker(), "another user is not");
 
         // A name that exists is refused, whatever its case, and so is a name twice in one file.
-        expectThrows(DuplicateEventNameException.class,
+        expectThrows(UserInputException.class,
                 () -> upload(engine, "Bella", DATA + "ex3/small.xml"), "the same file again");
-        expectThrows(DuplicateEventNameException.class,
+        expectThrows(UserInputException.class,
                 () -> Scenario.upload(engine, "Bella", "again.xml", Scenario.lmsrFile("Fresh one", "MUJTABA IS DEAD")),
                 "a name that exists in another case, after a fresh event");
-        expectThrows(DuplicateEventNameException.class,
+        expectThrows(UserInputException.class,
                 () -> Scenario.upload(engine, "Bella", "twice.xml", Scenario.lmsrFile("Twin", "twin")),
                 "the same name twice in one file");
         expect(4, engine.getAllEvents().size(), "a refused file adds no event at all");
@@ -147,12 +143,12 @@ public class UsersAndUploadsTest extends Check {
         expect(4, engine.getAllEvents().size(), "the refused files added nothing, again");
 
         // Only English is accepted: in the name, the description and the options of an event.
-        expectThrows(InvalidEventDetailsException.class,
+        expectThrows(UserInputException.class,
                 () -> Scenario.upload(engine, "Bella", "hebrew.xml", Scenario.lmsrFile("\u05E9\u05DC\u05D5\u05DD")),
                 "an event name that is not in English");
         String foreignOption = Scenario.lmsrFile("Foreign").replace("<GM-option>No</GM-option>",
                 "<GM-option>\u05DC\u05D0</GM-option>");
-        expectThrows(InvalidEventDetailsException.class,
+        expectThrows(UserInputException.class,
                 () -> Scenario.upload(engine, "Bella", "foreign.xml", foreignOption),
                 "an option that is not in English");
         expect(4, engine.getAllEvents().size(), "the refused files added nothing, once more");

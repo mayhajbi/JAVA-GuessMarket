@@ -1,6 +1,6 @@
 package gm.engine.chat;
 
-import gm.engine.exception.InvalidChatLineException;
+import gm.engine.exception.UserInputException;
 import gm.engine.util.InputText;
 
 import java.util.ArrayList;
@@ -21,15 +21,15 @@ public class ChatManager {
      * Adds a line to the chat. The text is cleaned like every other text of the system, and has to be
      * written in English.
      *
-     * @throws InvalidChatLineException when the line is empty or is not written in English
+     * @throws UserInputException when the line is empty or is not written in English
      */
     public void addLine(String userName, String text) {
         String line = InputText.normalize(text);
         if (line.isEmpty()) {
-            throw InvalidChatLineException.empty();
+            throw UserInputException.emptyChatLine();
         }
         if (!InputText.isEnglish(line)) {
-            throw InvalidChatLineException.notEnglish();
+            throw UserInputException.notEnglish();
         }
         lines.add(new ChatLine(userName, line));
     }

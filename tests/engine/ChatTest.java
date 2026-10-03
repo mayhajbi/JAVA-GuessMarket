@@ -1,6 +1,6 @@
 import gm.dto.ChatLineDTO;
 import gm.dto.ChatLinesDTO;
-import gm.engine.exception.InvalidChatLineException;
+import gm.engine.exception.UserInputException;
 import gm.engine.exception.UserNotFoundException;
 import gm.engine.impl.GuessMarketEngineImpl;
 
@@ -46,9 +46,9 @@ public class ChatTest extends Check {
         expect(3, engine.getChatLines(-1).lines().size(), "a negative version gets everything");
 
         // What is refused changes nothing.
-        expectThrows(InvalidChatLineException.class, () -> engine.sendChatLine("Avi", "   "), "an empty line");
-        expectThrows(InvalidChatLineException.class, () -> engine.sendChatLine("Avi", null), "no line at all");
-        expectThrows(InvalidChatLineException.class, () -> engine.sendChatLine("Avi", "שלום"),
+        expectThrows(UserInputException.class, () -> engine.sendChatLine("Avi", "   "), "an empty line");
+        expectThrows(UserInputException.class, () -> engine.sendChatLine("Avi", null), "no line at all");
+        expectThrows(UserInputException.class, () -> engine.sendChatLine("Avi", "שלום"),
                 "a line that is not in English");
         expectThrows(UserNotFoundException.class, () -> engine.sendChatLine("Nobody", "Hello"), "an unknown user");
         expect(3, engine.getChatLines(0).version(), "the refused lines were not added");

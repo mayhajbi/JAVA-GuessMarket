@@ -75,7 +75,7 @@ Expect 'create-lmsr' $reply 200 "Write check LMSR $rnd"
 $lmsr = ($reply.Text | ConvertFrom-Json)
 if ($lmsr.status -eq 'INACTIVE' -and $lmsr.marketMakerName -eq $a.User) { Pass 'create-lmsr-inactive-and-mine' 'INACTIVE, market maker is the creator' }
 else { Fail 'create-lmsr-inactive-and-mine' "status $($lmsr.status), market maker $($lmsr.marketMakerName)" }
-Expect 'create-same-name-other-case' (Send $a POST 'event/create' (New-Lmsr "write check lmsr $rnd" 5 'ON_PURCHASE')) 400 'already exists'
+Expect 'create-same-name-other-case' (Send $a POST 'event/create' (New-Lmsr "write check lmsr $rnd" 5 'ON_PURCHASE')) 400 'already taken'
 $noLiquidity = New-Lmsr "Missing liquidity $rnd" 5 'ON_PURCHASE'; $noLiquidity.Remove('liquidity')
 Expect 'create-missing-liquidity' (Send $a POST 'event/create' $noLiquidity) 400 "'liquidity' is missing"
 [IO.File]::WriteAllText($jsonFile, '{"name":"broken', (New-Object Text.UTF8Encoding($false)))

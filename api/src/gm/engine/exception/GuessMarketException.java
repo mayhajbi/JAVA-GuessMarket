@@ -10,9 +10,6 @@ public abstract class GuessMarketException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 
-    /** What every message about a text that is not in English asks for. */
-    protected static final String USE_ENGLISH = "Use English letters, digits and common punctuation only.";
-
     private final String title;
 
     /**
