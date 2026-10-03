@@ -137,7 +137,7 @@ public class EventsMapper {
             throw MissingXmlDataException.element("GM-options", location);
         }
         List<String> optionNames = xmlOptions.getOptionList();
-        EventValidator.requireTwoOptions(name, optionNames.size());
+        EventValidator.requireTwoOptions(optionNames.size());
 
         List<EventOption> options = new ArrayList<>();
         for (String optionName : optionNames) {

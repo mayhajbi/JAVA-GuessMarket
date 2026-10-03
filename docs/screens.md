@@ -36,7 +36,7 @@
   an ask, have no prices to draw yet.
 * **Actions** - performed by the user who is logged in: *Open event* and *Close event* for the market maker, *Buy* shares of an LMSR event,
   *Place order* (buy or sell, quantity, option, price) in an order book event.
-  Before shares are bought, or an order to buy is placed, a dialog shows the price (for an order: the highest it can cost), the commission and the balance that would be left, and warns when that balance is below zero, which blocks the user; *Cancel* changes nothing.
+  Before shares of an LMSR event are bought, a dialog shows the price, the commission and the balance that would be left, and warns when that balance is below zero, which blocks the user; *Cancel* changes nothing.
 
 * **Automatic updates** - what the other users do (a file uploaded, an event opened or closed, a
   purchase, an order, funds loaded) appears on the shown screen by itself within about half a second,

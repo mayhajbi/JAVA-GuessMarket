@@ -52,9 +52,9 @@ public final class EventValidator {
         }
     }
 
-    public static void requireTwoOptions(String eventName, int optionCount) {
+    public static void requireTwoOptions(int optionCount) {
         if (optionCount != REQUIRED_OPTIONS) {
-            throw new InvalidOptionsException(eventName, optionCount);
+            throw new InvalidOptionsException();
         }
     }
 

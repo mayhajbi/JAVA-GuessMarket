@@ -28,6 +28,7 @@
         <url-pattern>/event/market</url-pattern>
         <url-pattern>/event/orderbook</url-pattern>
         <url-pattern>/event/prices</url-pattern>
+        <url-pattern>/event/quote</url-pattern>
     </servlet-mapping>
     <servlet>
         <servlet-name>UsersServlet</servlet-name>
@@ -57,7 +58,6 @@
         <url-pattern>/event/open</url-pattern>
         <url-pattern>/event/close</url-pattern>
         <url-pattern>/event/buy</url-pattern>
-        <url-pattern>/event/quote</url-pattern>
         <url-pattern>/event/order</url-pattern>
         <url-pattern>/event/create</url-pattern>
     </servlet-mapping>

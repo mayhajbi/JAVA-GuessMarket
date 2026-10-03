@@ -12,6 +12,7 @@ import gm.dto.HistoryPointDTO;
 import gm.dto.MarketStateDTO;
 import gm.dto.OrderBookStateDTO;
 import gm.dto.PriceHistoryDTO;
+import gm.dto.PurchaseResultDTO;
 import gm.dto.UserDetailsDTO;
 import gm.dto.UserInfoDTO;
 import gm.dto.UserSummaryDTO;
@@ -94,6 +95,14 @@ public record Query<T>(String path, Map<String, String> params, Function<String,
      */
     public static Query<? extends EventStateDTO> state(EventInfoDTO event) {
         return event.type() == EventType.LMSR ? market(event.id()) : orderBook(event.id());
+    }
+
+    /**
+     * What buying shares would cost now. It is a read: nothing changes, so it is a GET with its details in the query.
+     */
+    public static Query<PurchaseResultDTO> quote(int eventId, int optionIndex, long quantity) {
+        return json("/event/quote", Map.of("id", String.valueOf(eventId), "option", String.valueOf(optionIndex),
+                "quantity", String.valueOf(quantity)), PurchaseResultDTO.class);
     }
 
     public static Query<List<PriceHistoryDTO>> prices(int eventId) {

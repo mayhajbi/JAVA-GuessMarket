@@ -91,7 +91,7 @@ public class MessageWordingTest extends Check {
                 .endsWith("use 'on-purchase' or 'on-close'."), "an unknown commission type");
         expectTrue(messageOf(() -> upload(engine, "costly.xml", lmsr("Costly", "on-close", 95, 100, "Yes", "No")))
                 .endsWith("It must be a whole number from 0 to 90."), "a commission above the limit");
-        expect("'Lonely' has 1 options. An event must have exactly 2, each in a 'GM-option' element.",
+        expect("An event must have exactly 2 options, no more and no fewer.",
                 messageOf(() -> upload(engine, "lonely.xml", lmsr("Lonely", "on-close", 5, 100, "Yes"))),
                 "an event with one option");
         expectTrue(messageOf(() -> upload(engine, "users.xml",

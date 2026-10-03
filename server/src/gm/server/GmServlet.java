@@ -70,6 +70,10 @@ public abstract class GmServlet extends HttpServlet {
         return requireNumber(request, name, Integer::parseInt, "a whole number");
     }
 
+    protected static long requireLong(HttpServletRequest request, String name) {
+        return requireNumber(request, name, Long::parseLong, "a whole number");
+    }
+
     protected static double requireDouble(HttpServletRequest request, String name) {
         return requireNumber(request, name, Double::parseDouble, "a number");
     }
