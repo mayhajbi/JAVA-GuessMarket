@@ -9,7 +9,6 @@ import gm.dto.EventInfoDTO;
 import gm.dto.UploadResultDTO;
 import gm.engine.exception.FileLoadException;
 import gm.engine.exception.EventException;
-import gm.engine.exception.UserNotFoundException;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -121,7 +120,7 @@ public class UsersAndUploadsTest extends Check {
                 () -> Scenario.upload(engine, "Bella", "events.txt", Scenario.lmsrFile("Fine")), "a file that is not xml");
         expectThrows(FileLoadException.class,
                 () -> Scenario.upload(engine, "Bella", "broken.xml", "<Guess-Market><GM-events>"), "a broken file");
-        expectThrows(UserNotFoundException.class,
+        expectThrows(IllegalArgumentException.class,
                 () -> Scenario.upload(engine, "Nobody", "fine.xml", Scenario.lmsrFile("Fine")), "an unknown uploader");
         expect(4, engine.getAllEvents().size(), "the refused files added nothing");
 

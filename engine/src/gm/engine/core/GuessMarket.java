@@ -4,7 +4,6 @@ import gm.dto.CommissionType;
 import gm.dto.EventStatus;
 import gm.dto.EventType;
 import gm.engine.exception.UserInputException;
-import gm.engine.exception.UserNotFoundException;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -133,13 +132,13 @@ public class GuessMarket {
     }
 
     /**
-     * @throws UserNotFoundException when no user with this name (ignoring case) exists
+     * @throws IllegalArgumentException when no user with this name (ignoring case) exists
      */
     public User getUser(String name) {
         String cleanName = name == null ? "" : name.trim();
         User user = usersByName.get(cleanName.toLowerCase(Locale.ROOT));
         if (user == null) {
-            throw new UserNotFoundException(cleanName);
+            throw new IllegalArgumentException("No user named '" + cleanName + "'");
         }
         return user;
     }

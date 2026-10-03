@@ -5,7 +5,7 @@ import gm.dto.CommissionType;
 import gm.dto.OrderSide;
 import gm.engine.core.Event;
 import gm.engine.core.User;
-import gm.engine.exception.InsufficientSharesException;
+import gm.engine.exception.UserAccountException;
 import gm.engine.exception.UserInputException;
 
 import java.util.ArrayList;
@@ -374,7 +374,7 @@ public class OrderBookMarket {
         }
         long available = held - offered;
         if (quantity > available) {
-            throw new InsufficientSharesException(event.getOptionName(optionIndex),
+            throw UserAccountException.insufficientShares(event.getOptionName(optionIndex),
                     event.getName(), quantity, Math.max(0, available));
         }
     }

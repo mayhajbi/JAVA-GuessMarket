@@ -1,6 +1,6 @@
 import gm.dto.PurchaseResultDTO;
 import gm.engine.exception.EventException;
-import gm.engine.exception.UserBlockedException;
+import gm.engine.exception.UserAccountException;
 import gm.engine.impl.GuessMarketEngineImpl;
 
 /**
@@ -45,7 +45,7 @@ public class QuoteTest extends Check {
 
         // a blocked user gets no quote, as no purchase
         engine.buyShares(1, "Menash", 0, 1000);
-        expectThrows(UserBlockedException.class, () -> engine.quoteShares(1, "Menash", 0, 1),
+        expectThrows(UserAccountException.class, () -> engine.quoteShares(1, "Menash", 0, 1),
                 "no quote for a blocked user");
     }
 }

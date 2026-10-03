@@ -1,7 +1,6 @@
 import gm.dto.ChatLineDTO;
 import gm.dto.ChatLinesDTO;
 import gm.engine.exception.UserInputException;
-import gm.engine.exception.UserNotFoundException;
 import gm.engine.impl.GuessMarketEngineImpl;
 
 /**
@@ -50,7 +49,7 @@ public class ChatTest extends Check {
         expectThrows(UserInputException.class, () -> engine.sendChatLine("Avi", null), "no line at all");
         expectThrows(UserInputException.class, () -> engine.sendChatLine("Avi", "שלום"),
                 "a line that is not in English");
-        expectThrows(UserNotFoundException.class, () -> engine.sendChatLine("Nobody", "Hello"), "an unknown user");
+        expectThrows(IllegalArgumentException.class, () -> engine.sendChatLine("Nobody", "Hello"), "an unknown user");
         expect(3, engine.getChatLines(0).version(), "the refused lines were not added");
     }
 

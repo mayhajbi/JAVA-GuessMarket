@@ -10,10 +10,8 @@ import gm.dto.OrderSide;
 import gm.dto.UserInfoDTO;
 import gm.engine.api.GuessMarketEngine;
 import gm.engine.exception.EventException;
-import gm.engine.exception.InsufficientFundsException;
-import gm.engine.exception.InsufficientSharesException;
+import gm.engine.exception.UserAccountException;
 import gm.engine.exception.UserInputException;
-import gm.engine.exception.UserBlockedException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -169,10 +167,10 @@ public class OrderBookTest extends Check {
         expectThrows(UserInputException.class, () -> order(a, 1, "Bob", BUY, YES, 0, 0.5), "quantity 0");
         expectThrows(UserInputException.class,
                 () -> a.submitOrder(new OrderRequestDTO(1, "Bob", null, YES, 1, 0.5)), "missing side");
-        expectThrows(InsufficientSharesException.class, () -> order(a, 1, "Carol", SELL, YES, 1, 0.5),
+        expectThrows(UserAccountException.class, () -> order(a, 1, "Carol", SELL, YES, 1, 0.5),
                 "sell without shares");
         order(a, 1, "Zoe", SELL, YES, 60, 0.90);
-        expectThrows(InsufficientSharesException.class, () -> order(a, 1, "Zoe", SELL, YES, 50, 0.95),
+        expectThrows(UserAccountException.class, () -> order(a, 1, "Zoe", SELL, YES, 50, 0.95),
                 "sell more than held minus offered");
         order(a, 1, "Bob", BUY, NO, 5, 0.30);
         expectTrue(a.getUserDetails("Bob").events().stream().anyMatch(e -> e.event().id() == 1 && e.participant()),
@@ -201,7 +199,7 @@ public class OrderBookTest extends Check {
         order(d, 2, "Zoe", SELL, NO, 100, 0.99);
         OrderResultDTO blocking = order(d, 2, "Dan", BUY, NO, 30, 0.99);
         expectTrue(blocking.userBlocked() && blocking.userBalance() < 0, "Dan went below zero and is blocked");
-        expectThrows(UserBlockedException.class, () -> order(d, 2, "Dan", SELL, NO, 1, 0.5), "blocked user orders");
+        expectThrows(UserAccountException.class, () -> order(d, 2, "Dan", SELL, NO, 1, 0.5), "blocked user orders");
         bids(d.getOrderBookState(2), YES, "", "a blocked user's bid is no longer shown");
         OrderResultDTO skipped = order(d, 2, "Zoe", SELL, YES, 10, 0.10);
         expect(0, skipped.trades().size(), "a blocked user's bid is not matched");
@@ -213,7 +211,7 @@ public class OrderBookTest extends Check {
         bids(d.getOrderBookState(2), NO, "", "no NO bid of Eve");
 
         GuessMarketEngine f = Scenario.clobOnPurchase();
-        expectThrows(InsufficientFundsException.class, () -> f.openEvent(4, "Dan"), "OB open without enough money");
+        expectThrows(UserAccountException.class, () -> f.openEvent(4, "Dan"), "OB open without enough money");
 
         expectThrows(EventException.class, () -> Scenario.upload(Scenario.clobOnClose(), "Zoe",
                 "odd.xml", Scenario.file(Scenario.orderBook("Odd Investment", "on-close", 1, true, 100, 3,

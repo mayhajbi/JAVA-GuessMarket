@@ -9,7 +9,7 @@ import gm.engine.core.method.TradingMethod;
 import gm.engine.core.orderbook.OrderBookMarket;
 import gm.engine.core.orderbook.OrderOutcome;
 import gm.engine.exception.EventException;
-import gm.engine.exception.InsufficientFundsException;
+import gm.engine.exception.UserAccountException;
 import gm.engine.exception.UserInputException;
 
 import java.util.ArrayList;
@@ -258,7 +258,7 @@ public class Event {
         double required = isLmsr ? getInitialSubsidy() : orderBook.getInitialInvestment();
         double balance = user.getAccount().getBalance();
         if (balance < required) {
-            throw new InsufficientFundsException(name,
+            throw UserAccountException.insufficientFunds(name,
                     isLmsr ? "initial subsidy" : "initial investment", required, balance);
         }
 

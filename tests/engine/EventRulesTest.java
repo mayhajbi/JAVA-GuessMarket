@@ -5,7 +5,7 @@ import gm.dto.EventStatus;
 import gm.dto.EventType;
 import gm.dto.NewEventRequestDTO;
 import gm.engine.exception.EventException;
-import gm.engine.exception.UserBlockedException;
+import gm.engine.exception.UserAccountException;
 import gm.engine.impl.GuessMarketEngineImpl;
 
 import java.util.EnumSet;
@@ -41,7 +41,7 @@ public class EventRulesTest extends Check {
         // Menash becomes blocked, and then may not create an event.
         engine.buyShares(1, "Menash", 0, 30);
         engine.buyShares(1, "Menash", 1, 400);
-        expectThrows(UserBlockedException.class, () -> engine.createEvent(new NewEventRequestDTO("Menash",
+        expectThrows(UserAccountException.class, () -> engine.createEvent(new NewEventRequestDTO("Menash",
                 "Blocked", "Blocked user", 5, CommissionType.ON_CLOSE, "Yes", "No", EventType.LMSR, 50, 0,
                 false, 0)), "a blocked user cannot create an event");
 

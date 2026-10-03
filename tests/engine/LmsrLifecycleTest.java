@@ -3,9 +3,7 @@ import gm.dto.MarketStateDTO;
 import gm.dto.PurchaseResultDTO;
 import gm.dto.UserInfoDTO;
 import gm.engine.exception.EventException;
-import gm.engine.exception.InsufficientFundsException;
-import gm.engine.exception.UserBlockedException;
-import gm.engine.exception.UserNotFoundException;
+import gm.engine.exception.UserAccountException;
 import gm.engine.impl.GuessMarketEngineImpl;
 
 /**
@@ -35,7 +33,7 @@ public class LmsrLifecycleTest extends Check {
         // non-MM cannot open
         expectThrows(EventException.class, () -> engine.openEvent(1, "Menash"),
                 "non-MM open");
-        expectThrows(UserNotFoundException.class, () -> engine.openEvent(1, "  nobody "), "unknown user");
+        expectThrows(IllegalArgumentException.class, () -> engine.openEvent(1, "  nobody "), "unknown user");
 
         // MM opens (case-insensitive name): subsidy moves Tikva -> event account
         double subsidy = 100 * Math.log(2);
@@ -58,7 +56,7 @@ public class LmsrLifecycleTest extends Check {
         // overdraft: Menash buys a lot -> goes through, gets blocked, then blocked from buying
         PurchaseResultDTO big = engine.buyShares(1, "Menash", 1, 500);
         expectTrue(big.buyerBalance() < 0 && big.buyerBlocked(), "overdraft allowed + blocked");
-        expectThrows(UserBlockedException.class, () -> engine.buyShares(1, "Menash", 0, 1),
+        expectThrows(UserAccountException.class, () -> engine.buyShares(1, "Menash", 0, 1),
                 "blocked user cannot buy");
 
         // close by non-MM refused; close by MM: NO (index 1) wins
@@ -88,7 +86,7 @@ public class LmsrLifecycleTest extends Check {
 
         // on-close commission + insufficient funds, on a second system
         GuessMarketEngineImpl engine2 = Scenario.lifecycle();
-        expectThrows(InsufficientFundsException.class, () -> engine2.openEvent(1, "Poor"),
+        expectThrows(UserAccountException.class, () -> engine2.openEvent(1, "Poor"),
                 "MM without enough money");
         expectTrue(engine2.getAllEvents().get(0).status() == EventStatus.INACTIVE,
                 "stays INACTIVE after failed open");
