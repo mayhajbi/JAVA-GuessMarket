@@ -1,3 +1,8 @@
+/* The legend of a graph has no box of its own around the names of the lines. */
+.chart-legend {
+    -fx-background-color: transparent;
+}
+
 .header {
     -fx-background-color: #eef1f5;
     -fx-border-color: transparent transparent #c9d0da transparent;

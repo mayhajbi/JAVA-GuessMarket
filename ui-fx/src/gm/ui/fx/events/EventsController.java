@@ -74,7 +74,7 @@ public class EventsController extends EventDetailScreen {
                 CommissionType::getDisplayName, this::applyFilters);
 
         ViewUtils.keepHeadersWhole(eventsTable);
-        ViewUtils.heightFollowsItems(splitPane, 0);
+        ViewUtils.heightFollowsItems(splitPane);
         ViewUtils.bindText(idColumn, event -> String.valueOf(event.id()));
         ViewUtils.bindText(nameColumn, EventInfoDTO::name);
         ViewUtils.bindText(statusColumn, event -> event.status().getDisplayName());

@@ -38,7 +38,7 @@
                     </columns>
                 </TableView>
                 <Label text="Account details" styleClass="section-title"/>
-                <TableView fx:id="accountEntriesTable" prefHeight="170" minHeight="110" VBox.vgrow="ALWAYS">
+                <TableView fx:id="accountEntriesTable" prefHeight="150" minHeight="110">
                     <columnResizePolicy>
                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS"/>
                     </columnResizePolicy>

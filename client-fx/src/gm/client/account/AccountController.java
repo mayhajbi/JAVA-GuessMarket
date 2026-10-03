@@ -44,9 +44,6 @@ public class AccountController extends EventDetailScreen {
     @FXML private ProgressBar uploadProgress;
     @FXML private Label uploadMessageLabel;
 
-    /** The room under the details of an event, so that the last line of its graph is not cut at the end of the scroll. */
-    private static final double SPACE_BELOW_DETAILS = 30;
-
     @FXML private SplitPane splitPane;
     @FXML private TableView<UserInfoDTO> usersTable;
     @FXML private TableColumn<UserInfoDTO, String> userNameColumn;
@@ -75,7 +72,7 @@ public class AccountController extends EventDetailScreen {
     private void initialize() {
         ViewUtils.show(uploadProgress, false);
 
-        ViewUtils.heightFollowsItems(splitPane, SPACE_BELOW_DETAILS);
+        ViewUtils.heightFollowsItems(splitPane);
         ViewUtils.keepHeadersWhole(usersTable, accountEntriesTable, userEventsTable);
         ViewUtils.bindText(userNameColumn, UserInfoDTO::name);
         ViewUtils.bindText(userBalanceColumn, user -> Formats.decimal(user.balance()));

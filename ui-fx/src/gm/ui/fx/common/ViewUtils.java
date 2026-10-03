@@ -27,6 +27,8 @@ public final class ViewUtils {
     private static final String NUMERIC_STYLE = "numeric";
     /** The room a header keeps free for the arrow that shows the column is sorted. */
     private static final double SORT_ARROW_WIDTH = 20;
+    /** The room under the tallest item of a split pane, so that its last line is not cut at the end of the scroll. */
+    private static final double SPACE_BELOW_ITEMS = 30;
     /** The room a table keeps free for its vertical scroll bar, so that bar never squeezes a column. */
     private static final double SCROLL_BAR_WIDTH = 18;
     private static final Duration TOOLTIP_DELAY = Duration.millis(500);
@@ -129,18 +131,17 @@ public final class ViewUtils {
      * A split pane is as tall as its tallest item at the width the item has now. The split pane alone
      * measures its height at the preferred width of the items, so an item that wraps its texts in a
      * narrower pane would be taller than the split pane and cut at the bottom.
-     *
-     * @param spaceBelow room kept free under the items, so that the last line is not cut at the end of the scroll
+     * Under the items stays {@link #SPACE_BELOW_ITEMS}, so that the last line is not cut at the end of the scroll.
      */
-    public static void heightFollowsItems(SplitPane splitPane, double spaceBelow) {
+    public static void heightFollowsItems(SplitPane splitPane) {
         for (Node item : splitPane.getItems()) {
             item.layoutBoundsProperty().addListener((observable, previous, bounds) -> {
                 double height = 0;
                 for (Node each : splitPane.getItems()) {
                     height = Math.max(height, each.prefHeight(each.getLayoutBounds().getWidth()));
                 }
-                splitPane.setMinHeight(height + spaceBelow);
-                splitPane.setPrefHeight(height + spaceBelow);
+                splitPane.setMinHeight(height + SPACE_BELOW_ITEMS);
+                splitPane.setPrefHeight(height + SPACE_BELOW_ITEMS);
             });
         }
     }
