@@ -5,7 +5,6 @@ import gm.dto.EventStatus;
 import gm.dto.EventType;
 import gm.engine.exception.DuplicateEventNameException;
 import gm.engine.exception.DuplicateUserNameException;
-import gm.engine.exception.EventNotFoundException;
 import gm.engine.exception.UserNotFoundException;
 
 import java.util.ArrayList;
@@ -90,12 +89,12 @@ public class GuessMarket {
     }
 
     /**
-     * @throws EventNotFoundException when no event with this id exists
+     * @throws IllegalArgumentException when no event with this id exists
      */
     public Event getEvent(int eventId) {
         Event event = eventsById.get(eventId);
         if (event == null) {
-            throw new EventNotFoundException(eventId);
+            throw new IllegalArgumentException("No event with id " + eventId);
         }
         return event;
     }

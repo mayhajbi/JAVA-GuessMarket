@@ -11,7 +11,6 @@ import gm.engine.core.orderbook.OrderOutcome;
 import gm.engine.exception.EventAlreadyOpenedException;
 import gm.engine.exception.EventNotActiveException;
 import gm.engine.exception.InsufficientFundsException;
-import gm.engine.exception.InvalidOptionSelectionException;
 import gm.engine.exception.InvalidOrderException;
 import gm.engine.exception.InvalidQuantityException;
 import gm.engine.exception.NotEventMarketMakerException;
@@ -255,7 +254,7 @@ public class Event {
     public void open(User user) {
         requireMarketMaker(user, "open");
         if (status != EventStatus.INACTIVE) {
-            throw new EventAlreadyOpenedException(name, status);
+            throw new EventAlreadyOpenedException(name);
         }
         user.requireNotBlocked("open the event '" + name + "'");
 
@@ -447,7 +446,7 @@ public class Event {
      */
     public void validateOptionIndex(int optionIndex) {
         if (optionIndex < 0 || optionIndex >= options.size()) {
-            throw new InvalidOptionSelectionException(name, options.size(), optionIndex + 1);
+            throw new IllegalArgumentException("Event '" + name + "' has no option number " + (optionIndex + 1));
         }
     }
 
