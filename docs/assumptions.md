@@ -94,7 +94,8 @@ The choices made wherever the exercise did not decide.
   did change is filled again, and its selected row stays selected when the same row is still there.
 * **Server not reachable** - after 3 pulls in a row without an answer (about a second and a half) the
   client shows a status line and locks its screens; it keeps trying, and continues by itself once the
-  server answers. A server that was restarted has no users, so a client that finds out it is no longer
+  server answers. A server that is up but does not answer is reported after about 15 seconds, because
+  an update waits for the server up to 5 seconds. A server that was restarted has no users, so a client that finds out it is no longer
   known goes back to the login screen with an explanation.
 * **Upload** - the file travels as a multipart field and is read straight from memory, never written
   to the disk of the server; it may not be bigger than 1MB, and a bigger one is refused with a
