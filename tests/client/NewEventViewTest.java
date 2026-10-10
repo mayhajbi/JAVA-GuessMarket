@@ -23,6 +23,10 @@ public class NewEventViewTest extends Check {
         run("new-event-view", () -> FxThread.run(NewEventViewTest::form));
     }
 
+    private static boolean marked(Map<String, Object> parts, String field) {
+        return ((Node) parts.get(field)).getStyleClass().contains("field-error");
+    }
+
     static void form() throws Exception {
         FXMLLoader loader = new FXMLLoader(NewEventController.class.getResource("newevent.fxml"));
         loader.load();
@@ -38,9 +42,18 @@ public class NewEventViewTest extends Check {
                 "the fields of the trading methods are named in words");
 
         expectTrue(lmsrFields.isVisible() && !orderBookFields.isVisible(), "a new form shows the LMSR fields only");
-        expect(null, form.toRequest(), "a form without a name cannot be read");
-        expect("[New event: Enter a name for the event.]", Screens.closeDialogs().toString(),
-                "the user is told what is missing");
+        expect(null, form.toRequest(), "an empty form cannot be read");
+        expect("[Incomplete form: Fill in all the empty fields to create a new event.]",
+                Screens.closeDialogs().toString(), "the user is told to fill in the empty fields");
+        List<String> required = List.of("nameField", "descriptionArea", "firstOptionField", "secondOptionField",
+                "commissionField", "liquidityField");
+        for (String name : required) {
+            expectTrue(marked(parts, name), "the empty field " + name + " is marked");
+        }
+        expectTrue(!marked(parts, "baseValueField"), "a field of the other trading method is not marked");
+        ((TextField) parts.get("nameField")).setText("R");
+        expectTrue(!marked(parts, "nameField"), "typing in a marked field removes the mark");
+        expectTrue(marked(parts, "descriptionArea"), "the other empty fields stay marked");
 
         ((ToggleGroup) parts.get("methodGroup")).getToggles().get(1).setSelected(true);
         expectTrue(!lmsrFields.isVisible() && orderBookFields.isVisible(),

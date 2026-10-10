@@ -5,14 +5,14 @@
 <?import javafx.scene.layout.*?>
 
 <DialogPane xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="gm.ui.fx.newevent.NewEventController" prefWidth="520">
+            fx:controller="gm.ui.fx.newevent.NewEventController" prefWidth="520" headerText="New event">
     <content>
         <!-- A window smaller than the form scrolls it, so the buttons below are never cut. -->
         <ScrollPane fitToWidth="true" hbarPolicy="AS_NEEDED" vbarPolicy="AS_NEEDED"
                     style="-fx-background-color: transparent; -fx-padding: 0;">
         <VBox spacing="10" minWidth="440">
             <padding>
-                <Insets top="6" right="4" bottom="4" left="4"/>
+                <Insets top="14" right="14" bottom="14" left="14"/>
             </padding>
 
             <GridPane hgap="12" vgap="7">
@@ -21,17 +21,17 @@
                     <ColumnConstraints hgrow="ALWAYS"/>
                 </columnConstraints>
                 <Label text="Name" styleClass="field-name" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-                <TextField fx:id="nameField" promptText="Enter a clear title, e.g. Who will win the 2026 World Cup?"
+                <TextField fx:id="nameField" promptText="Enter a clear title for the event"
                            GridPane.rowIndex="0" GridPane.columnIndex="1"/>
                 <Label text="Description" styleClass="field-name" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
                 <TextArea fx:id="descriptionArea" prefRowCount="2" wrapText="true"
-                          promptText="Describe the event for other users: what it is about, and how the winning option will be decided. For example: the winner is the team that wins the official final."
+                          promptText="Describe the event for other users: what it is about, and how the winning option will be decided, etc."
                           GridPane.rowIndex="1" GridPane.columnIndex="1"/>
                 <Label text="Option 1" styleClass="field-name" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-                <TextField fx:id="firstOptionField" promptText="Enter an option, e.g. Yes"
+                <TextField fx:id="firstOptionField" promptText="Enter an option."
                            GridPane.rowIndex="2" GridPane.columnIndex="1"/>
                 <Label text="Option 2" styleClass="field-name" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
-                <TextField fx:id="secondOptionField" promptText="Enter another option, e.g. No"
+                <TextField fx:id="secondOptionField" promptText="Enter a different option"
                            GridPane.rowIndex="3" GridPane.columnIndex="1"/>
                 <Label text="Commission" styleClass="field-name" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
                 <FlowPane hgap="8" vgap="4" alignment="CENTER_LEFT" GridPane.rowIndex="4"
@@ -55,7 +55,7 @@
                 <Label text="LMSR" styleClass="section-title"/>
                 <Label text="Liquidity" styleClass="field-name"/>
                 <TextField fx:id="liquidityField" maxWidth="90" promptText="100"/>
-                <Label text="Enter a positive whole number, e.g. 100. The higher it is, the more slowly prices change."
+                <Label text="Enter a positive whole number. The higher it is, the more slowly prices change."
                        styleClass="placeholder" wrapText="true" minHeight="-Infinity"/>
             </VBox>
 
@@ -63,11 +63,11 @@
                 <Label text="Order Book" styleClass="section-title"/>
                 <Label text="Base value" styleClass="field-name"/>
                 <TextField fx:id="baseValueField" maxWidth="90" promptText="1"/>
-                <Label text="Enter what a winning share pays, e.g. 1. It is also the highest price an order can have."
+                <Label text="Enter what a winning share pays. It is also the highest price an order can have."
                        styleClass="placeholder" wrapText="true" minHeight="-Infinity"/>
                 <Label text="Initial investment" styleClass="field-name"/>
                 <TextField fx:id="initialInvestmentField" maxWidth="90" promptText="100"/>
-                <Label text="Enter the amount you pay when the event opens, e.g. 100. It must be a multiple of the base value; each base value buys one pair of shares."
+                <Label text="Enter the amount you pay when the event opens. It must be a multiple of the base value."
                        styleClass="placeholder" wrapText="true" minHeight="-Infinity"/>
                 <CheckBox fx:id="allowMintCheckBox" text="Allow minting new pairs of shares"/>
             </VBox>

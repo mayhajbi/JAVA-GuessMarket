@@ -190,6 +190,12 @@
 
 .dialog-pane > .header-panel {
     -fx-background-color: #e9dcc0;
+    -fx-border-color: transparent transparent #c9b88f transparent;
+}
+
+.dialog-pane > .button-bar {
+    -fx-background-color: #e9dcc0;
+    -fx-border-color: #c9b88f transparent transparent transparent;
 }
 
 .dialog-pane > .header-panel .label {
@@ -199,4 +205,8 @@
 .dialog-pane .content.label,
 .dialog-pane .label {
     -fx-text-fill: #402f1d;
+}
+
+.field-error {
+    -fx-border-color: #b3261e;
 }

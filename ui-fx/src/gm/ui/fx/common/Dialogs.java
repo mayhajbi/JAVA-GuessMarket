@@ -1,6 +1,7 @@
 package gm.ui.fx.common;
 
 import gm.engine.exception.GuessMarketException;
+import javafx.geometry.Insets;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
@@ -11,6 +12,9 @@ import javafx.scene.layout.Region;
  * The dialogs the application uses to report the result of an action to the user.
  */
 public final class Dialogs {
+
+    /** Space between the message and the edges of the window, in pixels. */
+    private static final double TEXT_PADDING = 14;
 
     private Dialogs() {
     }
@@ -72,6 +76,8 @@ public final class Dialogs {
         Label text = new Label(message);
         text.setWrapText(true);
         text.setMinHeight(Region.USE_PREF_SIZE);
+        // The space is on the text, not on the scroll pane, so a scroll bar stays at the window edge.
+        text.setPadding(new Insets(TEXT_PADDING));
         ScrollPane scroll = new ScrollPane(text);
         scroll.setFitToWidth(true);
         scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);

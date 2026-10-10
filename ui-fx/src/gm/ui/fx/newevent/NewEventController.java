@@ -11,10 +11,14 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextInputControl;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -28,6 +32,7 @@ import javafx.util.StringConverter;
 public class NewEventController {
 
     private static final String HEADER = "New event";
+    private static final String EMPTY_FIELD_STYLE = "field-error";
 
     private String creatorName;
     @FXML private TextField nameField;
@@ -63,6 +68,12 @@ public class NewEventController {
         lmsrToggle.selectedProperty().addListener(
                 (observable, previous, chosen) -> showMethodFields(chosen));
         showMethodFields(true);
+        // A field marked as empty is unmarked as soon as the user starts to type in it.
+        for (TextInputControl field : List.of(nameField, descriptionArea, firstOptionField, secondOptionField,
+                commissionField, liquidityField, baseValueField, initialInvestmentField)) {
+            field.textProperty().addListener((observable, previous, typed) ->
+                    field.getStyleClass().remove(EMPTY_FIELD_STYLE));
+        }
         // In the description, TAB moves to the next field like everywhere in the form (the text area
         // would indent); Ctrl+TAB is the move key of a text area.
         descriptionArea.addEventFilter(KeyEvent.KEY_PRESSED, pressed -> {
@@ -93,14 +104,10 @@ public class NewEventController {
      *         in which case the user was already told what is missing
      */
     public NewEventRequestDTO toRequest() {
-        if (nameField.getText().isBlank()) {
-            return missing("Enter a name for the event.");
-        }
-        if (descriptionArea.getText().isBlank()) {
-            return missing("Enter a description for the event.");
-        }
-        if (firstOptionField.getText().isBlank() || secondOptionField.getText().isBlank()) {
-            return missing("Enter a name for both options.");
+        boolean isLmsr = lmsrToggle.isSelected();
+        if (markEmptyFields(isLmsr)) {
+            Dialogs.showWarning("Incomplete form", "Fill in all the empty fields to create a new event.");
+            return null;
         }
 
         Integer commission = readNumber(commissionField, "the commission");
@@ -108,7 +115,6 @@ public class NewEventController {
             return null;
         }
 
-        boolean isLmsr = lmsrToggle.isSelected();
         int liquidity = 0;
         int baseValue = 0;
         int initialInvestment = 0;
@@ -137,6 +143,32 @@ public class NewEventController {
                 liquidity, baseValue, allowMint(isLmsr), initialInvestment);
     }
 
+    /**
+     * Marks every required field that is still empty, among the fields of the chosen trading method.
+     *
+     * @return whether at least one field was empty
+     */
+    private boolean markEmptyFields(boolean isLmsr) {
+        List<TextInputControl> required = new ArrayList<>(List.of(nameField, descriptionArea,
+                firstOptionField, secondOptionField, commissionField));
+        if (isLmsr) {
+            required.add(liquidityField);
+        } else {
+            required.add(baseValueField);
+            required.add(initialInvestmentField);
+        }
+        List<TextInputControl> empty = required.stream().filter(field -> field.getText().isBlank()).toList();
+        for (TextInputControl field : empty) {
+            if (!field.getStyleClass().contains(EMPTY_FIELD_STYLE)) {
+                field.getStyleClass().add(EMPTY_FIELD_STYLE);
+            }
+        }
+        if (!empty.isEmpty()) {
+            empty.get(0).requestFocus();
+        }
+        return !empty.isEmpty();
+    }
+
     private boolean allowMint(boolean isLmsr) {
         return !isLmsr && allowMintCheckBox.isSelected();
     }
@@ -157,8 +189,4 @@ public class NewEventController {
         return ViewUtils.readNumber(field, Integer::valueOf, HEADER, text -> "'" + text + "' is not a valid value for " + what + ". Enter a whole number, for example 10.");
     }
 
-    private NewEventRequestDTO missing(String message) {
-        Dialogs.showWarning(HEADER, message);
-        return null;
-    }
 }

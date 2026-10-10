@@ -43,3 +43,22 @@
 .numeric {
     -fx-alignment: CENTER-RIGHT;
 }
+
+/* The message dialogs and the form of a new event share one structure: a header band, the content and
+   a button bar, each set apart by a thin line. The colours of the bands and lines belong to the skin. */
+.dialog-pane > .header-panel {
+    -fx-padding: 12 14 12 14;
+    -fx-border-color: transparent transparent #c9d0da transparent;
+}
+
+.dialog-pane > .button-bar {
+    -fx-background-color: #eef1f5;
+    -fx-border-color: #c9d0da transparent transparent transparent;
+}
+
+/* A required field that was left empty when the user tried to create an event. */
+.field-error {
+    -fx-border-color: #d32f2f;
+    -fx-border-width: 1.5;
+    -fx-border-radius: 3;
+}
