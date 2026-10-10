@@ -30,15 +30,31 @@ public class HttpApi {
     private static final MediaType XML = MediaType.get("application/xml");
     private static final String NO_BODY = "";
     private static final String CONNECTION_TITLE = "Server not reachable";
-    private static final String CONNECTION_MESSAGE = "The server could not be reached at " + Constants.BASE_URL
-            + ". Start Tomcat and check that it listens on localhost:8080.";
 
+    private final String baseUrl;
     private final OkHttpClient client = new OkHttpClient.Builder()
             .cookieJar(new SessionCookies())
             .connectTimeout(Constants.TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .readTimeout(Constants.TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .writeTimeout(Constants.TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .build();
+    /** The same client, with the shorter timeout of the automatic updates; it shares the session and the threads. */
+    private final OkHttpClient refreshClient = client.newBuilder()
+            .connectTimeout(Constants.REFRESH_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            .readTimeout(Constants.REFRESH_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            .writeTimeout(Constants.REFRESH_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            .build();
+
+    public HttpApi() {
+        this(Constants.BASE_URL);
+    }
+
+    /**
+     * @param baseUrl the address of the web application of the server, without a trailing slash
+     */
+    public HttpApi(String baseUrl) {
+        this.baseUrl = baseUrl;
+    }
 
     /**
      * @param path   the part of the address after the base, for example {@code /events}
@@ -78,10 +94,11 @@ public class HttpApi {
     /**
      * Sends a GET request without waiting for its answer, the way the course example does: the callback is
      * called on a thread of the HTTP client once the server answered or could not be reached. The callback
-     * must close the response it receives.
+     * must close the response it receives. Only the automatic updates send their requests this way, so
+     * the request waits for the server up to {@link Constants#REFRESH_TIMEOUT_SECONDS} seconds.
      */
     public void getAsync(String path, Map<String, String> params, Callback callback) {
-        client.newCall(new Request.Builder().url(url(path, params)).get().build()).enqueue(callback);
+        refreshClient.newCall(new Request.Builder().url(url(path, params)).get().build()).enqueue(callback);
     }
 
     /**
@@ -92,8 +109,8 @@ public class HttpApi {
         client.connectionPool().evictAll();
     }
 
-    private static HttpUrl url(String path, Map<String, String> params) {
-        HttpUrl.Builder url = HttpUrl.get(Constants.BASE_URL + path).newBuilder();
+    private HttpUrl url(String path, Map<String, String> params) {
+        HttpUrl.Builder url = HttpUrl.get(baseUrl + path).newBuilder();
         params.forEach(url::addQueryParameter);
         return url.build();
     }
@@ -109,7 +126,8 @@ public class HttpApi {
             }
             return body;
         } catch (IOException e) {
-            throw new ServerException(CONNECTION_TITLE, CONNECTION_MESSAGE, e);
+            throw new ServerException(CONNECTION_TITLE, "The server could not be reached at " + baseUrl
+                    + ". Start Tomcat and check that it listens on localhost:8080.", e);
         }
     }
 

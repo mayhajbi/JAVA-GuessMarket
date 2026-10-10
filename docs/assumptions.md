@@ -66,8 +66,8 @@ The choices made wherever the exercise did not decide.
 * **Messages** - a refused action, a refused file and a completed action are reported in a message
   window that names the action and the reason.
 * **Environment** - the server runs on Tomcat 10.1 (`jakarta.servlet`), and the client expects it at
-  `http://localhost:8080/guessmarket`. A request waits for the server up to 10 seconds. Nothing is
-  kept beyond the running server: when it stops, the users, the events and the history are gone.
+  `http://localhost:8080/guessmarket`. An action of the user waits for the server up to 10 seconds, and an
+  automatic update up to 5. Nothing is kept beyond the running server: when it stops, the users, the events and the history are gone.
 * **Text** - every textual value is compared without case, and whitespace at the edges (or line
   breaks and tabs inside a value, including a value typed into the form of a new event) is ignored.
 * **Server write requests** - every request that changes data (`/login`, `/upload`, `/account/deposit`,
