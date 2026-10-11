@@ -201,3 +201,100 @@ table.data tbody tr.selected {
         grid-template-columns: minmax(0, 1fr);
     }
 }
+
+/* messages and the form of a new event */
+#message-text {
+    white-space: pre-line;
+}
+
+#message-buttons, .buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 12px;
+}
+
+dialog.new-event {
+    max-width: 520px;
+    width: 90vw;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 110px 1fr;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 7px;
+}
+
+.form-row input, .form-row textarea {
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.form-row span input {
+    width: auto;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 10px;
+}
+
+.field-error {
+    border: 1.5px solid #d32f2f;
+    border-radius: 3px;
+}
+
+.events-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* the actions of the user on the shown event */
+.actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: #f7f9fc;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 8px;
+}
+
+.action-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.action-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.blocked {
+    color: #b91c1c;
+    font-weight: bold;
+}
+
+.position-grid {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 3px 16px;
+}
+
+.details-part {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+[hidden] {
+    display: none !important;
+}

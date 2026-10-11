@@ -62,6 +62,15 @@ export function createTable({columns, placeholder, rowKey, onSelect}) {
 
     return {
         element,
+
+        /** Selects the row with the key (when there is one), and tells onSelect about it. */
+        selectKey(key) {
+            const row = rows.find((one) => rowKey(one) === key);
+            if (row !== undefined) {
+                select(row);
+            }
+        },
+
         setRows(newRows) {
             rows = newRows;
             const selectedIsGone = onSelect && selectedKey !== null && !rows.some((row) => rowKey(row) === selectedKey);

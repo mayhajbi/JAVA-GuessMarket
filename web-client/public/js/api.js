@@ -35,6 +35,18 @@ export async function getJson(path) {
     return (await request(path)).json();
 }
 
-export async function post(path) {
-    await request(path, {method: 'POST'});
+function postOptions(body) {
+    return body === undefined
+        ? {method: 'POST'}
+        : {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)};
+}
+
+/** A POST whose answer has no content (the details, when there are any, go as the JSON body). */
+export async function post(path, body) {
+    await request(path, postOptions(body));
+}
+
+/** A POST whose answer is JSON. */
+export async function postJson(path, body) {
+    return (await request(path, postOptions(body))).json();
 }

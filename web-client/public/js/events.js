@@ -1,8 +1,9 @@
 import {getJson} from './api.js';
-import {showError} from './dialog.js';
+import {showError, showInformation} from './dialog.js';
 import {el} from './dom.js';
 import {createEventDetail} from './eventdetail.js';
 import {createFilterGroup} from './filters.js';
+import {openNewEventForm} from './newevent.js';
 import {
     COMMISSION_TYPES, EVENT_STATUSES, EVENT_TYPES, commission, decimal, displayName
 } from './format.js';
@@ -13,7 +14,7 @@ import {createTable} from './table.js';
  * filtering itself is done by the server), and the details of the selected event.
  */
 export function createEventsScreen() {
-    const detail = createEventDetail();
+    const detail = createEventDetail(() => refreshAll());
     const typeFilter = createFilterGroup(EVENT_TYPES, load);
     const statusFilter = createFilterGroup(EVENT_STATUSES, load);
     const commissionFilter = createFilterGroup(COMMISSION_TYPES, load);
@@ -51,10 +52,33 @@ export function createEventsScreen() {
         }
     }
 
-    load();
+    // The user who is logged in is read again with the events: the balance and the block change with the actions.
+    async function refreshAll() {
+        try {
+            detail.setUser(await getJson('/account'));
+        } catch (error) {
+            showError(error);
+            return;
+        }
+        await load();
+        await detail.refresh();
+    }
+
+    async function onNewEvent() {
+        const created = await openNewEventForm();
+        if (created !== null) {
+            await refreshAll();
+            table.selectKey(created.id);
+            showInformation('Event created', `'${created.name}' was created. It is inactive until you open it, `
+                + 'and then trading begins.');
+        }
+    }
+
+    refreshAll();
     return el('div', {class: 'split'},
         el('div', {class: 'events-pane'},
-            el('div', {class: 'section-title'}, 'Events'),
+            el('div', {class: 'events-title'}, el('span', {class: 'section-title'}, 'Events'),
+                el('button', {type: 'button', onclick: onNewEvent}, 'New event')),
             el('div', {class: 'filters'},
                 el('span', {class: 'field-name'}, 'Type'), typeFilter.element,
                 el('span', {class: 'field-name'}, 'Status'), statusFilter.element,

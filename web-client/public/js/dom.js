@@ -2,6 +2,9 @@
 export function el(tag, props = {}, ...children) {
     const node = document.createElement(tag);
     for (const [name, value] of Object.entries(props)) {
+        if (value === null || value === undefined || value === false) {
+            continue;
+        }
         if (name === 'class') {
             node.className = value;
         } else if (name.startsWith('on')) {

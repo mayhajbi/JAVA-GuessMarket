@@ -1,3 +1,4 @@
+import {createActions} from './actions.js';
 import {getJson} from './api.js';
 import {createPriceChart} from './chart.js';
 import {showError} from './dialog.js';
@@ -105,22 +106,57 @@ function orderBookSections(state) {
  * The details of the event that is selected: its summary, its options or order books, its trades and the
  * graph of its prices. Shows a message while no event is selected.
  */
-export function createEventDetail() {
+export function createEventDetail(onChanged) {
     const placeholder = el('div', {class: 'placeholder'}, 'Select an event to see its details.');
-    const details = el('div', {class: 'details'});
+    const head = el('div', {class: 'details-part'});
+    const main = el('div', {class: 'details-part'});
+    const tail = el('div', {class: 'details-part'});
+    const actions = createActions(onChanged);
+    const details = el('div', {class: 'details'}, head, main, actions.element, tail);
     details.hidden = true;
-    let currentId = null;
+    let currentEvent = null;
+    let user = null;
+    let shown = null;
+    let shownKey = null;
 
-    function render(state, prices) {
+    // The parts of an event before the actions (as in the sketch); the rest comes after them.
+    function render() {
+        const {state, prices} = shown;
         const info = state.eventInfo;
-        const chart = createPriceChart(prices);
-        details.replaceChildren(
-            el('div', {class: 'section-title'}, info.name),
-            el('div', {}, info.description),
-            summary(info, state),
-            ...(info.type === 'LMSR' ? lmsrSections(state) : orderBookSections(state)),
-            section('Price over time', chart ?? el('div', {class: 'placeholder'},
-                'No prices yet. The graph appears once the event is open and traded.')));
+        const key = JSON.stringify(shown);
+        if (key !== shownKey) {
+            shownKey = key;
+            const isLmsr = info.type === 'LMSR';
+            const parts = isLmsr ? lmsrSections(state) : orderBookSections(state);
+            const beforeActions = isLmsr ? 1 : 2;
+            const chart = createPriceChart(prices);
+            head.replaceChildren(el('div', {class: 'section-title'}, info.name), el('div', {}, info.description),
+                summary(info, state));
+            main.replaceChildren(...parts.slice(0, beforeActions));
+            tail.replaceChildren(...parts.slice(beforeActions), section('Price over time', chart
+                ?? el('div', {class: 'placeholder'},
+                    'No prices yet. The graph appears once the event is open and traded.')));
+        }
+        actions.element.hidden = user === null;
+        if (user !== null) {
+            actions.show(state, user);
+        }
+    }
+
+    async function load(event) {
+        const stateUrl = event.type === 'LMSR' ? '/event/market' : '/event/orderbook';
+        try {
+            const [state, prices] = await Promise.all(
+                [getJson(`${stateUrl}?id=${event.id}`), getJson(`/event/prices?id=${event.id}`)]);
+            if (currentEvent !== null && currentEvent.id === event.id) {
+                shown = {state, prices};
+                render();
+                placeholder.hidden = true;
+                details.hidden = false;
+            }
+        } catch (error) {
+            showError(error);
+        }
     }
 
     return {
@@ -129,26 +165,33 @@ export function createEventDetail() {
         /** @param event the selected event (as in the list of events), or null when none is selected */
         async show(event) {
             if (event === null) {
-                currentId = null;
+                currentEvent = null;
+                shown = null;
+                shownKey = null;
                 placeholder.hidden = false;
                 details.hidden = true;
                 return;
             }
-            if (event.id === currentId) {
+            if (currentEvent !== null && event.id === currentEvent.id) {
                 return;
             }
-            currentId = event.id;
-            const stateUrl = event.type === 'LMSR' ? '/event/market' : '/event/orderbook';
-            try {
-                const [state, prices] = await Promise.all(
-                    [getJson(`${stateUrl}?id=${event.id}`), getJson(`/event/prices?id=${event.id}`)]);
-                if (currentId === event.id) {
-                    render(state, prices);
-                    placeholder.hidden = true;
-                    details.hidden = false;
-                }
-            } catch (error) {
-                showError(error);
+            currentEvent = event;
+            shown = null;
+            await load(event);
+        },
+
+        /** Pulls the details of the shown event again. */
+        async refresh() {
+            if (currentEvent !== null) {
+                await load(currentEvent);
+            }
+        },
+
+        /** @param newUser the details of the user who is logged in, who performs the actions */
+        setUser(newUser) {
+            user = newUser;
+            if (shown !== null) {
+                render();
             }
         }
     };
