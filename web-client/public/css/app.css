@@ -298,3 +298,36 @@ dialog.new-event {
 [hidden] {
     display: none !important;
 }
+
+/* the tabs and the account screen */
+.tabs {
+    display: flex;
+    gap: 2px;
+    padding: 6px 10px 0;
+    border-bottom: 1px solid var(--line);
+}
+
+.tab {
+    border: 1px solid var(--line);
+    border-bottom: none;
+    background: var(--band);
+    padding: 6px 16px;
+    border-radius: 4px 4px 0 0;
+    cursor: pointer;
+}
+
+.tab.selected {
+    background: #fff;
+    font-weight: bold;
+}
+
+.balance-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+}
+
+.spacer {
+    flex: 1;
+}

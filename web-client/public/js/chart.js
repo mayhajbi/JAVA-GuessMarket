@@ -28,9 +28,10 @@ function ticks(min, max) {
  * first price of the event.
  *
  * @param series [{optionName, points: [{timeMillis, value}]}]
+ * @param labels {x, y}: the names of the axes
  * @return the chart, or null when no option has a price yet
  */
-export function createPriceChart(series) {
+export function createPriceChart(series, labels = {x: 'Seconds since the first price', y: 'Share value'}) {
     const allPoints = series.flatMap((one) => one.points);
     if (allPoints.length === 0) {
         return null;
@@ -62,8 +63,8 @@ export function createPriceChart(series) {
             svg('text', {x: MARGIN.left - 6, y: y(tick) + 4, 'text-anchor': 'end'}, tick.toFixed(2)));
     }
     chart.append(
-        svg('text', {x: MARGIN.left + plotWidth / 2, y: HEIGHT - 6, 'text-anchor': 'middle'}, 'Seconds since the first price'),
-        svg('text', {x: 12, y: HEIGHT / 2, 'text-anchor': 'middle', transform: `rotate(-90 12 ${HEIGHT / 2})`}, 'Share value'));
+        svg('text', {x: MARGIN.left + plotWidth / 2, y: HEIGHT - 6, 'text-anchor': 'middle'}, labels.x),
+        svg('text', {x: 12, y: HEIGHT / 2, 'text-anchor': 'middle', transform: `rotate(-90 12 ${HEIGHT / 2})`}, labels.y));
 
     const legend = el('div', {class: 'legend'});
     series.forEach((one, index) => {

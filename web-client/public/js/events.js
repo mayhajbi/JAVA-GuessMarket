@@ -13,8 +13,8 @@ import {createTable} from './table.js';
  * The events screen: the events of the system, filtered by type, status and commission method (the
  * filtering itself is done by the server), and the details of the selected event.
  */
-export function createEventsScreen() {
-    const detail = createEventDetail(() => refreshAll());
+export function createEventsScreen(onChanged) {
+    const detail = createEventDetail(onChanged);
     const typeFilter = createFilterGroup(EVENT_TYPES, load);
     const statusFilter = createFilterGroup(EVENT_STATUSES, load);
     const commissionFilter = createFilterGroup(COMMISSION_TYPES, load);
@@ -53,7 +53,7 @@ export function createEventsScreen() {
     }
 
     // The user who is logged in is read again with the events: the balance and the block change with the actions.
-    async function refreshAll() {
+    async function refresh() {
         try {
             detail.setUser(await getJson('/account'));
         } catch (error) {
@@ -67,15 +67,15 @@ export function createEventsScreen() {
     async function onNewEvent() {
         const created = await openNewEventForm();
         if (created !== null) {
-            await refreshAll();
+            await onChanged();
             table.selectKey(created.id);
             showInformation('Event created', `'${created.name}' was created. It is inactive until you open it, `
                 + 'and then trading begins.');
         }
     }
 
-    refreshAll();
-    return el('div', {class: 'split'},
+    refresh();
+    const element = el('div', {class: 'split'},
         el('div', {class: 'events-pane'},
             el('div', {class: 'events-title'}, el('span', {class: 'section-title'}, 'Events'),
                 el('button', {type: 'button', onclick: onNewEvent}, 'New event')),
@@ -85,4 +85,5 @@ export function createEventsScreen() {
                 el('span', {class: 'field-name'}, 'Commission'), commissionFilter.element),
             table.element, countLabel),
         detail.element);
+    return {element, refresh};
 }

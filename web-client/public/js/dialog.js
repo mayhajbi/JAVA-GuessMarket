@@ -5,12 +5,14 @@ import {el} from './dom.js';
 const dialog = document.getElementById('message');
 const titleElement = document.getElementById('message-title');
 const textElement = document.getElementById('message-text');
+const extraElement = document.getElementById('message-extra');
 const buttons = document.getElementById('message-buttons');
 let queue = Promise.resolve();
 
-function show(title, message, withCancel) {
+function show(title, message, withCancel, extra) {
     titleElement.textContent = title;
     textElement.textContent = message;
+    extraElement.replaceChildren(...(extra ? [extra] : []));
     buttons.replaceChildren(
         el('button', {type: 'button', autofocus: '', onclick: () => dialog.close('ok')}, 'OK'),
         ...(withCancel ? [el('button', {type: 'button', onclick: () => dialog.close('cancel')}, 'Cancel')] : []));
@@ -21,8 +23,8 @@ function show(title, message, withCancel) {
     });
 }
 
-function open(title, message, withCancel) {
-    const shown = queue.then(() => show(title, message, withCancel));
+function open(title, message, withCancel, extra) {
+    const shown = queue.then(() => show(title, message, withCancel, extra));
     queue = shown.catch(() => {});
     return shown;
 }
@@ -40,4 +42,11 @@ export function showInformation(title, message) {
 /** @return a promise of whether the user approved */
 export function confirm(title, message) {
     return open(title, message, true);
+}
+
+/** @return a promise of the text the user typed, or null when the user cancelled */
+export function askText(title, label) {
+    const input = el('input', {});
+    input.addEventListener('keydown', (event) => event.key === 'Enter' && dialog.close('ok'));
+    return open(title, label, true, input).then((approved) => approved ? input.value : null);
 }
