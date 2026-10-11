@@ -3,12 +3,19 @@
     --line: #d5dbe3;
     --band: #eef1f5;
     --accent: #cfe3ff;
+    --left-min-width: 520px;
+    --right-min-width: 600px;
 }
 
 body {
     font-family: Arial, sans-serif;
     font-size: 14px;
     margin: 0;
+}
+
+/* the application is never narrower than its two sides, so that the header and the tabs reach the edge when it is scrolled */
+#screen:has(.app) {
+    min-width: calc(var(--left-min-width) + var(--right-min-width) + 40px);
 }
 
 .app-title {
@@ -25,6 +32,11 @@ body {
     color: var(--muted);
 }
 
+/* a window that is smaller than the content: text wraps and tables scroll, nothing is cut */
+.section-title, .field-name, .placeholder, .summary span {
+    overflow-wrap: anywhere;
+}
+
 .placeholder {
     color: #6b7280;
     font-style: italic;
@@ -33,6 +45,7 @@ body {
 
 .header {
     display: flex;
+    flex-wrap: wrap;
     align-items: baseline;
     gap: 16px;
     padding: 8px 16px;
@@ -56,12 +69,15 @@ body {
 
 dialog {
     max-width: 480px;
+    max-height: 80vh;
+    overflow: auto;
+    overflow-wrap: anywhere;
 }
 
 /* the events screen: the list on the left, the details of the selected event on the right */
 .split {
     display: grid;
-    grid-template-columns: minmax(0, 54fr) minmax(0, 46fr);
+    grid-template-columns: minmax(var(--left-min-width), 54fr) minmax(var(--right-min-width), 46fr);
     gap: 16px;
     padding: 10px;
 }
@@ -136,7 +152,7 @@ table.data tbody tr.selected {
 
 .summary {
     display: grid;
-    grid-template-columns: max-content 1fr max-content 1fr;
+    grid-template-columns: max-content minmax(0, 1fr) max-content minmax(0, 1fr);
     gap: 4px 12px;
 }
 
@@ -161,6 +177,7 @@ table.data tbody tr.selected {
 
 .statistics {
     display: flex;
+    flex-wrap: wrap;
     gap: 14px;
 }
 
@@ -196,11 +213,6 @@ table.data tbody tr.selected {
     margin-right: 5px;
 }
 
-@media (max-width: 900px) {
-    .split {
-        grid-template-columns: minmax(0, 1fr);
-    }
-}
 
 /* messages and the form of a new event */
 #message-text {
@@ -339,3 +351,4 @@ dialog.new-event {
     padding: 8px 16px;
     border-bottom: 1px solid #f5c2c0;
 }
+

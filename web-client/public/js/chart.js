@@ -1,4 +1,5 @@
 import {el} from './dom.js';
+import {decimal} from './format.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const WIDTH = 600;
@@ -55,12 +56,12 @@ export function createPriceChart(series, labels = {x: 'Seconds since the first p
         svg('line', {x1: MARGIN.left, y1: y(minValue), x2: WIDTH - MARGIN.right, y2: y(minValue), class: 'axis'}),
         svg('line', {x1: MARGIN.left, y1: MARGIN.top, x2: MARGIN.left, y2: y(minValue), class: 'axis'}));
     for (const tick of ticks(0, maxSeconds)) {
-        chart.append(svg('text', {x: x(tick), y: y(minValue) + 16, 'text-anchor': 'middle'}, tick.toFixed(1)));
+        chart.append(svg('text', {x: x(tick), y: y(minValue) + 16, 'text-anchor': 'middle'}, decimal(tick)));
     }
     for (const tick of ticks(minValue, maxValue)) {
         chart.append(
             svg('line', {x1: MARGIN.left, y1: y(tick), x2: WIDTH - MARGIN.right, y2: y(tick), class: 'grid'}),
-            svg('text', {x: MARGIN.left - 6, y: y(tick) + 4, 'text-anchor': 'end'}, tick.toFixed(2)));
+            svg('text', {x: MARGIN.left - 6, y: y(tick) + 4, 'text-anchor': 'end'}, decimal(tick)));
     }
     chart.append(
         svg('text', {x: MARGIN.left + plotWidth / 2, y: HEIGHT - 6, 'text-anchor': 'middle'}, labels.x),

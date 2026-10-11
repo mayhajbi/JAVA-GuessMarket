@@ -94,4 +94,10 @@ async function start() {
     }
 }
 
+// Whatever failed without being handled where it happened is reported once, in the same dialog.
+window.addEventListener('unhandledrejection', (event) => {
+    console.error(event.reason);
+    showError({title: 'Unexpected error', message: 'The application could not complete the action. Try again.'});
+});
+
 start();

@@ -6,7 +6,7 @@ const BASE = '/guessmarket';
 const UNREACHABLE_STATUSES = [0, 502];
 const UNREACHABLE_MESSAGE = 'The Guess Market server does not answer. Check that Tomcat is running, and try again.';
 
-export class ServerError extends Error {
+class ServerError extends Error {
     constructor(title, message, status) {
         super(message);
         this.title = title;
