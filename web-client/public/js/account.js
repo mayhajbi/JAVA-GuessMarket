@@ -26,7 +26,7 @@ function describeRole(row) {
  * user can also load funds.
  *
  * @param onChanged called after an action changed the data in the server; refreshes every screen
- * @return {element, refresh}
+ * @return {element, refresh(timeoutSeconds)}: refresh fails with the error of the server
  */
 export function createAccountScreen(onChanged) {
     const detail = createEventDetail(onChanged);
@@ -62,6 +62,7 @@ export function createAccountScreen(onChanged) {
     const blockedLabel = el('span', {class: 'blocked'}, 'Blocked - balance below zero');
     const balanceLabel = el('span', {class: 'section-title'});
     const balanceChart = el('div');
+    let shownHistory = null;
 
     async function loadFunds() {
         const text = await askText(LOAD_FUNDS, 'Amount:');
@@ -81,26 +82,27 @@ export function createAccountScreen(onChanged) {
         }
     }
 
-    async function refresh() {
-        try {
-            const [account, users, entries, history] = await Promise.all(
-                [getJson('/account'), getJson('/users'), getJson('/account/log'), getJson('/account/history')]);
-            detail.setUser(account);
-            nameLabel.textContent = account.name;
-            balanceLabel.textContent = decimal(account.balance);
-            blockedLabel.hidden = !account.blocked;
-            eventsTable.setRows(account.events);
-            usersTable.setRows(users);
-            entriesTable.setRows(entries);
+    async function refresh(timeoutSeconds) {
+        const [account, users, entries, history] = await Promise.all(['/account', '/users', '/account/log',
+            '/account/history'].map((path) => getJson(path, timeoutSeconds)));
+        detail.setUser(account);
+        nameLabel.textContent = account.name;
+        balanceLabel.textContent = decimal(account.balance);
+        blockedLabel.hidden = !account.blocked;
+        eventsTable.setRows(account.events);
+        usersTable.setRows(users);
+        entriesTable.setRows(entries);
+        // The graph is drawn again only when the history changed.
+        const historyKey = JSON.stringify(history);
+        if (historyKey !== shownHistory) {
+            shownHistory = historyKey;
             balanceChart.replaceChildren(createPriceChart([{optionName: 'Balance', points: history}], BALANCE_LABELS)
                 ?? el('div', {class: 'placeholder'}, 'No balance changes yet.'));
-            await detail.refresh();
-        } catch (error) {
-            showError(error);
         }
+        await detail.refresh(timeoutSeconds);
     }
 
-    refresh();
+    refresh().catch(showError);
     const element = el('div', {class: 'split'},
         el('div', {class: 'events-pane'},
             el('div', {class: 'section-title'}, 'Users'), usersTable.element,

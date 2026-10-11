@@ -15,9 +15,9 @@ import {createTable} from './table.js';
  */
 export function createEventsScreen(onChanged) {
     const detail = createEventDetail(onChanged);
-    const typeFilter = createFilterGroup(EVENT_TYPES, load);
-    const statusFilter = createFilterGroup(EVENT_STATUSES, load);
-    const commissionFilter = createFilterGroup(COMMISSION_TYPES, load);
+    const typeFilter = createFilterGroup(EVENT_TYPES, onFilterChanged);
+    const statusFilter = createFilterGroup(EVENT_STATUSES, onFilterChanged);
+    const commissionFilter = createFilterGroup(COMMISSION_TYPES, onFilterChanged);
     const countLabel = el('div', {class: 'field-name'});
     const table = createTable({
         columns: [
@@ -37,31 +37,28 @@ export function createEventsScreen(onChanged) {
     });
     let latestLoad = 0;
 
-    async function load() {
+    async function load(timeoutSeconds) {
         const thisLoad = ++latestLoad;
         const query = `types=${typeFilter.selected()}&statuses=${statusFilter.selected()}`
             + `&commissions=${commissionFilter.selected()}`;
-        try {
-            const [all, visible] = await Promise.all([getJson('/events'), getJson(`/events?${query}`)]);
-            if (thisLoad === latestLoad) {
-                table.setRows(visible);
-                countLabel.textContent = `Showing ${visible.length} of ${all.length} events`;
-            }
-        } catch (error) {
-            showError(error);
+        const [all, visible] = await Promise.all(
+            [getJson('/events', timeoutSeconds), getJson(`/events?${query}`, timeoutSeconds)]);
+        if (thisLoad === latestLoad) {
+            table.setRows(visible);
+            countLabel.textContent = `Showing ${visible.length} of ${all.length} events`;
         }
     }
 
+    // A change of a filter asks for the events again, and tells the user when the server refuses.
+    function onFilterChanged() {
+        load().catch(showError);
+    }
+
     // The user who is logged in is read again with the events: the balance and the block change with the actions.
-    async function refresh() {
-        try {
-            detail.setUser(await getJson('/account'));
-        } catch (error) {
-            showError(error);
-            return;
-        }
-        await load();
-        await detail.refresh();
+    async function refresh(timeoutSeconds) {
+        detail.setUser(await getJson('/account', timeoutSeconds));
+        await load(timeoutSeconds);
+        await detail.refresh(timeoutSeconds);
     }
 
     async function onNewEvent() {
@@ -74,7 +71,7 @@ export function createEventsScreen(onChanged) {
         }
     }
 
-    refresh();
+    refresh().catch(showError);
     const element = el('div', {class: 'split'},
         el('div', {class: 'events-pane'},
             el('div', {class: 'events-title'}, el('span', {class: 'section-title'}, 'Events'),

@@ -143,19 +143,16 @@ export function createEventDetail(onChanged) {
         }
     }
 
-    async function load(event) {
+    async function load(event, timeoutSeconds) {
         const stateUrl = event.type === 'LMSR' ? '/event/market' : '/event/orderbook';
-        try {
-            const [state, prices] = await Promise.all(
-                [getJson(`${stateUrl}?id=${event.id}`), getJson(`/event/prices?id=${event.id}`)]);
-            if (currentEvent !== null && currentEvent.id === event.id) {
-                shown = {state, prices};
-                render();
-                placeholder.hidden = true;
-                details.hidden = false;
-            }
-        } catch (error) {
-            showError(error);
+        const [state, prices] = await Promise.all(
+            [getJson(`${stateUrl}?id=${event.id}`, timeoutSeconds),
+                getJson(`/event/prices?id=${event.id}`, timeoutSeconds)]);
+        if (currentEvent !== null && currentEvent.id === event.id) {
+            shown = {state, prices};
+            render();
+            placeholder.hidden = true;
+            details.hidden = false;
         }
     }
 
@@ -177,13 +174,17 @@ export function createEventDetail(onChanged) {
             }
             currentEvent = event;
             shown = null;
-            await load(event);
+            try {
+                await load(event);
+            } catch (error) {
+                showError(error);
+            }
         },
 
         /** Pulls the details of the shown event again. */
-        async refresh() {
+        async refresh(timeoutSeconds) {
             if (currentEvent !== null) {
-                await load(currentEvent);
+                await load(currentEvent, timeoutSeconds);
             }
         },
 

@@ -14,6 +14,7 @@ export function createTable({columns, placeholder, rowKey, onSelect}) {
     let sortColumn = null;
     let ascending = true;
     let selectedKey = null;
+    let shownRows = null;
     const arrows = columns.map(() => el('span', {class: 'arrow'}));
     const head = el('tr', {}, ...columns.map((column, index) => el('th',
         {class: column.numeric ? 'numeric' : '', onclick: () => sortBy(index)}, column.title, arrows[index])));
@@ -72,6 +73,12 @@ export function createTable({columns, placeholder, rowKey, onSelect}) {
         },
 
         setRows(newRows) {
+            // Rows that did not change are not drawn again: no flicker, and the scroll position stays.
+            const serialized = JSON.stringify(newRows);
+            if (serialized === shownRows) {
+                return;
+            }
+            shownRows = serialized;
             rows = newRows;
             const selectedIsGone = onSelect && selectedKey !== null && !rows.some((row) => rowKey(row) === selectedKey);
             if (selectedIsGone) {
