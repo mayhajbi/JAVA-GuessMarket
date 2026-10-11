@@ -62,3 +62,6 @@ ehthumbs.db
 # The jar files under lib/ are committed on purpose, so that the project can be built right after a
 # clone. To keep binaries out of the repository, uncomment the next line instead.
 # lib/*.jar
+
+# --- web client ---
+node_modules/
