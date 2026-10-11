@@ -55,6 +55,12 @@ public class FileLoadException extends GuessMarketException {
         return missing("attribute '" + name + "' of the element '" + element + "'", location);
     }
 
+    public static FileLoadException eventNameTaken(String eventName) {
+        return new FileLoadException("File rejected", "The file was rejected because the name of the event "
+                + describeEvent(eventName) + " is not available. Change the event name or remove the event from "
+                + "the file, and try to upload it again.");
+    }
+
     public static FileLoadException wrongOptionCount() {
         return new FileLoadException("Invalid options", "An event must have exactly 2 options, no more and no fewer.");
     }

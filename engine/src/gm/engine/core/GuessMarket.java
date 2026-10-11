@@ -3,6 +3,7 @@ package gm.engine.core;
 import gm.dto.CommissionType;
 import gm.dto.EventStatus;
 import gm.dto.EventType;
+import gm.engine.exception.FileLoadException;
 import gm.engine.exception.UserInputException;
 
 import java.util.ArrayList;
@@ -48,14 +49,14 @@ public class GuessMarket {
      * the system and against each other before the first event is added, and the events get the next
      * ids of the system, in the order of the list.
      *
-     * @throws UserInputException when a name is already in use, or appears twice in the list
+     * @throws FileLoadException when a name is already in use, or appears twice in the list
      */
     public void addEvents(List<Event> events) {
         Set<String> namesInList = new HashSet<>();
         for (Event event : events) {
-            requireNameNotInUse(event.getName());
-            if (!namesInList.add(nameKey(event.getName()))) {
-                throw UserInputException.unavailableName(event.getName());
+            String key = nameKey(event.getName());
+            if (eventsByName.containsKey(key) || !namesInList.add(key)) {
+                throw FileLoadException.eventNameTaken(event.getName());
             }
         }
         int nextId = nextEventId();

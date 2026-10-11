@@ -97,12 +97,12 @@ public class UsersAndUploadsTest extends Check {
         expectFalse(user(engine, "Bella").marketMaker(), "another user is not");
 
         // A name that exists is refused, whatever its case, and so is a name twice in one file.
-        expectThrows(UserInputException.class,
+        expectThrows(FileLoadException.class,
                 () -> upload(engine, "Bella", DATA + "ex3/small.xml"), "the same file again");
-        expectThrows(UserInputException.class,
+        expectThrows(FileLoadException.class,
                 () -> Scenario.upload(engine, "Bella", "again.xml", Scenario.lmsrFile("Fresh one", "MUJTABA IS DEAD")),
                 "a name that exists in another case, after a fresh event");
-        expectThrows(UserInputException.class,
+        expectThrows(FileLoadException.class,
                 () -> Scenario.upload(engine, "Bella", "twice.xml", Scenario.lmsrFile("Twin", "twin")),
                 "the same name twice in one file");
         expect(4, engine.getAllEvents().size(), "a refused file adds no event at all");

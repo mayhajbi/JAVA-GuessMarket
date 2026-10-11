@@ -71,7 +71,8 @@ public class MessageWordingTest extends Check {
 
         // uploaded files
         expectTrue(messageOf(() -> UsersAndUploadsTest.upload(engine, "Ben", DATA + "ex3/multiple.xml"))
-                .endsWith("is already taken. Please choose another."), "an event name that is in use");
+                .endsWith("is not available. Change the event name or remove the event from the file, and try to "
+                        + "upload it again."), "an event name that is in use");
         expect("The attribute 'd' of the element 'GM-order-book' is missing or empty in the event 'No d'. Add "
                         + "it and upload the file again.",
                 messageOf(() -> uploadOrderBook(engine, "No d", "allow-mint=\"true\" initial=\"10\"")),
