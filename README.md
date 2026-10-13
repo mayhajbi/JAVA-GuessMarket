@@ -38,7 +38,7 @@ tests\run-all.bat   runs the regression checks: the engine and client checks com
 
 `web-client\run-web.bat` starts a small Node JS server (no packages to install) that serves the pages
 at `http://localhost:3000` and forwards `/guessmarket` requests to the Tomcat server, so that the
-server needs no change. It works in a current Chrome or Edge.
+server needs no change. It was tested in Chrome.
 
 ## Project structure
 
