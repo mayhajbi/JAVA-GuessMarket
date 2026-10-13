@@ -50,10 +50,19 @@ function serveFile(request, response) {
     });
 }
 
-http.createServer((request, response) => {
+const server = http.createServer((request, response) => {
     if (request.url === CONTEXT_PATH || request.url.startsWith(CONTEXT_PATH + '/')) {
         forward(request, response);
     } else {
         serveFile(request, response);
     }
-}).listen(PORT, () => console.log(`Guess Market web client: http://localhost:${PORT}`));
+});
+
+server.on('error', (error) => {
+    console.error(error.code === 'EADDRINUSE'
+        ? `Port ${PORT} is already in use. Close the program that uses it (maybe another web client), and run this file again.`
+        : error.message);
+    process.exit(1);
+});
+
+server.listen(PORT, () => console.log(`Guess Market web client: http://localhost:${PORT}`));

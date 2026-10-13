@@ -14,6 +14,7 @@ order book (bids, asks and minting, in the spirit of Polymarket).
 * Events with a life cycle and a market maker, LMSR trading and order book trading
 * Automatic updates between the clients, by pulling from the server
 * A chat between the users who are logged in
+* A web client (login, events and account screens) that works against the same server
 * Graphs of prices and balances, user created events, skins and animations
 
 ## Requirements
@@ -33,6 +34,12 @@ run-client.bat   runs the JavaFX client (the server has to be running); works fr
 tests\run-all.bat   runs the regression checks: the engine and client checks compile from the sources and need nothing running, the server checks need a running server (see tests\README.md)
 ```
 
+## Web client
+
+`web-client\run-web.bat` starts a small Node JS server (no packages to install) that serves the pages
+at `http://localhost:3000` and forwards `/guessmarket` requests to the Tomcat server, so that the
+server needs no change. It works in a current Chrome or Edge.
+
 ## Project structure
 
 | Module   | Package      | Role |
@@ -43,6 +50,7 @@ tests\run-all.bat   runs the regression checks: the engine and client checks com
 | `server` | `gm.server`  | The web application (WAR): the servlets that expose the engine over HTTP |
 | `ui-fx`  | `gm.ui.fx`   | The JavaFX screens the client uses: events, event details, new event, common components |
 | `client-fx` | `gm.client` | The JavaFX client: login, main window, and the engine that talks to the server over HTTP |
+| `web-client` | JavaScript | The web client: login, events and account screens, and the Node JS server that serves them |
 
 A user interface talks to the engine only through `gm.engine.api.GuessMarketEngine` and receives
 only `gm.dto` objects. The engine stays passive - it never reaches back into a user interface.

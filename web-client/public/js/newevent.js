@@ -107,18 +107,31 @@ export function openNewEventForm() {
 
     return new Promise((resolve) => {
         let created = null;
+        let sending = false;
+        // One request at a time, so that a second Enter does not create the event twice.
         const create = async () => {
-            const request = toRequest();
+            const request = sending ? null : toRequest();
             if (request === null) {
                 return;
             }
+            sending = true;
             try {
                 created = await postJson('/event/create', request);
                 dialog.close();
             } catch (error) {
                 showError(error);
+            } finally {
+                sending = false;
             }
         };
+        // Enter in a field of the form is the same as OK (a description is a text area, where it is a new line).
+        // The key press is consumed, so that it does not go on to the button that opened the form.
+        dialog.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' && event.target.tagName === 'INPUT') {
+                event.preventDefault();
+                create();
+            }
+        });
         dialog.append(el('div', {class: 'buttons'},
             el('button', {type: 'button', onclick: create}, 'OK'),
             el('button', {type: 'button', onclick: () => dialog.close()}, 'Cancel')));
